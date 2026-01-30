@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle } from 'lucide-react';
 
-const Navbar = () => {
+const Navbar = ({ settings }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -78,7 +78,7 @@ const Navbar = () => {
     );
 };
 
-const Hero = () => {
+const Hero = ({ settings = {} }) => {
     return (
         <section id="home" style={{
             height: '100vh',
@@ -120,9 +120,9 @@ const Hero = () => {
                     marginBottom: '1.5rem',
                     lineHeight: '1.1',
                     width: '100%'
-                }}>Where Hair Dreams Come True</h1>
+                }}>{settings.hero_title || "Where Hair Dreams Come True"}</h1>
                 <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '2.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
-                    Luxury hair styling and bespoke treatments at 938 High Road.
+                    {settings.hero_subtitle || "Luxury hair styling and bespoke treatments at 938 High Road."}
                 </p>
                 <div className="hero-buttons" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', width: '100%', margin: '0 auto' }}>
                     <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</a>
@@ -144,11 +144,17 @@ const Hero = () => {
     );
 };
 
-const Services = () => {
-    const services = [
-        { title: "Hair Magic", desc: "Expert coloring and transformations tailored to you.", icon: <Calendar style={{ color: '#3D2B1F' }} /> },
-        { title: "Salon Life", desc: "A premium experience in every detail of your visit.", icon: <MapPin style={{ color: '#3D2B1F' }} /> },
-        { title: "Bespoke Styling", desc: "Crafting the perfect look for your unique identity.", icon: <Phone style={{ color: '#3D2B1F' }} /> }
+const Services = ({ services = [] }) => {
+    const iconMap = {
+        Calendar: <Calendar style={{ color: '#3D2B1F' }} />,
+        MapPin: <MapPin style={{ color: '#3D2B1F' }} />,
+        Phone: <Phone style={{ color: '#3D2B1F' }} />,
+    };
+
+    const displayServices = services.length > 0 ? services : [
+        { title: "Hair Magic", description: "Expert coloring and transformations tailored to you.", icon_name: "Calendar" },
+        { title: "Salon Life", description: "A premium experience in every detail of your visit.", icon_name: "MapPin" },
+        { title: "Bespoke Styling", description: "Crafting the perfect look for your unique identity.", icon_name: "Phone" }
     ];
 
     return (
@@ -165,7 +171,7 @@ const Services = () => {
                 maxWidth: '1200px',
                 margin: '0 auto'
             }}>
-                {services.map((service, index) => (
+                {displayServices.map((service, index) => (
                     <motion.div
                         key={index}
                         whileHover={{ y: -10 }}
@@ -178,10 +184,10 @@ const Services = () => {
                         }}
                     >
                         <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
-                            {service.icon}
+                            {iconMap[service.icon_name] || iconMap.Calendar}
                         </div>
                         <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: '#3D2B1F' }}>{service.title}</h3>
-                        <p style={{ color: '#666', lineHeight: '1.8' }}>{service.desc}</p>
+                        <p style={{ color: '#666', lineHeight: '1.8' }}>{service.description || service.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -189,12 +195,14 @@ const Services = () => {
     );
 };
 
-const TeamSection = () => {
-    const team = [
-        { name: "Jo", role: "Owner & Creative Director", desc: "Expert in bespoke coloring and luxury extensions.", img: "/jo.png" },
-        { name: "Viktor", role: "Master Stylist", desc: "Specializing in precision cuts and seamless balayage.", img: "/viktor.png" },
-        { name: "Nisha", role: "Senior Stylist", desc: "Crafting glam transformations and signature styles.", img: "/nisha.png" }
+const TeamSection = ({ team = [] }) => {
+    const defaultTeam = [
+        { name: "Jo", role: "Owner & Creative Director", description: "Expert in bespoke coloring and luxury extensions.", image_url: "/jo.png" },
+        { name: "Viktor", role: "Master Stylist", description: "Specializing in precision cuts and seamless balayage.", image_url: "/viktor.png" },
+        { name: "Nisha", role: "Senior Stylist", description: "Crafting glam transformations and signature styles.", image_url: "/nisha.png" }
     ];
+
+    const displayTeam = team.length > 0 ? team : defaultTeam;
 
     return (
         <section id="team" style={{ padding: '120px 50px', backgroundColor: '#F5F1ED' }}>
@@ -210,7 +218,7 @@ const TeamSection = () => {
                 maxWidth: '1200px',
                 margin: '0 auto'
             }}>
-                {team.map((member, index) => (
+                {displayTeam.map((member, index) => (
                     <motion.div
                         key={index}
                         initial={{ opacity: 0, y: 30 }}
@@ -230,11 +238,11 @@ const TeamSection = () => {
                                 boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
                             }}
                         >
-                            <img src={member.img} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={member.image_url || member.img} alt={member.stylist_name || member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </motion.div>
-                        <h3 style={{ fontSize: '2rem', color: '#3D2B1F', marginBottom: '5px' }}>{member.name}</h3>
+                        <h3 style={{ fontSize: '2rem', color: '#3D2B1F', marginBottom: '5px' }}>{member.stylist_name || member.name}</h3>
                         <p style={{ color: '#3D2B1F', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.85rem', marginBottom: '20px', opacity: 0.8 }}>{member.role}</p>
-                        <p style={{ color: '#666', lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1.05rem' }}>{member.desc}</p>
+                        <p style={{ color: '#666', lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1.05rem' }}>{member.description || member.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -242,55 +250,64 @@ const TeamSection = () => {
     );
 };
 
-const PriceList = () => {
-    const categories = [
-        {
-            title: "CUT & STYLING",
-            items: [
-                { name: "Wash cut & blowdry", price: "£50" },
-                { name: "Wash & cut", price: "£30-£35" },
-                { name: "Wash & blowdry", price: "£25-35" },
-                { name: "Styling (flat iron/curls)", price: "£20" },
-                { name: "Hair Up", price: "From £60" }
-            ]
-        },
-        {
-            title: "COLOURING",
-            items: [
-                { name: "T-section highlights", price: "£50" },
-                { name: "Half head highlights", price: "£75" },
-                { name: "Full head highlights", price: "£95" },
-                { name: "Full head of baby lights", price: "£120" },
-                { name: "Balyage", price: "£180-£225" },
-                { name: "Full head tint", price: "From £70" },
-                { name: "Root tint", price: "From £50" },
-                { name: "Toner", price: "£25" }
-            ]
-        },
-        {
-            title: "HAIR TREATMENTS",
-            items: [
-                { name: "Keratin blowdry", price: "£140-£150" },
-                { name: "Hair Botox", price: "£35" },
-                { name: "Olaplex", price: "£25" }
-            ]
-        },
-        {
-            title: "HAIR EXTENSIONS",
-            items: [
-                { name: "Hair extensions on consultation", price: "£0" },
-                { name: "Extensions maintenance", price: "£100-150" }
-            ]
-        },
-        {
-            title: "MAKE UP",
-            items: [
-                { name: "Natural make up", price: "£55" },
-                { name: "Full glam make up", price: "£65" },
-                { name: "Wedding make up packages available", price: "" }
-            ]
-        }
-    ];
+const PriceList = ({ pricing = [] }) => {
+    // Transform flat pricing list into categories
+    const categoriesMap = pricing.reduce((acc, item) => {
+        if (!acc[item.category]) acc[item.category] = [];
+        acc[item.category].push({ name: item.item_name, price: item.price });
+        return acc;
+    }, {});
+
+    const displayCategories = pricing.length > 0
+        ? Object.entries(categoriesMap).map(([title, items]) => ({ title, items }))
+        : [
+            {
+                title: "CUT & STYLING",
+                items: [
+                    { name: "Wash cut & blowdry", price: "£50" },
+                    { name: "Wash & cut", price: "£30-£35" },
+                    { name: "Wash & blowdry", price: "£25-35" },
+                    { name: "Styling (flat iron/curls)", price: "£20" },
+                    { name: "Hair Up", price: "From £60" }
+                ]
+            },
+            {
+                title: "COLOURING",
+                items: [
+                    { name: "T-section highlights", price: "£50" },
+                    { name: "Half head highlights", price: "£75" },
+                    { name: "Full head highlights", price: "£95" },
+                    { name: "Full head of baby lights", price: "£120" },
+                    { name: "Balyage", price: "£180-£225" },
+                    { name: "Full head tint", price: "From £70" },
+                    { name: "Root tint", price: "From £50" },
+                    { name: "Toner", price: "£25" }
+                ]
+            },
+            {
+                title: "HAIR TREATMENTS",
+                items: [
+                    { name: "Keratin blowdry", price: "£140-£150" },
+                    { name: "Hair Botox", price: "£35" },
+                    { name: "Olaplex", price: "£25" }
+                ]
+            },
+            {
+                title: "HAIR EXTENSIONS",
+                items: [
+                    { name: "Hair extensions on consultation", price: "£0" },
+                    { name: "Extensions maintenance", price: "£100-150" }
+                ]
+            },
+            {
+                title: "MAKE UP",
+                items: [
+                    { name: "Natural make up", price: "£55" },
+                    { name: "Full glam make up", price: "£65" },
+                    { name: "Wedding make up packages available", price: "" }
+                ]
+            }
+        ];
 
     return (
         <section id="pricing" style={{
@@ -332,7 +349,7 @@ const PriceList = () => {
                     gap: '40px',
                     width: '100%'
                 }}>
-                    {categories.map((cat, idx) => (
+                    {displayCategories.map((cat, idx) => (
                         <div key={idx} style={{ width: '100%' }}>
                             <h3 style={{
                                 fontFamily: "'Inter', sans-serif",
@@ -367,7 +384,14 @@ const PriceList = () => {
     );
 };
 
-const Contact = () => {
+const Contact = ({ settings = {} }) => {
+    const phone = settings.phone || "07376 168558";
+    const phoneLink = `tel:${phone.replace(/\s/g, '')}`;
+    const whatsapp = settings.whatsapp || "07376 168558";
+    const whatsappLink = `https://wa.me/44${whatsapp.replace(/\s|^0/g, '')}`;
+    const email = settings.email || "hair.studio938@gmail.com";
+    const address = settings.address || "938 High Road, London, N12 9RT";
+
     return (
         <section id="contact" style={{
             padding: '120px 20px',
@@ -388,26 +412,26 @@ const Contact = () => {
                     <ContactItem
                         icon={<Phone size={24} />}
                         label="Call Us"
-                        value="07376 168558"
-                        link="tel:07376168558"
+                        value={phone}
+                        link={phoneLink}
                     />
                     <ContactItem
                         icon={<MessageCircle size={24} />}
                         label="WhatsApp"
-                        value="07376 168558"
-                        link="https://wa.me/447376168558"
+                        value={whatsapp}
+                        link={whatsappLink}
                     />
                     <ContactItem
                         icon={<Mail size={24} />}
                         label="Email"
-                        value="hair.studio938@gmail.com"
-                        link="mailto:hair.studio938@gmail.com"
+                        value={email}
+                        link={`mailto:${email}`}
                     />
                 </div>
 
                 <div style={{ marginTop: '80px', opacity: 0.8 }}>
                     <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', fontSize: '1.1rem' }}>
-                        <MapPin size={20} /> 938 High Road, London, N12 9RT
+                        <MapPin size={20} /> {address}
                     </p>
                 </div>
             </div>
@@ -423,7 +447,7 @@ const ContactItem = ({ icon, label, value, link }) => (
     </div>
 );
 
-const Footer = () => {
+const Footer = ({ settings = {} }) => {
     return (
         <footer style={{ padding: '80px 50px', backgroundColor: '#3D2B1F', color: '#EAE0D5' }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '60px' }}>
@@ -443,12 +467,12 @@ const Footer = () => {
 
                 <div>
                     <h4 style={{ textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '25px' }}>Location</h4>
-                    <p style={{ opacity: 0.8 }}>938 High Road, London<br />United Kingdom N12 9RT</p>
+                    <p style={{ opacity: 0.8 }}>{settings.address || "938 High Road, London, N12 9RT"}</p>
                 </div>
 
                 <div>
                     <h4 style={{ textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '25px' }}>Opening Hours</h4>
-                    <p style={{ opacity: 0.8 }}>Tuesday - Saturday<br />9:00 AM - 6:00 PM</p>
+                    <p style={{ opacity: 0.8 }}>{settings.opening_hours || "Tuesday - Saturday: 9:00 AM - 6:00 PM"}</p>
                 </div>
             </div>
 

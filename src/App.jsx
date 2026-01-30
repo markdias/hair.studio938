@@ -39,6 +39,48 @@ const MainSite = () => {
     return localStorage.getItem('hasSeenIntro') === 'true';
   })
 
+  // CMS Data States
+  const [siteData, setSiteData] = useState({
+    settings: {}, services: [], pricing: [], team: [], gallery: [], loading: true
+  });
+
+  useEffect(() => {
+    fetchSiteData();
+  }, []);
+
+  const fetchSiteData = async () => {
+    try {
+      const [
+        { data: settings },
+        { data: srvs },
+        { data: prices },
+        { data: stls },
+        { data: gly }
+      ] = await Promise.all([
+        supabase.from('site_settings').select('*'),
+        supabase.from('services_overview').select('*'),
+        supabase.from('price_list').select('*').order('sort_order'),
+        supabase.from('stylist_calendars').select('*'),
+        supabase.from('gallery_images').select('*').order('sort_order')
+      ]);
+
+      const settingsObj = {};
+      if (settings) settings.forEach(s => settingsObj[s.key] = s.value);
+
+      setSiteData({
+        settings: settingsObj,
+        services: srvs || [],
+        pricing: prices || [],
+        team: stls || [],
+        gallery: gly || [],
+        loading: false
+      });
+    } catch (err) {
+      console.warn('CMS data fetch failed (tables might not exist yet):', err.message);
+      setSiteData(prev => ({ ...prev, loading: false }));
+    }
+  };
+
   const handleIntroComplete = () => {
     localStorage.setItem('hasSeenIntro', 'true');
     setShowMainSite(true);
@@ -52,15 +94,15 @@ const MainSite = () => {
 
       {showMainSite && (
         <main className="main-content">
-          <Navbar />
-          <Hero />
-          <Services />
-          <TeamSection />
-          <PriceList />
+          <Navbar settings={siteData.settings} />
+          <Hero settings={siteData.settings} />
+          <Services services={siteData.services} />
+          <TeamSection team={siteData.team} />
+          <PriceList pricing={siteData.pricing} />
           <BookingSystem />
-          <Gallery />
-          <Contact />
-          <Footer />
+          <Gallery images={siteData.gallery} />
+          <Contact settings={siteData.settings} />
+          <Footer settings={siteData.settings} />
           <Analytics />
         </main>
       )}

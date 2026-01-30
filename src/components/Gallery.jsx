@@ -11,16 +11,27 @@ const images = [
     '/instagram/img6.jpg',
 ];
 
-const Gallery = () => {
+const Gallery = ({ images = [] }) => {
+    const defaultImages = [
+        '/instagram/img7.jpg',
+        '/instagram/img2.jpg',
+        '/instagram/img3.jpg',
+        '/instagram/img4.jpg',
+        '/instagram/img5.jpg',
+        '/instagram/img6.jpg',
+    ];
+
+    const displayImages = images.length > 0 ? images.map(img => img.image_url) : defaultImages;
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0);
 
     useEffect(() => {
+        if (displayImages.length === 0) return;
         const timer = setInterval(() => {
             nextSlide();
         }, 5000);
         return () => clearInterval(timer);
-    }, [currentIndex]);
+    }, [currentIndex, displayImages.length]);
 
     const slideVariants = {
         enter: (direction) => ({
@@ -52,13 +63,15 @@ const Gallery = () => {
 
     const nextSlide = () => {
         setDirection(1);
-        setCurrentIndex((prev) => (prev + 1) % images.length);
+        setCurrentIndex((prev) => (prev + 1) % displayImages.length);
     };
 
     const prevSlide = () => {
         setDirection(-1);
-        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+        setCurrentIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length);
     };
+
+    if (displayImages.length === 0) return null;
 
     return (
         <section id="gallery" style={{
@@ -127,7 +140,7 @@ const Gallery = () => {
                                 border: '8px solid rgba(234, 224, 213, 0.1)'
                             }}>
                                 <img
-                                    src={images[currentIndex]}
+                                    src={displayImages[currentIndex]}
                                     alt={`Instagram Post ${currentIndex + 1}`}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
@@ -193,7 +206,7 @@ const Gallery = () => {
                     gap: '12px',
                     marginTop: '40px'
                 }}>
-                    {images.map((_, idx) => (
+                    {displayImages.map((_, idx) => (
                         <button
                             key={idx}
                             onClick={() => {
