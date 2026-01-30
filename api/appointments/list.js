@@ -65,10 +65,16 @@ export default async function handler(req, res) {
         const futureDate = new Date();
         futureDate.setDate(futureDate.getDate() + 90); // Next 90 days
 
+        console.log(`Found ${stylists?.length} stylists with calendars`);
+
         for (const stylist of stylists) {
-            if (!stylist.calendar_id) continue;
+            if (!stylist.calendar_id) {
+                console.log(`Skipping stylist ${stylist.stylist_name} (no calendar_id)`);
+                continue;
+            }
 
             try {
+                console.log(`Fetching events for ${stylist.stylist_name} (${stylist.calendar_id})...`);
                 const response = await calendar.events.list({
                     calendarId: stylist.calendar_id,
                     timeMin: now,
@@ -79,6 +85,7 @@ export default async function handler(req, res) {
                 });
 
                 const events = response.data.items || [];
+                console.log(`Found ${events.length} events for ${stylist.stylist_name}`);
 
                 // Parse and format events
                 events.forEach(event => {
@@ -122,6 +129,8 @@ export default async function handler(req, res) {
                 console.error(`Error fetching calendar for ${stylist.stylist_name}:`, err.message);
             }
         }
+
+        console.log(`Total appointments found: ${allAppointments.length}`);
 
         // Sort by start time
         allAppointments.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));

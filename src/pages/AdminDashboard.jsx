@@ -9,6 +9,67 @@ import {
     List, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
+const TABS = [
+    { id: 'general', label: 'General Settings', icon: <Settings size={18} /> },
+    { id: 'services', label: 'Services', icon: <Scissors size={18} /> },
+    { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
+    { id: 'team', label: 'Team', icon: <User size={18} /> },
+    { id: 'gallery', label: 'Gallery', icon: <Image size={18} /> },
+    { id: 'appointments', label: 'Appointments', icon: <Calendar size={18} /> },
+    { id: 'messages', label: 'Messages', icon: <Mail size={18} /> },
+];
+
+const STYLIST_COLORS = {
+    'Jo': 'bg-blue-100 text-blue-800 border-blue-200',
+    'Nisha': 'bg-purple-100 text-purple-800 border-purple-200',
+    'default': 'bg-stone-100 text-stone-800 border-stone-200'
+};
+
+const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const TIME_SLOTS = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
+
+const GENERAL_FIELDS = [
+    { key: 'hero_title', label: 'Hero Title', icon: <Info size={16} /> },
+    { key: 'hero_subtitle', label: 'Hero Subtitle', icon: <Info size={16} /> },
+    { key: 'phone', label: 'Phone Number', icon: <Phone size={16} /> },
+    { key: 'whatsapp', label: 'WhatsApp Number', icon: <Phone size={16} /> },
+    { key: 'email', label: 'Email Address', icon: <Mail size={16} /> },
+    { key: 'address', label: 'Salon Address', icon: <MapPin size={16} /> },
+];
+
+const EMAIL_VARIABLES = [
+    { tag: '{{name}}', desc: 'Customer Name' },
+    { tag: '{{service}}', desc: 'Service Name' },
+    { tag: '{{stylist}}', desc: 'Stylist Name' },
+    { tag: '{{date}}', desc: 'Date of Appointment' },
+    { tag: '{{time}}', desc: 'Time of Appointment' },
+    { tag: '{{salon_phone}}', desc: 'Salon Phone Number' },
+    { tag: '{{salon_location}}', desc: 'Salon Address' },
+];
+
+const DEFAULT_EMAIL_TEMPLATE = `
+<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #EAE0D5; border-radius: 12px;">
+    <h2 style="color: #3D2B1F; border-bottom: 2px solid #EAE0D5; padding-bottom: 10px;">Booking Confirmed!</h2>
+    <p>Hi {{name}},</p>
+    <p>Thank you for choosing Studio 938. Your appointment is officially confirmed.</p>
+    
+    <div style="background-color: #FDFBF9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 5px 0;"><strong>Service:</strong> {{service}}</p>
+        <p style="margin: 5px 0;"><strong>Stylist:</strong> {{stylist}}</p>
+        <p style="margin: 5px 0;"><strong>Date:</strong> {{date}}</p>
+        <p style="margin: 5px 0;"><strong>Time:</strong> {{time}}</p>
+    </div>
+    
+    <p style="font-size: 0.9rem; color: #666;">
+        📍 <strong>Location:</strong> {{salon_location}}<br>
+        📞 <strong>Phone:</strong> {{salon_phone}}
+    </p>
+    
+    <p style="margin-top: 30px; font-size: 0.8rem; color: #999;">
+        Please give us at least 24 hours notice for any cancellations or changes.
+    </p>
+</div>`;
+
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('general');
     const [loading, setLoading] = useState(true);
@@ -81,14 +142,6 @@ const AdminDashboard = () => {
         );
     }
 
-    const tabs = [
-        { id: 'general', label: 'General Settings', icon: <Settings size={18} /> },
-        { id: 'services', label: 'Services', icon: <Scissors size={18} /> },
-        { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
-        { id: 'team', label: 'Team', icon: <User size={18} /> },
-        { id: 'gallery', label: 'Gallery', icon: <Image size={18} /> },
-        { id: 'appointments', label: 'Appointments', icon: <Calendar size={18} /> },
-    ];
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
@@ -107,7 +160,7 @@ const AdminDashboard = () => {
                 </div>
 
                 <nav className="flex-grow p-4 space-y-1">
-                    {tabs.map(tab => (
+                    {TABS.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
@@ -174,6 +227,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage }) => {
         case 'team': return <TeamTab stylists={data.stylists} refresh={refresh} showMessage={showMessage} />;
         case 'gallery': return <GalleryTab gallery={data.gallery} refresh={refresh} showMessage={showMessage} />;
         case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} showMessage={showMessage} />;
+        case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} />;
         default: return null;
     }
 };
@@ -220,7 +274,7 @@ const ImageUploader = ({ onUpload, folder = 'general', showMessage }) => {
             />
             <button
                 disabled={uploading}
-                className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg text-sm font-medium hover:-hover disabled:opacity-50 transition-all" style={{ backgroundColor: "#3D2B1F" }}
+                className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-all" style={{ backgroundColor: "#3D2B1F" }}
             >
                 {uploading ? <Loader2 size={16} className="animate-spin" /> : <Image size={16} />}
                 {uploading ? 'Uploading...' : 'Upload Image'}
@@ -470,7 +524,7 @@ const OpeningHoursPicker = ({ initialValue, onSave, showMessage }) => {
 
             {/* Save button */}
             <button
-                onClick={handleSaveHours}
+                onClick={() => handleSaveHours()}
                 className="w-full px-4 py-3 bg-stone-800 text-white rounded-lg hover:shadow-lg transition-all font-medium"
                 style={{ backgroundColor: '#3D2B1F' }}
             >
@@ -481,14 +535,6 @@ const OpeningHoursPicker = ({ initialValue, onSave, showMessage }) => {
 };
 
 const GeneralTab = ({ settings, setSettings, showMessage }) => {
-    const fields = [
-        { key: 'hero_title', label: 'Hero Title', icon: <Info size={16} /> },
-        { key: 'hero_subtitle', label: 'Hero Subtitle', icon: <Info size={16} /> },
-        { key: 'phone', label: 'Phone Number', icon: <Phone size={16} /> },
-        { key: 'whatsapp', label: 'WhatsApp Number', icon: <Phone size={16} /> },
-        { key: 'email', label: 'Email Address', icon: <Mail size={16} /> },
-        { key: 'address', label: 'Salon Address', icon: <MapPin size={16} /> },
-    ];
 
     const handleSave = async (key, value) => {
         try {
@@ -511,7 +557,7 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">General Settings</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {fields.map(field => (
+                {GENERAL_FIELDS.map(field => (
                     <div key={field.key} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                         <label className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">
                             {field.icon}
@@ -526,7 +572,7 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                             />
                             <button
                                 onClick={() => handleSave(field.key, settings[field.key])}
-                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:-hover transition-all" style={{ backgroundColor: "#3D2B1F" }}
+                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}
                             >
                                 <Save size={18} />
                             </button>
@@ -600,7 +646,7 @@ const ServicesTab = ({ services, refresh, showMessage }) => {
                 <h2 className="text-2xl font-semibold text-gray-900">Service Highlights</h2>
                 <button
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:-hover transition-all" style={{ backgroundColor: "#3D2B1F" }}
+                    className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}
                 >
                     <Plus size={18} /> {showAddForm ? 'Cancel' : 'Add Service'}
                 </button>
@@ -622,8 +668,8 @@ const ServicesTab = ({ services, refresh, showMessage }) => {
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg h-32 resize-none focus:ring-2 focus:ring-stone-800 focus:border-transparent"
                     />
                     <button
-                        onClick={handleAddService}
-                        className="w-full bg-stone-800 text-white font-medium py-3 rounded-lg hover:-hover transition-all flex items-center justify-center gap-2" style={{ backgroundColor: "#3D2B1F" }}
+                        onClick={() => handleAddService()}
+                        className="w-full bg-stone-800 text-white font-medium py-3 rounded-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2" style={{ backgroundColor: "#3D2B1F" }}
                     >
                         <Plus size={16} /> Create Service
                     </button>
@@ -660,7 +706,7 @@ const ServicesTab = ({ services, refresh, showMessage }) => {
                         />
                         <button
                             onClick={() => handleSave(s)}
-                            className="w-full bg-stone-800 text-white font-medium py-3 rounded-lg hover:-hover transition-all flex items-center justify-center gap-2" style={{ backgroundColor: "#3D2B1F" }}
+                            className="w-full bg-stone-800 text-white font-medium py-3 rounded-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2" style={{ backgroundColor: "#3D2B1F" }}
                         >
                             <Save size={16} /> Save Changes
                         </button>
@@ -769,7 +815,7 @@ const PricingTab = ({ pricing, refresh, showMessage }) => {
                     </select>
                     <button
                         onClick={handleAdd}
-                        className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:-hover transition-all flex items-center gap-2" style={{ backgroundColor: "#3D2B1F" }}
+                        className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all flex items-center gap-2" style={{ backgroundColor: "#3D2B1F" }}
                     >
                         <Plus size={18} /> Add
                     </button>
@@ -893,7 +939,7 @@ const TeamTab = ({ stylists, refresh, showMessage }) => {
                 </div>
                 <button
                     onClick={() => setIsAdding(!isAdding)}
-                    className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:-hover transition-all" style={{ backgroundColor: "#3D2B1F" }}
+                    className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}
                 >
                     <Plus size={18} /> Add Stylist
                 </button>
@@ -962,7 +1008,7 @@ const TeamTab = ({ stylists, refresh, showMessage }) => {
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg h-20 resize-none focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
                     />
                     <div className="flex gap-4">
-                        <button onClick={handleAdd} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:-hover transition-all" style={{ backgroundColor: "#3D2B1F" }}>Create Stylist</button>
+                        <button onClick={handleAdd} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Create Stylist</button>
                         <button onClick={() => setIsAdding(false)} className="px-8 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all">Cancel</button>
                     </div>
                 </div>
@@ -995,7 +1041,7 @@ const TeamTab = ({ stylists, refresh, showMessage }) => {
                         />
                         <textarea value={s.description || ''} onChange={(e) => handleFieldChange(idx, 'description', e.target.value)} placeholder="Bio" className="w-full text-sm text-gray-600 h-20 resize-none border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
                         <div className="flex gap-2">
-                            <button onClick={() => handleSave(s)} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:-hover transition-all" style={{ backgroundColor: "#3D2B1F" }}>Save</button>
+                            <button onClick={() => handleSave(s)} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Save</button>
                             <button onClick={() => handleDelete(s.id)} className="px-4 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all">Delete</button>
                         </div>
                     </div>
@@ -1070,6 +1116,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage }) => {
                 setAppointments(data.appointments);
             }
         } catch (err) {
+            console.error('Fetch error:', err);
             showMessage('error', 'Failed to load appointments');
         } finally {
             setLoading(false);
@@ -1404,21 +1451,14 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment }) 
         }
     };
 
-    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const timeSlots = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
 
-    const stylistColors = {
-        'Jo': 'bg-blue-100 text-blue-800 border-blue-200',
-        'Nisha': 'bg-purple-100 text-purple-800 border-purple-200',
-        'default': 'bg-stone-100 text-stone-800 border-stone-200'
-    };
 
     const renderMonthView = () => {
         const days = getDaysInMonth(currentDate);
 
         return (
             <div className="grid grid-cols-7 gap-1 md:gap-2">
-                {weekDays.map(day => (
+                {WEEK_DAYS.map(day => (
                     <div key={day} className="text-center text-xs md:text-sm font-medium text-gray-600 py-1 md:py-2">
                         <span className="hidden sm:inline">{day}</span>
                         <span className="sm:hidden">{day.substring(0, 1)}</span>
@@ -1447,7 +1487,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment }) 
                                                 hour: '2-digit',
                                                 minute: '2-digit'
                                             });
-                                            const colorClass = stylistColors[appt.stylist] || stylistColors.default;
+                                            const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
 
                                             return (
                                                 <div
@@ -1491,7 +1531,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment }) 
                             return (
                                 <div key={i} className={`text-center p-2 rounded-t-lg ${isTodayDate ? 'bg-amber-100' : 'bg-gray-50'
                                     }`}>
-                                    <div className="text-xs font-medium text-gray-600">{weekDays[date.getDay()]}</div>
+                                    <div className="text-xs font-medium text-gray-600">{WEEK_DAYS[date.getDay()]}</div>
                                     <div className={`text-sm font-semibold ${isTodayDate ? 'text-amber-900' : 'text-gray-900'}`}>
                                         {date.getDate()}
                                     </div>
@@ -1502,7 +1542,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment }) 
 
                     {/* Time slots */}
                     <div className="space-y-1">
-                        {timeSlots.map(hour => (
+                        {TIME_SLOTS.map(hour => (
                             <div key={hour} className="grid grid-cols-8 gap-1">
                                 <div className="text-xs text-gray-600 p-2 font-medium">
                                     {hour}:00
@@ -1515,7 +1555,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment }) 
                                         <div key={i} className={`min-h-[60px] border rounded p-1 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'
                                             }`}>
                                             {slotAppts.map(appt => {
-                                                const colorClass = stylistColors[appt.stylist] || stylistColors.default;
+                                                const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
                                                 const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
                                                     hour: '2-digit',
                                                     minute: '2-digit'
@@ -1552,7 +1592,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment }) 
             <div className="max-w-2xl mx-auto">
                 <div className={`text-center p-4 rounded-lg mb-4 ${isTodayDate ? 'bg-amber-100' : 'bg-gray-50'
                     }`}>
-                    <div className="text-sm text-gray-600">{weekDays[currentDate.getDay()]}</div>
+                    <div className="text-sm text-gray-600">{WEEK_DAYS[currentDate.getDay()]}</div>
                     <div className={`text-2xl font-bold ${isTodayDate ? 'text-amber-900' : 'text-gray-900'}`}>
                         {currentDate.getDate()}
                     </div>
@@ -1562,7 +1602,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment }) 
                 </div>
 
                 <div className="space-y-2">
-                    {timeSlots.map(hour => {
+                    {TIME_SLOTS.map(hour => {
                         const slotAppts = getAppointmentsForTimeSlot(currentDate, hour);
 
                         return (
@@ -1573,7 +1613,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment }) 
                                 <div className={`flex-1 min-h-[60px] border rounded-lg p-2 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'
                                     }`}>
                                     {slotAppts.map(appt => {
-                                        const colorClass = stylistColors[appt.stylist] || stylistColors.default;
+                                        const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
                                         const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
                                             hour: '2-digit',
                                             minute: '2-digit'
@@ -1676,7 +1716,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment }) 
             {/* Legend */}
             <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-4 md:mt-6 pt-3 md:pt-4 border-t border-gray-200">
                 <span className="text-xs md:text-sm text-gray-600">Stylists:</span>
-                {Object.entries(stylistColors).filter(([key]) => key !== 'default').map(([stylist, colorClass]) => (
+                {Object.entries(STYLIST_COLORS).filter(([key]) => key !== 'default').map(([stylist, colorClass]) => (
                     <div key={stylist} className="flex items-center gap-1 md:gap-2">
                         <div className={`w-3 h-3 md:w-4 md:h-4 rounded border ${colorClass}`}></div>
                         <span className="text-xs md:text-sm text-gray-700">{stylist}</span>
@@ -1803,6 +1843,150 @@ const EditAppointmentModal = ({ appointment, onClose, onSave }) => {
                 </div>
             </motion.div>
         </div>
+    );
+};
+
+
+const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
+
+    const [template, setTemplate] = useState(settings.email_template || DEFAULT_EMAIL_TEMPLATE.trim());
+    const [isSaving, setIsSaving] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
+
+    useEffect(() => {
+        if (settings.email_template) {
+            setTemplate(settings.email_template);
+        } else {
+            setTemplate(DEFAULT_EMAIL_TEMPLATE.trim());
+        }
+    }, [settings.email_template]);
+
+    const handleSave = async (content = template) => {
+        setIsSaving(true);
+        try {
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({ key: 'email_template', value: content });
+            if (error) throw error;
+            showMessage('success', 'Email template updated!');
+            refresh();
+        } catch (err) {
+            showMessage('error', err.message);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const resetToDefault = async () => {
+        if (confirm('Reset to default template? This will overwrite your current changes and save to the database.')) {
+            const content = DEFAULT_EMAIL_TEMPLATE.trim();
+            setTemplate(content);
+            await handleSave(content);
+        }
+    };
+
+    const previewHtml = template
+        .replace(/{{name}}/g, 'Jane Doe')
+        .replace(/{{service}}/g, 'Full Balayage')
+        .replace(/{{stylist}}/g, 'Jo')
+        .replace(/{{date}}/g, 'Friday, 30 January 2026')
+        .replace(/{{time}}/g, '14:30')
+        .replace(/{{salon_phone}}/g, settings.phone || '020 8445 1122')
+        .replace(/{{salon_location}}/g, settings.address || '938 High Road, London');
+
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900">Email Settings</h2>
+                <div className="flex gap-3">
+                    <button
+                        onClick={resetToDefault}
+                        className="px-4 py-2 text-stone-600 hover:text-stone-800 text-sm font-medium transition-colors"
+                    >
+                        Reset to Default
+                    </button>
+                    <button
+                        onClick={() => handleSave()}
+                        disabled={isSaving}
+                        className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-stone-900 flex items-center gap-2 transition-all disabled:opacity-50"
+                        style={{ backgroundColor: "#3D2B1F" }}
+                    >
+                        {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                        Save Template
+                    </button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Editor Section */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <Mail size={16} className="text-gray-500" />
+                                <span className="text-sm font-medium text-gray-700">
+                                    {showPreview ? 'Live Preview' : 'HTML Editor'}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => setShowPreview(!showPreview)}
+                                className="text-xs font-semibold text-stone-800 bg-stone-100 hover:bg-stone-200 px-3 py-1 rounded-full transition-all"
+                            >
+                                {showPreview ? 'Edit HTML' : 'Show Preview'}
+                            </button>
+                        </div>
+
+                        {showPreview ? (
+                            <div className="h-[500px] overflow-y-auto p-8 bg-gray-50 flex items-start justify-center">
+                                <div
+                                    className="bg-white shadow-lg rounded-xl overflow-hidden w-full max-w-[600px]"
+                                    dangerouslySetInnerHTML={{ __html: previewHtml }}
+                                />
+                            </div>
+                        ) : (
+                            <textarea
+                                value={template}
+                                onChange={(e) => setTemplate(e.target.value)}
+                                placeholder="Paste your HTML template here..."
+                                className="w-full h-[500px] p-4 font-mono text-sm focus:ring-0 border-none outline-none resize-none"
+                                spellCheck="false"
+                            />
+                        )}
+                    </div>
+                </div>
+
+                {/* Sidebar Section */}
+                <div className="space-y-6">
+                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                        <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <Info size={16} className="text-stone-800" />
+                            Available Variables
+                        </h3>
+                        <p className="text-xs text-gray-500 mb-4">
+                            Copy and paste these tags into your template. They will be automatically replaced with booking details.
+                        </p>
+                        <div className="space-y-3">
+                            {EMAIL_VARIABLES.map(v => (
+                                <div key={v.tag} className="flex flex-col gap-1">
+                                    <code className="text-[11px] bg-stone-100 text-stone-800 px-2 py-1 rounded inline-block w-fit font-bold">
+                                        {v.tag}
+                                    </code>
+                                    <span className="text-[10px] text-gray-500 ml-1">{v.desc}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="bg-amber-50 rounded-xl border border-amber-200 p-6">
+                        <h3 className="text-sm font-bold text-amber-900 mb-2">Pro Tip</h3>
+                        <p className="text-xs text-amber-800 leading-relaxed">
+                            You can use standard HTML tags like <code>&lt;b&gt;</code>, <code>&lt;hr&gt;</code>, or <code>&lt;img&gt;</code> to style your confirmation emails. Make sure all styles are inline for maximum compatibility across email clients!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </motion.div>
     );
 };
 
