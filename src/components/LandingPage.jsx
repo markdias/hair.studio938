@@ -91,7 +91,7 @@ const Hero = ({ settings = {} }) => {
             height: '100vh',
             width: '100%',
             position: 'relative',
-            backgroundImage: 'url("/salon_bg.png")',
+            backgroundImage: `url("${settings.hero_bg_url || "/salon_bg.png"}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             display: 'flex',
@@ -128,9 +128,23 @@ const Hero = ({ settings = {} }) => {
                     lineHeight: '1.1',
                     width: '100%'
                 }}>{settings.hero_title || "Where Hair Dreams Come True"}</h1>
-                <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '2.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
+                <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '1.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
                     {settings.hero_subtitle || "Luxury hair styling and bespoke treatments at 938 High Road."}
                 </p>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    marginBottom: '2.5rem',
+                    opacity: 0.8,
+                    fontSize: '0.95rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px'
+                }}>
+                    <Calendar size={18} />
+                    <span>{settings.opening_hours || "Tuesday - Saturday: 9:00 AM - 6:00 PM"}</span>
+                </div>
                 <div className="hero-buttons" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', width: '100%', margin: '0 auto' }}>
                     <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</a>
                     <a href="#services" style={{
@@ -399,6 +413,17 @@ const Contact = ({ settings = {} }) => {
     const email = settings.email || "hair.studio938@gmail.com";
     const address = settings.address || "938 High Road, London, N12 9RT";
 
+    const activeCards = [
+        { type: 'combined' },
+        { type: 'email' },
+        { type: 'address' },
+        settings.instagram_url && { type: 'instagram' },
+        settings.facebook_url && { type: 'facebook' },
+        settings.tiktok_url && { type: 'tiktok' }
+    ].filter(Boolean);
+
+    const cardCount = activeCards.length;
+
     return (
         <section id="contact" style={{
             padding: '120px 20px',
@@ -406,36 +431,41 @@ const Contact = ({ settings = {} }) => {
             color: '#EAE0D5',
             textAlign: 'center'
         }}>
-            <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
                 <h2 style={{ fontSize: 'clamp(2.5rem, 8vw, 4rem)', color: '#FFF', marginBottom: '15px' }}>Contact Us</h2>
                 <div style={{ width: '60px', height: '2px', backgroundColor: '#EAE0D5', margin: '0 auto 40px' }}></div>
 
                 <div className="contact-grid" style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                    gap: '40px',
+                    gridTemplateColumns: cardCount === 4
+                        ? 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))'
+                        : 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gap: '30px',
                     marginTop: '60px'
                 }}>
-                    <ContactItem
-                        icon={<Phone size={24} />}
-                        label="Call Us"
+                    <ContactCard
+                        isCombined
+                        label="Call or WhatsApp"
                         value={phone}
-                        link={phoneLink}
+                        options={[
+                            { icon: <Phone size={18} />, label: "Call Us", link: phoneLink },
+                            { icon: <MessageCircle size={18} />, label: "WhatsApp", link: whatsappLink }
+                        ]}
                     />
-                    <ContactItem
-                        icon={<MessageCircle size={24} />}
-                        label="WhatsApp"
-                        value={whatsapp}
-                        link={whatsappLink}
-                    />
-                    <ContactItem
+                    <ContactCard
                         icon={<Mail size={24} />}
                         label="Email"
                         value={email}
                         link={`mailto:${email}`}
                     />
+                    <ContactCard
+                        icon={<MapPin size={24} />}
+                        label="Location"
+                        value={address}
+                        link={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                    />
                     {settings.instagram_url && (
-                        <ContactItem
+                        <ContactCard
                             icon={<Instagram size={24} />}
                             label="Instagram"
                             value="Follow Us"
@@ -443,7 +473,7 @@ const Contact = ({ settings = {} }) => {
                         />
                     )}
                     {settings.facebook_url && (
-                        <ContactItem
+                        <ContactCard
                             icon={<Facebook size={24} />}
                             label="Facebook"
                             value="Join Us"
@@ -451,7 +481,7 @@ const Contact = ({ settings = {} }) => {
                         />
                     )}
                     {settings.tiktok_url && (
-                        <ContactItem
+                        <ContactCard
                             icon={<Music2 size={24} />}
                             label="TikTok"
                             value="Watch Us"
@@ -459,72 +489,102 @@ const Contact = ({ settings = {} }) => {
                         />
                     )}
                 </div>
-
-                <div style={{ marginTop: '80px', opacity: 0.8 }}>
-                    <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', fontSize: '1.1rem' }}>
-                        <MapPin size={20} /> {address}
-                    </p>
-                </div>
             </div>
         </section>
     );
 };
 
-const ContactItem = ({ icon, label, value, link }) => (
-    <div style={{ padding: '30px', backgroundColor: 'rgba(234, 224, 213, 0.05)', borderRadius: '12px' }}>
-        <div style={{ color: '#EAE0D5', marginBottom: '15px', display: 'flex', justifyContent: 'center' }}>{icon}</div>
-        <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.6, marginBottom: '5px' }}>{label}</div>
-        <a href={link} style={{ color: '#FFF', fontSize: '1.2rem', fontWeight: '600', textDecoration: 'none' }}>{value}</a>
-    </div>
-);
+const ContactCard = ({ icon, label, value, link, isCombined, options }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const cardStyle = {
+        padding: '40px 30px',
+        backgroundColor: 'rgba(234, 224, 213, 0.05)',
+        borderRadius: '16px',
+        border: '1px solid rgba(234, 224, 213, 0.1)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'all 0.3s ease',
+        cursor: isCombined ? 'pointer' : 'default',
+        minHeight: '180px',
+        position: 'relative',
+        overflow: 'hidden'
+    };
+
+    if (isCombined) {
+        return (
+            <motion.div
+                whileHover={{ y: -5, backgroundColor: 'rgba(234, 224, 213, 0.08)' }}
+                onClick={() => setIsExpanded(!isExpanded)}
+                style={cardStyle}
+            >
+                <div style={{
+                    display: 'flex',
+                    gap: '15px',
+                    color: '#EAE0D5',
+                    marginBottom: '15px'
+                }}>
+                    <Phone size={24} />
+                    <MessageCircle size={24} />
+                </div>
+                {!isExpanded ? (
+                    <>
+                        <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.6, marginBottom: '5px' }}>{label}</div>
+                        <div style={{ color: '#FFF', fontSize: '1.2rem', fontWeight: '600' }}>{value}</div>
+                        <div style={{ fontSize: '0.7rem', marginTop: '10px', opacity: 0.4 }}>Click for options</div>
+                    </>
+                ) : (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}
+                    >
+                        {options.map((opt, i) => (
+                            <a
+                                key={i}
+                                href={opt.link}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '10px',
+                                    padding: '12px',
+                                    backgroundColor: '#EAE0D5',
+                                    color: '#3D2B1F',
+                                    borderRadius: '8px',
+                                    textDecoration: 'none',
+                                    fontWeight: '600',
+                                    fontSize: '0.9rem'
+                                }}
+                            >
+                                {opt.icon} {opt.label}
+                            </a>
+                        ))}
+                    </motion.div>
+                )}
+            </motion.div>
+        );
+    }
+
+    return (
+        <motion.div
+            whileHover={{ y: -5, backgroundColor: 'rgba(234, 224, 213, 0.08)' }}
+            style={cardStyle}
+        >
+            <div style={{ color: '#EAE0D5', marginBottom: '15px' }}>{icon}</div>
+            <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.6, marginBottom: '5px' }}>{label}</div>
+            <a href={link} target={link.startsWith('http') ? "_blank" : "_self"} rel="noopener noreferrer" style={{ color: '#FFF', fontSize: '1.1rem', fontWeight: '600', textDecoration: 'none', wordBreak: 'break-word' }}>{value}</a>
+        </motion.div>
+    );
+};
 
 const Footer = ({ settings = {} }) => {
     return (
-        <footer style={{ padding: '80px 50px', backgroundColor: '#3D2B1F', color: '#EAE0D5' }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '60px' }}>
-                <div>
-                    <img
-                        src={settings.logo_url || "/logo.png"}
-                        alt="938 Logo"
-                        style={{ height: '140px', width: '140px', borderRadius: '50%', marginBottom: '25px', objectFit: 'cover', border: '1px solid rgba(234, 224, 213, 0.2)' }}
-                    />
-                    <p style={{ opacity: 0.8, lineHeight: '1.8' }}>Where Hair Dreams Come True! Follow us for fabulous hair moments!</p>
-                    <div style={{ display: 'flex', gap: '20px', marginTop: '30px' }}>
-                        {settings.instagram_url && (
-                            <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer">
-                                <Instagram size={24} />
-                            </a>
-                        )}
-                        {settings.facebook_url && (
-                            <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer">
-                                <Facebook size={24} />
-                            </a>
-                        )}
-                        {settings.tiktok_url && (
-                            <a href={settings.tiktok_url} target="_blank" rel="noopener noreferrer">
-                                <Music2 size={24} />
-                            </a>
-                        )}
-                        {!settings.instagram_url && !settings.facebook_url && !settings.tiktok_url && (
-                            <a href="https://www.instagram.com/hair.studio938/" target="_blank" rel="noopener noreferrer">
-                                <Instagram size={24} />
-                            </a>
-                        )}
-                    </div>
-                </div>
-
-                <div>
-                    <h4 style={{ textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '25px' }}>Location</h4>
-                    <p style={{ opacity: 0.8 }}>{settings.address || "938 High Road, London, N12 9RT"}</p>
-                </div>
-
-                <div>
-                    <h4 style={{ textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '25px' }}>Opening Hours</h4>
-                    <p style={{ opacity: 0.8 }}>{settings.opening_hours || "Tuesday - Saturday: 9:00 AM - 6:00 PM"}</p>
-                </div>
-            </div>
-
-            <div style={{ maxWidth: '1200px', margin: '80px auto 0', paddingTop: '40px', borderTop: '1px solid rgba(234, 224, 213, 0.1)', textAlign: 'center', opacity: 0.6, fontSize: '0.9rem' }}>
+        <footer style={{ padding: '60px 20px', backgroundColor: '#3D2B1F', color: '#EAE0D5', textAlign: 'center' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', paddingTop: '40px', borderTop: '1px solid rgba(234, 224, 213, 0.1)', opacity: 0.6, fontSize: '0.9rem' }}>
                 &copy; {new Date().getFullYear()} Hair Studio 938. All rights reserved.
             </div>
         </footer>
