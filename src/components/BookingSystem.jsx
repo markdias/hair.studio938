@@ -281,7 +281,12 @@ const BookingSystem = () => {
                                                     </label>
                                                     {isLoadingSlots ? (
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#666', padding: '20px 0' }}>
-                                                            <Loader2 className="animate-spin" size={20} />
+                                                            <motion.div
+                                                                animate={{ rotate: 360 }}
+                                                                transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                                                            >
+                                                                <Loader2 size={20} />
+                                                            </motion.div>
                                                             <span>Checking availability...</span>
                                                         </div>
                                                     ) : (
@@ -376,7 +381,17 @@ const BookingSystem = () => {
                                                     className="btn-primary"
                                                     style={{ opacity: (!booking.name || !booking.email || isSubmitting) ? 0.5 : 1 }}
                                                 >
-                                                    {isSubmitting ? 'Confirming...' : 'Confirm Booking'}
+                                                    {isSubmitting ? (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                                                            <motion.div
+                                                                animate={{ rotate: 360 }}
+                                                                transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                                                            >
+                                                                <Loader2 size={16} />
+                                                            </motion.div>
+                                                            Confirming...
+                                                        </div>
+                                                    ) : 'Confirm Booking'}
                                                 </button>
                                             )}
                                         </div>
