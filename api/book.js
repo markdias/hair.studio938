@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import { supabase } from './_lib/supabase.js';
+import nodemailer from 'nodemailer';
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 
@@ -15,10 +16,14 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Check for credentials
+    // Check for Google credentials
     const privateKey = process.env.GOOGLE_PRIVATE_KEY;
     const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     let calendarId = process.env.GOOGLE_CALENDAR_ID;
+
+    // Check for Email credentials
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
 
     // Fetch stylist-specific calendar if provided
     const stylistName = typeof stylist === 'string' ? stylist : stylist?.name;
@@ -39,9 +44,9 @@ export default async function handler(req, res) {
         }
     }
 
-    // Use a default timezone if not specified, or Europe/London as requested
     const timeZone = 'Europe/London';
 
+    // If Google credentials are missing, simulate success (local/preview)
     if (!privateKey || !clientEmail || !calendarId) {
         console.warn('Google Calendar credentials missing. Configuration required in Vercel.');
         return res.status(200).json({
@@ -54,96 +59,110 @@ export default async function handler(req, res) {
         const cleanKey = (key) => {
             if (!key) return null;
             let cleaned = key.trim();
-
-            // 1. Handle Base64 encoding (very robust for Vercel)
             if (!cleaned.startsWith('-')) {
                 try {
                     const decoded = Buffer.from(cleaned, 'base64').toString('utf8');
-                    if (decoded.includes('BEGIN PRIVATE KEY')) {
-                        console.log('Decoded Base64 key successfully');
-                        cleaned = decoded;
-                    }
+                    if (decoded.includes('BEGIN PRIVATE KEY')) cleaned = decoded;
                 } catch (e) { /* not base64 */ }
             }
-
-            // 2. Remove any surrounding quotes
             cleaned = cleaned.replace(/^["']|["']$/g, '');
-
-            // 3. Handle literal \n characters
             cleaned = cleaned.replace(/\\n/g, '\n');
-
-            // 4. Ensure PEM structure (add newlines if missing in one-liner)
             if (cleaned.includes('BEGIN PRIVATE KEY') && !cleaned.includes('\n')) {
                 cleaned = cleaned
                     .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
                     .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
             }
-
             return cleaned.trim();
         };
 
         const cleanedKey = cleanKey(privateKey);
-        console.log('Diagnostic - Key info:', {
-            length: cleanedKey?.length,
-            startsWithHeader: cleanedKey?.startsWith('-----BEGIN'),
-            endsWithHeader: cleanedKey?.endsWith('KEY-----'),
-            lineCount: cleanedKey?.split('\n').length
-        });
-
-        const auth = new google.auth.JWT(
-            clientEmail,
-            null,
-            cleanedKey,
-            SCOPES
-        );
-
+        const auth = new google.auth.JWT(clientEmail, null, cleanedKey, SCOPES);
         const calendar = google.calendar({ version: 'v3', auth });
 
         // Build ISO strings for start and end
         const startDateTime = new Date(`${date}T${time}:00`).toISOString();
         const endDateTime = new Date(new Date(`${date}T${time}:00`).getTime() + duration * 60 * 1000).toISOString();
 
-        console.log(`Final check - Using Calendar ID: ${calendarId}`);
-        console.log(`Event details: ${service} for ${name} at ${startDateTime}`);
+        console.log(`Creating event: ${service} for ${name} at ${startDateTime}`);
 
-        try {
-            const response = await calendar.events.insert({
-                calendarId: calendarId,
-                resource: {
-                    summary: `[938] ${service} - ${name}`,
-                    description: `Stylist: ${typeof stylist === 'string' ? stylist : stylist?.name}\nService: ${service}\nPhone: ${phone}\nEmail: ${email}`,
-                    start: { dateTime: startDateTime, timeZone: 'Europe/London' },
-                    end: { dateTime: endDateTime, timeZone: 'Europe/London' },
-                    reminders: { useDefault: true },
-                },
-            });
-            console.log('Event created successfully:', response.data.id);
-            return res.status(200).json({
-                success: true,
-                eventId: response.data.id,
-                message: 'Booking confirmed and added to calendar.'
-            });
-        } catch (insertError) {
-            console.error('Insert Event Error:', {
-                status: insertError.status,
-                message: insertError.message,
-                errors: insertError.errors
-            });
-            throw insertError; // Caught by outer try/catch
-        }
-    } catch (error) {
-        console.error('Google Calendar API Error Details:', {
-            message: error.message,
-            stack: error.stack,
-            code: error.code,
-            errors: error.errors
+        // 1. Create Google Calendar Event
+        const calendarResponse = await calendar.events.insert({
+            calendarId: calendarId,
+            resource: {
+                summary: `[938] ${service} - ${name}`,
+                description: `Stylist: ${stylistName}\nService: ${service}\nPhone: ${phone}\nEmail: ${email}`,
+                start: { dateTime: startDateTime, timeZone: 'Europe/London' },
+                end: { dateTime: endDateTime, timeZone: 'Europe/London' },
+                reminders: { useDefault: true },
+            },
         });
 
-        // Return a 500 but with helpful info for the user in logs
+        console.log('Event created successfully:', calendarResponse.data.id);
+
+        // 2. Send Email Notification (if SMTP is configured)
+        if (smtpUser && smtpPass) {
+            try {
+                const transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: { user: smtpUser, pass: smtpPass }
+                });
+
+                const formattedDate = new Date(date).toLocaleDateString('en-GB', {
+                    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                });
+
+                const mailOptions = {
+                    from: `"Studio 938" <${smtpUser}>`,
+                    to: email, // Customer
+                    bcc: smtpUser, // Salon Copy
+                    subject: 'Booking Confirmation - Studio 938',
+                    html: `
+                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #EAE0D5; border-radius: 12px;">
+                            <h2 style="color: #3D2B1F; border-bottom: 2px solid #EAE0D5; padding-bottom: 10px;">Booking Confirmed!</h2>
+                            <p>Hi ${name},</p>
+                            <p>Thank you for choosing Studio 938. Your appointment is officially confirmed.</p>
+                            
+                            <div style="background-color: #FDFBF9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                <p style="margin: 5px 0;"><strong>Service:</strong> ${service}</p>
+                                <p style="margin: 5px 0;"><strong>Stylist:</strong> ${stylistName}</p>
+                                <p style="margin: 5px 0;"><strong>Date:</strong> ${formattedDate}</p>
+                                <p style="margin: 5px 0;"><strong>Time:</strong> ${time}</p>
+                            </div>
+                            
+                            <p style="font-size: 0.9rem; color: #666;">
+                                📍 <strong>Location:</strong> 938 High Road, London<br>
+                                📞 <strong>Phone:</strong> 020 8445 1122
+                            </p>
+                            
+                            <p style="margin-top: 30px; font-size: 0.8rem; color: #999;">
+                                Please give us at least 24 hours notice for any cancellations or changes.
+                            </p>
+                        </div>
+                    `
+                };
+
+                await transporter.sendMail(mailOptions);
+                console.log('Confirmation email sent to:', email);
+            } catch (emailError) {
+                console.error('Email Sending Error:', emailError.message);
+                // We don't return an error to the user if ONLY the email fails, 
+                // as the booking is already in the calendar.
+            }
+        } else {
+            console.warn('SMTP credentials missing, skipping email.');
+        }
+
+        return res.status(200).json({
+            success: true,
+            eventId: calendarResponse.data.id,
+            message: 'Booking confirmed and added to calendar.'
+        });
+
+    } catch (error) {
+        console.error('Booking API Error:', error.message);
         return res.status(500).json({
-            error: 'Failed to create calendar event',
-            details: error.message,
-            suggestion: 'Check if the Service Account has been shared with the calendar in Google Calendar settings.'
+            error: 'Failed to complete booking',
+            details: error.message
         });
     }
 }
