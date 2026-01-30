@@ -608,7 +608,7 @@ const BrandingEditor = ({ settings, onSave, showMessage }) => {
                 </div>
 
                 <div className="flex-grow w-full">
-                    <div className={`relative rounded-lg p-8 flex items-center justify-center min-h-[300px] transition-all ${showResizer ? 'border border-dashed border-gray-300 bg-stone-50' : 'bg-transparent'}`}>
+                    <div className={`relative rounded-lg flex items-center justify-center transition-all ${showResizer ? 'min-h-[300px] p-8 border border-dashed border-gray-300 bg-stone-50' : 'min-h-[120px] p-4 bg-transparent'}`}>
                         <div
                             className="relative shadow-xl rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100"
                             style={{ width: `${size}px`, height: `${size}px` }}
