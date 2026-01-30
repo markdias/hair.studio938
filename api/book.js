@@ -99,42 +99,38 @@ export default async function handler(req, res) {
         const calendar = google.calendar({ version: 'v3', auth });
 
         // Build ISO strings for start and end
-        // Assuming 1 hour slot for now
         const startDateTime = new Date(`${date}T${time}:00`).toISOString();
         const endDateTime = new Date(new Date(`${date}T${time}:00`).getTime() + 60 * 60 * 1000).toISOString();
 
-        console.log(`Attempting to create event: ${service} for ${name} at ${startDateTime}`);
+        console.log(`Final check - Using Calendar ID: ${calendarId}`);
+        console.log(`Event details: ${service} for ${name} at ${startDateTime}`);
 
-        const event = {
-            summary: `[938] ${service} - ${name}`,
-            description: `Stylist: ${stylist?.name || 'Any'}\nService: ${service}\nPhone: ${phone}\nEmail: ${email}`,
-            start: {
-                dateTime: startDateTime,
-                timeZone: timeZone,
-            },
-            end: {
-                dateTime: endDateTime,
-                timeZone: timeZone,
-            },
-            attendee: [
-                { email: email }
-            ],
-            reminders: {
-                useDefault: true,
-            },
-        };
-
-        const response = await calendar.events.insert({
-            calendarId: calendarId,
-            resource: event,
-        });
-
-        console.log('Event created successfully:', response.data.id);
-        return res.status(200).json({
-            success: true,
-            eventId: response.data.id,
-            message: 'Booking confirmed and added to calendar.'
-        });
+        try {
+            const response = await calendar.events.insert({
+                calendarId: calendarId,
+                resource: {
+                    summary: `[938] ${service} - ${name}`,
+                    description: `Stylist: ${typeof stylist === 'string' ? stylist : stylist?.name}\nService: ${service}\nPhone: ${phone}\nEmail: ${email}`,
+                    start: { dateTime: startDateTime, timeZone: 'Europe/London' },
+                    end: { dateTime: endDateTime, timeZone: 'Europe/London' },
+                    attendees: [{ email: email }],
+                    reminders: { useDefault: true },
+                },
+            });
+            console.log('Event created successfully:', response.data.id);
+            return res.status(200).json({
+                success: true,
+                eventId: response.data.id,
+                message: 'Booking confirmed and added to calendar.'
+            });
+        } catch (insertError) {
+            console.error('Insert Event Error:', {
+                status: insertError.status,
+                message: insertError.message,
+                errors: insertError.errors
+            });
+            throw insertError; // Caught by outer try/catch
+        }
     } catch (error) {
         console.error('Google Calendar API Error Details:', {
             message: error.message,
