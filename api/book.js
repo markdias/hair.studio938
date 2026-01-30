@@ -113,7 +113,6 @@ export default async function handler(req, res) {
                     description: `Stylist: ${typeof stylist === 'string' ? stylist : stylist?.name}\nService: ${service}\nPhone: ${phone}\nEmail: ${email}`,
                     start: { dateTime: startDateTime, timeZone: 'Europe/London' },
                     end: { dateTime: endDateTime, timeZone: 'Europe/London' },
-                    attendees: [{ email: email }],
                     reminders: { useDefault: true },
                 },
             });
