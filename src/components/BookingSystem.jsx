@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar as CalendarIcon, Clock, User, Scissors, Check, ChevronRight, ChevronLeft, Phone, Mail, Loader2 } from 'lucide-react';
-
-const stylists = [
-    { name: 'Jo', role: 'Owner & Creative Director', img: '/jo.png' },
-    { name: 'Viktor', role: 'Master Stylist', img: '/viktor.png' },
-    { name: 'Nisha', role: 'Senior Stylist', img: '/nisha.png' },
-];
+import { supabase } from '../lib/supabase';
 
 const categories = [
     { title: "CUT & STYLING", items: ["Wash cut & blowdry", "Wash & cut", "Wash & blowdry", "Styling", "Hair Up"] },
@@ -15,6 +10,8 @@ const categories = [
 ];
 
 const BookingSystem = () => {
+    const [stylists, setStylists] = useState([]);
+    const [isLoadingStylists, setIsLoadingStylists] = useState(true);
     const [step, setStep] = useState(1);
     const [booking, setBooking] = useState({
         stylist: null,
@@ -25,6 +22,26 @@ const BookingSystem = () => {
         email: '',
         phone: ''
     });
+
+    useEffect(() => {
+        const fetchStylists = async () => {
+            const { data, error } = await supabase
+                .from('stylist_calendars')
+                .select('*');
+            if (!error && data) {
+                // Transform to match previous structure
+                const formatted = data.map(s => ({
+                    name: s.stylist_name,
+                    role: s.role,
+                    img: s.image_url || '/placeholder.png',
+                    calendar_id: s.calendar_id
+                }));
+                setStylists(formatted);
+            }
+            setIsLoadingStylists(false);
+        };
+        fetchStylists();
+    }, []);
 
     const [timeSlots, setTimeSlots] = useState([]);
     const [isLoadingSlots, setIsLoadingSlots] = useState(false);
