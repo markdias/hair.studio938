@@ -6,7 +6,7 @@ import {
     Save, LogOut, Check, Info, Loader2,
     Settings, Scissors, Tag, Image, Plus, Trash2,
     MapPin, Phone, Mail, Clock, User, Calendar, Edit, X,
-    List, ChevronLeft, ChevronRight, Instagram, Facebook, Music2
+    List, ChevronLeft, ChevronRight, Instagram, Facebook, Music2, Maximize2
 } from 'lucide-react';
 
 const TABS = [
@@ -537,6 +537,101 @@ const OpeningHoursPicker = ({ initialValue, onSave, showMessage }) => {
     );
 };
 
+const BrandingEditor = ({ settings, onSave, showMessage }) => {
+    const [logoUrl, setLogoUrl] = useState(settings.logo_url || '/logo.png');
+    const [size, setSize] = useState(parseInt(settings.logo_size) || 85);
+    const [isResizing, setIsResizing] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [startSize, setStartSize] = useState(0);
+
+    const handleResizeStart = (e) => {
+        setIsResizing(true);
+        setStartX(e.clientX);
+        setStartSize(size);
+        document.body.style.cursor = 'nwse-resize';
+    };
+
+    useEffect(() => {
+        const handleResizeMove = (e) => {
+            if (!isResizing) return;
+            const delta = e.clientX - startX;
+            const newSize = Math.max(40, Math.min(300, startSize + delta));
+            setSize(newSize);
+        };
+
+        const handleResizeEnd = () => {
+            setIsResizing(false);
+            document.body.style.cursor = 'default';
+        };
+
+        if (isResizing) {
+            window.addEventListener('mousemove', handleResizeMove);
+            window.addEventListener('mouseup', handleResizeEnd);
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleResizeMove);
+            window.removeEventListener('mouseup', handleResizeEnd);
+        };
+    }, [isResizing, startX, startSize]);
+
+    const handleLogoUpload = (url) => {
+        setLogoUrl(url);
+        onSave('logo_url', url);
+    };
+
+    const saveSize = () => {
+        onSave('logo_size', size.toString());
+    };
+
+    return (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
+            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Maximize2 size={18} /> Logo Branding
+            </h3>
+
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+                <div className="flex-shrink-0">
+                    <p className="text-sm text-gray-500 mb-2">Upload Logo:</p>
+                    <ImageUploader folder="branding" onUpload={handleLogoUpload} showMessage={showMessage} />
+                </div>
+
+                <div className="flex-grow w-full">
+                    <p className="text-sm text-gray-500 mb-4">Visual Resizer (Drag bottom-right corner):</p>
+                    <div className="relative border border-dashed border-gray-300 rounded-lg p-8 bg-stone-50 flex items-center justify-center min-h-[300px]">
+                        <div
+                            className="relative shadow-xl rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100"
+                            style={{ width: `${size}px`, height: `${size}px` }}
+                        >
+                            <img src={logoUrl} alt="Logo Preview" className="w-full h-full object-cover" />
+
+                            <div
+                                onMouseDown={handleResizeStart}
+                                className="absolute bottom-0 right-0 w-4 h-4 bg-stone-800 cursor-nwse-resize flex items-center justify-center hover:scale-125 transition-transform"
+                                style={{ backgroundColor: '#3D2B1F' }}
+                            >
+                                <div className="w-1 h-1 bg-white rounded-full"></div>
+                            </div>
+                        </div>
+
+                        <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-xs font-mono border border-gray-200 text-gray-500">
+                            {size}px
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={saveSize}
+                        className="mt-4 px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium flex items-center gap-2"
+                        style={{ backgroundColor: '#3D2B1F' }}
+                    >
+                        <Save size={16} /> Save Logo Size
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const GeneralTab = ({ settings, setSettings, showMessage }) => {
 
     const handleSave = async (key, value) => {
@@ -546,6 +641,7 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                 .upsert({ key, value });
             if (error) throw error;
             showMessage('success', `${key.replace('_', ' ')} updated!`);
+            setSettings(prev => ({ ...prev, [key]: value }));
         } catch (err) {
             showMessage('error', err.message);
         }
@@ -553,12 +649,19 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
 
     const handleSaveOpeningHours = async (formattedHours) => {
         await handleSave('opening_hours', formattedHours);
-        setSettings({ ...settings, opening_hours: formattedHours });
     };
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">General Settings</h2>
+
+            {/* Branding Section */}
+            <BrandingEditor
+                settings={settings}
+                onSave={handleSave}
+                showMessage={showMessage}
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {GENERAL_FIELDS.map(field => (
                     <div key={field.key} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
