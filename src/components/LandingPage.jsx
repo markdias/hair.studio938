@@ -115,7 +115,12 @@ const Hero = () => {
                     boxSizing: 'border-box'
                 }}
             >
-                <h1 className="responsive-title" style={{ fontSize: '5rem', marginBottom: '1rem', lineHeight: '1' }}>Where Hair Dreams Come True</h1>
+                <h1 className="responsive-title" style={{
+                    fontSize: 'clamp(3.5rem, 8vw, 5.5rem)',
+                    marginBottom: '1.5rem',
+                    lineHeight: '1.1',
+                    width: '100%'
+                }}>Where Hair Dreams Come True</h1>
                 <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '2.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
                     Luxury hair styling and bespoke treatments at 938 High Road.
                 </p>
@@ -321,40 +326,41 @@ const PriceList = () => {
                     Price list
                 </h2>
 
-                <div className="pricing-grid-container" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '60px', position: 'relative' }}>
-                    <div className="vertical-divider" style={{
-                        position: 'absolute',
-                        top: '0',
-                        right: '180px',
-                        width: '1px',
-                        height: '100%',
-                        backgroundColor: 'rgba(61, 43, 31, 0.2)'
-                    }}></div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '50px' }}>
-                        {categories.map((cat, idx) => (
-                            <div key={idx}>
-                                <h3 style={{
-                                    fontFamily: "'Inter', sans-serif",
-                                    fontSize: '1.4rem',
-                                    fontWeight: '700',
-                                    color: '#3D2B1F',
-                                    letterSpacing: '2px',
-                                    marginBottom: '20px'
-                                }}>
-                                    {cat.title}
-                                </h3>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    {cat.items.map((item, i) => (
-                                        <div key={i} className="pricing-item" style={{ display: 'grid', gridTemplateColumns: '1fr 150px', alignItems: 'baseline' }}>
-                                            <span style={{ fontSize: '1.05rem', color: '#3D2B1F', opacity: 0.8 }}>{item.name}</span>
-                                            <span style={{ fontSize: '1.05rem', color: '#3D2B1F', fontWeight: '600', textAlign: 'right' }}>{item.price}</span>
-                                        </div>
-                                    ))}
-                                </div>
+                <div className="pricing-info" style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '40px',
+                    width: '100%'
+                }}>
+                    {categories.map((cat, idx) => (
+                        <div key={idx} style={{ width: '100%' }}>
+                            <h3 style={{
+                                fontFamily: "'Inter', sans-serif",
+                                fontSize: 'clamp(1.1rem, 3vw, 1.4rem)',
+                                fontWeight: '700',
+                                color: '#3D2B1F',
+                                letterSpacing: '2px',
+                                marginBottom: '20px',
+                                borderBottom: '1px solid rgba(61,43,31,0.1)',
+                                paddingBottom: '10px'
+                            }}>
+                                {cat.title}
+                            </h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                {cat.items.map((item, i) => (
+                                    <div key={i} className="pricing-item" style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'baseline',
+                                        gap: '20px'
+                                    }}>
+                                        <span style={{ fontSize: '1rem', color: '#3D2B1F', opacity: 0.8 }}>{item.name}</span>
+                                        <span style={{ fontSize: '1rem', color: '#3D2B1F', fontWeight: '600', whiteSpace: 'nowrap' }}>{item.price}</span>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        </div>
+                    ))}
                 </div>
             </motion.div>
         </section>
