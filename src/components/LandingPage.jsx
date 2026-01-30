@@ -413,6 +413,17 @@ const Contact = ({ settings = {} }) => {
     const email = settings.email || "hair.studio938@gmail.com";
     const address = settings.address || "938 High Road, London, N12 9RT";
 
+    const activeCards = [
+        { type: 'combined' },
+        { type: 'email' },
+        { type: 'address' },
+        settings.instagram_url && { type: 'instagram' },
+        settings.facebook_url && { type: 'facebook' },
+        settings.tiktok_url && { type: 'tiktok' }
+    ].filter(Boolean);
+
+    const cardCount = activeCards.length;
+
     return (
         <section id="contact" style={{
             padding: '120px 20px',
@@ -426,7 +437,9 @@ const Contact = ({ settings = {} }) => {
 
                 <div className="contact-grid" style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gridTemplateColumns: cardCount === 4
+                        ? 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))'
+                        : 'repeat(auto-fit, minmax(280px, 1fr))',
                     gap: '30px',
                     marginTop: '60px'
                 }}>
