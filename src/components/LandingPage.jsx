@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, MapPin, Phone, Calendar } from 'lucide-react';
+import { Instagram, MapPin, Phone, Calendar, Menu, X } from 'lucide-react';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -13,32 +14,35 @@ const Navbar = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
     return (
-        <nav style={{
+        <nav className={isMenuOpen ? 'mobile-menu-active' : ''} style={{
             position: 'fixed',
             top: 0,
             left: 0,
             width: '100%',
-            padding: isScrolled ? '15px 50px' : '30px 50px',
+            padding: isScrolled ? '15px 20px' : '30px 20px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             zIndex: 1000,
-            backgroundColor: isScrolled ? 'rgba(61, 43, 31, 0.95)' : 'transparent',
-            backdropFilter: isScrolled ? 'blur(10px)' : 'none',
+            backgroundColor: (isScrolled || isMenuOpen) ? 'rgba(61, 43, 31, 0.98)' : 'transparent',
+            backdropFilter: (isScrolled || isMenuOpen) ? 'blur(10px)' : 'none',
             transition: 'all 0.4s ease',
-            color: isScrolled ? '#EAE0D5' : '#FFFFFF',
+            color: (isScrolled || isMenuOpen) ? '#EAE0D5' : '#FFFFFF',
             boxSizing: 'border-box'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <img
                     src="/logo.png"
                     alt="938 Logo"
-                    style={{ height: '85px', width: '85px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(234, 224, 213, 0.2)' }}
+                    style={{ height: isScrolled ? '60px' : '85px', width: isScrolled ? '60px' : '85px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(234, 224, 213, 0.2)', transition: 'all 0.4s ease' }}
                 />
             </div>
 
-            <div style={{ display: 'flex', gap: '40px', alignItems: 'center', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px', fontWeight: '500' }}>
+            {/* Desktop Menu */}
+            <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px', fontWeight: '500' }}>
                 <a href="#home">Home</a>
                 <a href="#services">Services</a>
                 <a href="#team">Team</a>
@@ -53,6 +57,22 @@ const Navbar = () => {
                 }}>
                     Book Now
                 </a>
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <button className="mobile-menu-toggle" onClick={toggleMenu}>
+                {isMenuOpen ? <X size={32} /> : <Menu size={32} />}
+            </button>
+
+            {/* Mobile Menu Overlay */}
+            <div className="nav-links-mobile">
+                <a href="#home" onClick={toggleMenu}>Home</a>
+                <a href="#services" onClick={toggleMenu}>Services</a>
+                <a href="#team" onClick={toggleMenu}>Team</a>
+                <a href="#pricing" onClick={toggleMenu}>Pricing</a>
+                <a href="#gallery" onClick={toggleMenu}>Gallery</a>
+                <a href="#contact" onClick={toggleMenu}>Contact</a>
+                <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
             </div>
         </nav>
     );
@@ -94,8 +114,8 @@ const Hero = () => {
                     padding: '0 20px'
                 }}
             >
-                <h1 style={{ fontSize: '5rem', marginBottom: '1rem', lineHeight: '1' }}>Where Hair Dreams Come True</h1>
-                <p style={{ fontSize: '1.25rem', marginBottom: '2.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
+                <h1 className="responsive-title" style={{ fontSize: '5rem', marginBottom: '1rem', lineHeight: '1' }}>Where Hair Dreams Come True</h1>
+                <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '2.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
                     Luxury hair styling and bespoke treatments at 938 High Road.
                 </p>
                 <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
@@ -177,7 +197,7 @@ const TeamSection = () => {
                 <div style={{ width: '60px', height: '2px', backgroundColor: '#3D2B1F', margin: '0 auto' }}></div>
             </div>
 
-            <div style={{
+            <div className="responsive-grid" style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
                 gap: '80px',
@@ -195,8 +215,8 @@ const TeamSection = () => {
                         <motion.div
                             whileHover={{ scale: 1.05 }}
                             style={{
-                                width: '280px',
-                                height: '280px',
+                                width: 'min(280px, 70vw)',
+                                height: 'min(280px, 70vw)',
                                 borderRadius: '50%',
                                 overflow: 'hidden',
                                 margin: '0 auto 30px',
@@ -287,7 +307,7 @@ const PriceList = () => {
                     position: 'relative'
                 }}
             >
-                <h2 style={{
+                <h2 className="price-list-title" style={{
                     fontFamily: "'Great Vibes', cursive",
                     fontSize: '6rem',
                     color: '#3D2B1F',
@@ -299,8 +319,8 @@ const PriceList = () => {
                     Price list
                 </h2>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '60px', position: 'relative' }}>
-                    <div style={{
+                <div className="pricing-grid-container" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '60px', position: 'relative' }}>
+                    <div className="vertical-divider" style={{
                         position: 'absolute',
                         top: '0',
                         right: '180px',
@@ -324,7 +344,7 @@ const PriceList = () => {
                                 </h3>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     {cat.items.map((item, i) => (
-                                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 150px', alignItems: 'baseline' }}>
+                                        <div key={i} className="pricing-item" style={{ display: 'grid', gridTemplateColumns: '1fr 150px', alignItems: 'baseline' }}>
                                             <span style={{ fontSize: '1.05rem', color: '#3D2B1F', opacity: 0.8 }}>{item.name}</span>
                                             <span style={{ fontSize: '1.05rem', color: '#3D2B1F', fontWeight: '600', textAlign: 'right' }}>{item.price}</span>
                                         </div>

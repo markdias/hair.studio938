@@ -5,7 +5,7 @@
   --text-dark: #2A1D15;
   --text-light: #FFFFFF;
   --glass: rgba(61, 43, 31, 0.8);
-  
+
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -32,7 +32,10 @@ body {
   width: 100%;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-family: 'Playfair Display', serif;
   margin: 0;
 }
@@ -82,4 +85,107 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--soft-cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-brown);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4D3B2F;
+}
+
+/* Mobile Specific Transitions and Fixes */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none !important;
+  }
+
+  .mobile-menu-active .nav-links-mobile {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: #3D2B1F;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    z-index: 999;
+  }
+
+  .mobile-menu-toggle {
+    display: block !important;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 5px;
+    z-index: 1001;
+  }
+
+  .nav-links-mobile a {
+    font-size: 1.5rem;
+    color: #EAE0D5;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .responsive-title {
+    font-size: 3rem !important;
+  }
+
+  .responsive-p {
+    font-size: 1rem !important;
+  }
+
+  .responsive-grid {
+    grid-template-columns: 1fr !important;
+    gap: 50px !important;
+  }
+
+  .price-list-title {
+    font-size: 3.5rem !important;
+    margin-bottom: 40px !important;
+  }
+
+  .pricing-grid-container {
+    grid-template-columns: 1fr !important;
+    gap: 30px !important;
+  }
+
+  .vertical-divider {
+    display: none !important;
+  }
+
+  .pricing-item {
+    grid-template-columns: 1fr 100px !important;
+  }
+
+  .pricing-item span {
+    font-size: 0.95rem !important;
+  }
+
+  section {
+    padding: 80px 20px !important;
+  }
+}
+
+.mobile-menu-toggle {
+  display: none;
+}
+
+.nav-links-mobile {
+  display: none;
 }
