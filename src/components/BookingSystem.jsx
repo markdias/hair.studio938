@@ -34,15 +34,16 @@ const BookingSystem = () => {
 
     useEffect(() => {
         if (booking.date) {
-            fetchAvailability(booking.date);
+            fetchAvailability(booking.date, booking.stylist?.name);
         }
-    }, [booking.date]);
+    }, [booking.date, booking.stylist?.name]);
 
-    const fetchAvailability = async (date) => {
+    const fetchAvailability = async (date, stylistName) => {
         setIsLoadingSlots(true);
         setError(null);
         try {
-            const response = await fetch(`/api/availability?date=${date}`);
+            const stylistParam = stylistName ? `&stylist=${encodeURIComponent(stylistName)}` : '';
+            const response = await fetch(`/api/availability?date=${date}${stylistParam}`);
 
             if (!response.ok) {
                 // Fallback for local development where /api is not served by vite

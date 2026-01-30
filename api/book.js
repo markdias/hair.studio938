@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import { supabase } from './_lib/supabase';
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 
@@ -16,7 +17,26 @@ export default async function handler(req, res) {
     // Check for credentials
     const privateKey = process.env.GOOGLE_PRIVATE_KEY;
     const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    const calendarId = process.env.GOOGLE_CALENDAR_ID;
+    let calendarId = process.env.GOOGLE_CALENDAR_ID;
+
+    // Fetch stylist-specific calendar if provided
+    const stylistName = typeof stylist === 'string' ? stylist : stylist?.name;
+    if (stylistName) {
+        try {
+            const { data, error } = await supabase
+                .from('stylist_calendars')
+                .select('calendar_id')
+                .eq('stylist_name', stylistName)
+                .single();
+
+            if (data?.calendar_id) {
+                calendarId = data.calendar_id;
+                console.log(`Using specific calendar for ${stylistName}: ${calendarId}`);
+            }
+        } catch (err) {
+            console.warn(`Could not fetch calendar for ${stylistName}, falling back to default:`, err.message);
+        }
+    }
 
     // Use a default timezone if not specified, or Europe/London as requested
     const timeZone = 'Europe/London';

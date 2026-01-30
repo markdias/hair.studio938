@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import { startOfDay, endOfDay, addMinutes, format, parseISO, isWithinInterval } from 'date-fns';
+import { supabase } from './_lib/supabase';
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 
@@ -8,7 +9,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { date } = req.query;
+    const { date, stylist } = req.query;
 
     if (!date) {
         return res.status(400).json({ error: 'Date is required' });
@@ -17,7 +18,25 @@ export default async function handler(req, res) {
     // Check for credentials
     const privateKey = process.env.GOOGLE_PRIVATE_KEY;
     const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    const calendarId = process.env.GOOGLE_CALENDAR_ID;
+    let calendarId = process.env.GOOGLE_CALENDAR_ID;
+
+    // Fetch stylist-specific calendar if provided
+    if (stylist) {
+        try {
+            const { data, error } = await supabase
+                .from('stylist_calendars')
+                .select('calendar_id')
+                .eq('stylist_name', stylist)
+                .single();
+
+            if (data?.calendar_id) {
+                calendarId = data.calendar_id;
+                console.log(`Using specific calendar for ${stylist}: ${calendarId}`);
+            }
+        } catch (err) {
+            console.warn(`Could not fetch calendar for ${stylist}, falling back to default:`, err.message);
+        }
+    }
 
     if (!privateKey || !clientEmail || !calendarId) {
         // Return dummy data if credentials are not configured yet, 
