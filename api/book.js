@@ -107,8 +107,55 @@ export default async function handler(req, res) {
                     auth: { user: smtpUser, pass: smtpPass }
                 });
 
+                // Fetch template and salon info from settings
+                const { data: settingsData } = await supabase.from('site_settings').select('key, value');
+                const settings = {};
+                settingsData?.forEach(s => settings[s.key] = s.value);
+
                 const formattedDate = new Date(date).toLocaleDateString('en-GB', {
                     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+                });
+
+                // Default template if none is set in database
+                const defaultTemplate = `
+<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #EAE0D5; border-radius: 12px;">
+    <h2 style="color: #3D2B1F; border-bottom: 2px solid #EAE0D5; padding-bottom: 10px;">Booking Confirmed!</h2>
+    <p>Hi {{name}},</p>
+    <p>Thank you for choosing Studio 938. Your appointment is officially confirmed.</p>
+    
+    <div style="background-color: #FDFBF9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 5px 0;"><strong>Service:</strong> {{service}}</p>
+        <p style="margin: 5px 0;"><strong>Stylist:</strong> {{stylist}}</p>
+        <p style="margin: 5px 0;"><strong>Date:</strong> {{date}}</p>
+        <p style="margin: 5px 0;"><strong>Time:</strong> {{time}}</p>
+    </div>
+    
+    <p style="font-size: 0.9rem; color: #666;">
+        📍 <strong>Location:</strong> {{salon_location}}<br>
+        📞 <strong>Phone:</strong> {{salon_phone}}
+    </p>
+    
+    <p style="margin-top: 30px; font-size: 0.8rem; color: #999;">
+        Please give us at least 24 hours notice for any cancellations or changes.
+    </p>
+</div>`;
+
+                let html = settings.email_template || defaultTemplate;
+
+                // Replace placeholders
+                const replacements = {
+                    '{{name}}': name,
+                    '{{service}}': service,
+                    '{{stylist}}': stylistName,
+                    '{{date}}': formattedDate,
+                    '{{time}}': time,
+                    '{{salon_phone}}': settings.phone || '020 8445 1122',
+                    '{{salon_location}}': settings.address || '938 High Road, London'
+                };
+
+                Object.keys(replacements).forEach(key => {
+                    const regex = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                    html = html.replace(regex, replacements[key]);
                 });
 
                 const mailOptions = {
@@ -116,37 +163,13 @@ export default async function handler(req, res) {
                     to: email, // Customer
                     bcc: smtpUser, // Salon Copy
                     subject: 'Booking Confirmation - Studio 938',
-                    html: `
-                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #EAE0D5; border-radius: 12px;">
-                            <h2 style="color: #3D2B1F; border-bottom: 2px solid #EAE0D5; padding-bottom: 10px;">Booking Confirmed!</h2>
-                            <p>Hi ${name},</p>
-                            <p>Thank you for choosing Studio 938. Your appointment is officially confirmed.</p>
-                            
-                            <div style="background-color: #FDFBF9; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                <p style="margin: 5px 0;"><strong>Service:</strong> ${service}</p>
-                                <p style="margin: 5px 0;"><strong>Stylist:</strong> ${stylistName}</p>
-                                <p style="margin: 5px 0;"><strong>Date:</strong> ${formattedDate}</p>
-                                <p style="margin: 5px 0;"><strong>Time:</strong> ${time}</p>
-                            </div>
-                            
-                            <p style="font-size: 0.9rem; color: #666;">
-                                📍 <strong>Location:</strong> 938 High Road, London<br>
-                                📞 <strong>Phone:</strong> 020 8445 1122
-                            </p>
-                            
-                            <p style="margin-top: 30px; font-size: 0.8rem; color: #999;">
-                                Please give us at least 24 hours notice for any cancellations or changes.
-                            </p>
-                        </div>
-                    `
+                    html: html
                 };
 
                 await transporter.sendMail(mailOptions);
                 console.log('Confirmation email sent to:', email);
             } catch (emailError) {
                 console.error('Email Sending Error:', emailError.message);
-                // We don't return an error to the user if ONLY the email fails, 
-                // as the booking is already in the calendar.
             }
         } else {
             console.warn('SMTP credentials missing, skipping email.');
