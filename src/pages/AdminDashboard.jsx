@@ -126,8 +126,8 @@ const AdminDashboard = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-grow p-6 md:p-12 overflow-y-auto">
-                <div className="max-w-4xl mx-auto">
+            <main className="flex-grow p-6 md:p-12 overflow-y-auto flex justify-center">
+                <div className="w-full max-w-7xl">
                     <AnimatePresence mode="wait">
                         {message.text && (
                             <motion.div
@@ -490,7 +490,7 @@ const TeamTab = ({ stylists, refresh, showMessage }) => {
                     <div key={s.id || idx} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/[0.07] transition-all duration-500">
                         <div className="flex flex-col lg:flex-row gap-8">
                             <div className="space-y-4">
-                                <div className="w-32 h-32 rounded-3xl overflow-hidden border border-white/10 bg-black/40 shrink-0 mx-auto relative group">
+                                <div className="w-20 h-20 rounded-3xl overflow-hidden border border-white/10 bg-black/40 shrink-0 mx-auto relative group">
                                     <img src={s.image_url || '/placeholder.png'} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <ImageUploader
@@ -582,7 +582,7 @@ const GalleryTab = ({ gallery, refresh, showMessage }) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-6">
                 {gallery.map((img) => (
                     <div key={img.id} className="relative group aspect-square rounded-3xl overflow-hidden border border-white/10 bg-black/40">
                         <img src={img.image_url} className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110" />
