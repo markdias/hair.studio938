@@ -30,10 +30,21 @@ export default async function handler(req, res) {
     }
 
     try {
+        const cleanKey = (key) => {
+            if (!key) return null;
+            // Remove any surrounding quotes that might have been added in Vercel
+            let cleaned = key.trim();
+            if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+                cleaned = cleaned.substring(1, cleaned.length - 1);
+            }
+            // Replace literal \n with actual newlines
+            return cleaned.replace(/\\n/g, '\n');
+        };
+
         const auth = new google.auth.JWT(
             clientEmail,
             null,
-            privateKey.replace(/\\n/g, '\n'),
+            cleanKey(privateKey),
             SCOPES
         );
 
