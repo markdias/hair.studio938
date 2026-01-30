@@ -91,7 +91,7 @@ const Hero = ({ settings = {} }) => {
             height: '100vh',
             width: '100%',
             position: 'relative',
-            backgroundImage: 'url("/salon_bg.png")',
+            backgroundImage: `url("${settings.hero_bg_url || "/salon_bg.png"}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             display: 'flex',

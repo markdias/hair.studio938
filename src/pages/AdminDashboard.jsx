@@ -38,6 +38,7 @@ const GENERAL_FIELDS = [
     { key: 'instagram_url', label: 'Instagram URL', icon: <Instagram size={16} /> },
     { key: 'facebook_url', label: 'Facebook URL', icon: <Facebook size={16} /> },
     { key: 'tiktok_url', label: 'TikTok URL', icon: <Music2 size={16} /> },
+    { key: 'hero_bg_url', label: 'Hero Background Image URL', icon: <Image size={16} /> },
 ];
 
 const EMAIL_VARIABLES = [
@@ -541,6 +542,7 @@ const BrandingEditor = ({ settings, onSave, showMessage }) => {
     const [logoUrl, setLogoUrl] = useState(settings.logo_url || '/logo.png');
     const [size, setSize] = useState(parseInt(settings.logo_size) || 85);
     const [isResizing, setIsResizing] = useState(false);
+    const [showResizer, setShowResizer] = useState(false);
     const [startX, setStartX] = useState(0);
     const [startSize, setStartSize] = useState(0);
 
@@ -586,9 +588,18 @@ const BrandingEditor = ({ settings, onSave, showMessage }) => {
 
     return (
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Maximize2 size={18} /> Logo Branding
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <Maximize2 size={18} /> Logo Branding
+                </h3>
+                <button
+                    onClick={() => setShowResizer(!showResizer)}
+                    className="flex items-center gap-2 text-sm text-stone-600 hover:text-stone-900 font-medium transition-colors"
+                >
+                    {showResizer ? <X size={16} /> : <Edit size={16} />}
+                    {showResizer ? 'Hide Resizer' : 'Visual Resizer (Toggle)'}
+                </button>
+            </div>
 
             <div className="flex flex-col md:flex-row gap-8 items-start">
                 <div className="flex-shrink-0">
@@ -596,37 +607,46 @@ const BrandingEditor = ({ settings, onSave, showMessage }) => {
                     <ImageUploader folder="branding" onUpload={handleLogoUpload} showMessage={showMessage} />
                 </div>
 
-                <div className="flex-grow w-full">
-                    <p className="text-sm text-gray-500 mb-4">Visual Resizer (Drag bottom-right corner):</p>
-                    <div className="relative border border-dashed border-gray-300 rounded-lg p-8 bg-stone-50 flex items-center justify-center min-h-[300px]">
-                        <div
-                            className="relative shadow-xl rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100"
-                            style={{ width: `${size}px`, height: `${size}px` }}
+                <AnimatePresence>
+                    {showResizer && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="flex-grow w-full overflow-hidden"
                         >
-                            <img src={logoUrl} alt="Logo Preview" className="w-full h-full object-cover" />
+                            <p className="text-sm text-gray-500 mb-4">Visual Resizer (Drag bottom-right corner):</p>
+                            <div className="relative border border-dashed border-gray-300 rounded-lg p-8 bg-stone-50 flex items-center justify-center min-h-[300px]">
+                                <div
+                                    className="relative shadow-xl rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100"
+                                    style={{ width: `${size}px`, height: `${size}px` }}
+                                >
+                                    <img src={logoUrl} alt="Logo Preview" className="w-full h-full object-cover" />
 
-                            <div
-                                onMouseDown={handleResizeStart}
-                                className="absolute bottom-0 right-0 w-4 h-4 bg-stone-800 cursor-nwse-resize flex items-center justify-center hover:scale-125 transition-transform"
+                                    <div
+                                        onMouseDown={handleResizeStart}
+                                        className="absolute bottom-0 right-0 w-4 h-4 bg-stone-800 cursor-nwse-resize flex items-center justify-center hover:scale-125 transition-transform"
+                                        style={{ backgroundColor: '#3D2B1F' }}
+                                    >
+                                        <div className="w-1 h-1 bg-white rounded-full"></div>
+                                    </div>
+                                </div>
+
+                                <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-xs font-mono border border-gray-200 text-gray-500">
+                                    {size}px
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={saveSize}
+                                className="mt-4 px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium flex items-center gap-2"
                                 style={{ backgroundColor: '#3D2B1F' }}
                             >
-                                <div className="w-1 h-1 bg-white rounded-full"></div>
-                            </div>
-                        </div>
-
-                        <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-xs font-mono border border-gray-200 text-gray-500">
-                            {size}px
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={saveSize}
-                        className="mt-4 px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium flex items-center gap-2"
-                        style={{ backgroundColor: '#3D2B1F' }}
-                    >
-                        <Save size={16} /> Save Logo Size
-                    </button>
-                </div>
+                                <Save size={16} /> Save Logo Size
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );
@@ -661,6 +681,27 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                 onSave={handleSave}
                 showMessage={showMessage}
             />
+
+            {/* Background Image Section */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Image size={18} /> Hero Background
+                </h3>
+                <div className="flex flex-col md:flex-row gap-8 items-center bg-stone-50 p-6 rounded-lg border border-dashed border-gray-300">
+                    <div className="flex-shrink-0">
+                        <ImageUploader
+                            folder="backgrounds"
+                            onUpload={(url) => handleSave('hero_bg_url', url)}
+                            showMessage={showMessage}
+                        />
+                    </div>
+                    {settings.hero_bg_url && (
+                        <div className="relative h-24 w-full md:w-48 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                            <img src={settings.hero_bg_url} alt="Hero BG Preview" className="w-full h-full object-cover" />
+                        </div>
+                    )}
+                </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {GENERAL_FIELDS.map(field => (
