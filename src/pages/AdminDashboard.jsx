@@ -6,7 +6,7 @@ import {
     Save, LogOut, Check, Info, Loader2,
     Settings, Scissors, Tag, Image, Plus, Trash2,
     MapPin, Phone, Mail, Clock, User, Calendar, Edit, X,
-    List, ChevronLeft, ChevronRight
+    List, ChevronLeft, ChevronRight, Instagram, Facebook, Music2
 } from 'lucide-react';
 
 const TABS = [
@@ -35,6 +35,9 @@ const GENERAL_FIELDS = [
     { key: 'whatsapp', label: 'WhatsApp Number', icon: <Phone size={16} /> },
     { key: 'email', label: 'Email Address', icon: <Mail size={16} /> },
     { key: 'address', label: 'Salon Address', icon: <MapPin size={16} /> },
+    { key: 'instagram_url', label: 'Instagram URL', icon: <Instagram size={16} /> },
+    { key: 'facebook_url', label: 'Facebook URL', icon: <Facebook size={16} /> },
+    { key: 'tiktok_url', label: 'TikTok URL', icon: <Music2 size={16} /> },
 ];
 
 const EMAIL_VARIABLES = [

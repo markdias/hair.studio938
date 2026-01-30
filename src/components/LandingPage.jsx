@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle } from 'lucide-react';
+import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2 } from 'lucide-react';
 
 const Navbar = ({ settings }) => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -427,6 +427,30 @@ const Contact = ({ settings = {} }) => {
                         value={email}
                         link={`mailto:${email}`}
                     />
+                    {settings.instagram_url && (
+                        <ContactItem
+                            icon={<Instagram size={24} />}
+                            label="Instagram"
+                            value="Follow Us"
+                            link={settings.instagram_url}
+                        />
+                    )}
+                    {settings.facebook_url && (
+                        <ContactItem
+                            icon={<Facebook size={24} />}
+                            label="Facebook"
+                            value="Join Us"
+                            link={settings.facebook_url}
+                        />
+                    )}
+                    {settings.tiktok_url && (
+                        <ContactItem
+                            icon={<Music2 size={24} />}
+                            label="TikTok"
+                            value="Watch Us"
+                            link={settings.tiktok_url}
+                        />
+                    )}
                 </div>
 
                 <div style={{ marginTop: '80px', opacity: 0.8 }}>
@@ -459,9 +483,26 @@ const Footer = ({ settings = {} }) => {
                     />
                     <p style={{ opacity: 0.8, lineHeight: '1.8' }}>Where Hair Dreams Come True! Follow us for fabulous hair moments!</p>
                     <div style={{ display: 'flex', gap: '20px', marginTop: '30px' }}>
-                        <a href="https://www.instagram.com/hair.studio938/" target="_blank">
-                            <Instagram size={24} />
-                        </a>
+                        {settings.instagram_url && (
+                            <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer">
+                                <Instagram size={24} />
+                            </a>
+                        )}
+                        {settings.facebook_url && (
+                            <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer">
+                                <Facebook size={24} />
+                            </a>
+                        )}
+                        {settings.tiktok_url && (
+                            <a href={settings.tiktok_url} target="_blank" rel="noopener noreferrer">
+                                <Music2 size={24} />
+                            </a>
+                        )}
+                        {!settings.instagram_url && !settings.facebook_url && !settings.tiktok_url && (
+                            <a href="https://www.instagram.com/hair.studio938/" target="_blank" rel="noopener noreferrer">
+                                <Instagram size={24} />
+                            </a>
+                        )}
                     </div>
                 </div>
 
