@@ -65,33 +65,6 @@ const IntroVideo = ({ onComplete }) => {
             <source src={videoSource} type="video/mp4" />
           </video>
 
-          {/* Logo Overlay */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5, duration: 1.5 }}
-            style={{
-              position: 'absolute',
-              textAlign: 'center',
-              pointerEvents: 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '20px'
-            }}
-          >
-            <img
-              src="/logo.png"
-              alt="938 Logo"
-              style={{
-                width: '350px',
-                height: '350px',
-                borderRadius: '50%',
-                boxShadow: '0 0 50px rgba(0,0,0,0.5)',
-                border: '3px solid rgba(234, 224, 213, 0.4)'
-              }}
-            />
-          </motion.div>
 
           <motion.button
             initial={{ opacity: 0 }}
