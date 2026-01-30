@@ -35,9 +35,16 @@ const Navbar = ({ settings }) => {
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <img
-                    src="/logo.png"
+                    src={settings.logo_url || "/logo.png"}
                     alt="938 Logo"
-                    style={{ height: isScrolled ? '60px' : '85px', width: isScrolled ? '60px' : '85px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(234, 224, 213, 0.2)', transition: 'all 0.4s ease' }}
+                    style={{
+                        height: isScrolled ? `${(parseInt(settings.logo_size) || 85) * 0.7}px` : `${parseInt(settings.logo_size) || 85}px`,
+                        width: isScrolled ? `${(parseInt(settings.logo_size) || 85) * 0.7}px` : `${parseInt(settings.logo_size) || 85}px`,
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '1px solid rgba(234, 224, 213, 0.2)',
+                        transition: 'all 0.4s ease'
+                    }}
                 />
             </div>
 
@@ -477,7 +484,7 @@ const Footer = ({ settings = {} }) => {
             <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '60px' }}>
                 <div>
                     <img
-                        src="/logo.png"
+                        src={settings.logo_url || "/logo.png"}
                         alt="938 Logo"
                         style={{ height: '140px', width: '140px', borderRadius: '50%', marginBottom: '25px', objectFit: 'cover', border: '1px solid rgba(234, 224, 213, 0.2)' }}
                     />
