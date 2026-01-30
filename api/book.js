@@ -32,19 +32,29 @@ export default async function handler(req, res) {
     try {
         const cleanKey = (key) => {
             if (!key) return null;
-            // Remove any surrounding quotes that might have been added in Vercel
             let cleaned = key.trim();
-            if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
-                cleaned = cleaned.substring(1, cleaned.length - 1);
-            }
+            // Handle surrounding quotes
+            if (cleaned.startsWith('"') && cleaned.endsWith('"')) cleaned = cleaned.substring(1, cleaned.length - 1);
+            if (cleaned.startsWith("'") && cleaned.endsWith("'")) cleaned = cleaned.substring(1, cleaned.length - 1);
+
             // Replace literal \n with actual newlines
-            return cleaned.replace(/\\n/g, '\n');
+            cleaned = cleaned.replace(/\\n/g, '\n');
+
+            return cleaned;
         };
+
+        const cleanedKey = cleanKey(privateKey);
+        console.log('Diagnostic - Key info:', {
+            length: cleanedKey?.length,
+            startsWithHeader: cleanedKey?.includes('-----BEGIN PRIVATE KEY-----'),
+            endsWithHeader: cleanedKey?.includes('-----END PRIVATE KEY-----'),
+            lineCount: cleanedKey?.split('\n').length
+        });
 
         const auth = new google.auth.JWT(
             clientEmail,
             null,
-            cleanKey(privateKey),
+            cleanedKey,
             SCOPES
         );
 
