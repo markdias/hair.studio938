@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Save, LogOut, Check, Info, Loader2,
     Settings, Scissors, Tag, Image, Plus, Trash2,
-    MapPin, Phone, Mail, Clock, User, Calendar, Edit, X
+    MapPin, Phone, Mail, Clock, User, Calendar, Edit, X,
+    List, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -713,6 +714,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage }) => {
     const [editingAppt, setEditingAppt] = useState(null);
     const [filterStylist, setFilterStylist] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
 
     useEffect(() => {
         fetchAppointments();
@@ -813,15 +815,40 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage }) => {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold text-gray-900">Appointments</h2>
-                <button
-                    onClick={fetchAppointments}
-                    className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-all"
-                    style={{ backgroundColor: "#3D2B1F" }}
-                    disabled={loading}
-                >
-                    {loading ? <Loader2 size={18} className="animate-spin" /> : <Calendar size={18} />}
-                    Refresh
-                </button>
+                <div className="flex items-center gap-3">
+                    {/* View Toggle */}
+                    <div className="flex bg-gray-100 rounded-lg p-1">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${viewMode === 'list'
+                                ? 'bg-white text-stone-800 shadow-sm'
+                                : 'text-gray-600 hover:text-gray-900'
+                                }`}
+                        >
+                            <List size={18} />
+                            List
+                        </button>
+                        <button
+                            onClick={() => setViewMode('calendar')}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${viewMode === 'calendar'
+                                ? 'bg-white text-stone-800 shadow-sm'
+                                : 'text-gray-600 hover:text-gray-900'
+                                }`}
+                        >
+                            <Calendar size={18} />
+                            Calendar
+                        </button>
+                    </div>
+                    <button
+                        onClick={fetchAppointments}
+                        className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-all"
+                        style={{ backgroundColor: "#3D2B1F" }}
+                        disabled={loading}
+                    >
+                        {loading ? <Loader2 size={18} className="animate-spin" /> : <Calendar size={18} />}
+                        Refresh
+                    </button>
+                </div>
             </div>
 
             {/* Filters */}
@@ -853,7 +880,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage }) => {
                 </div>
             </div>
 
-            {/* Appointments List */}
+            {/* Appointments List or Calendar */}
             {loading ? (
                 <div className="flex items-center justify-center py-12">
                     <Loader2 size={40} className="animate-spin text-stone-800" />
@@ -863,6 +890,12 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage }) => {
                     <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
                     <p className="text-gray-600">No appointments found</p>
                 </div>
+            ) : viewMode === 'calendar' ? (
+                <CalendarView
+                    appointments={filteredAppointments}
+                    onEditAppointment={setEditingAppt}
+                    onDeleteAppointment={handleDelete}
+                />
             ) : (
                 <div className="space-y-4">
                     {filteredAppointments.map(appt => (
@@ -937,6 +970,166 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage }) => {
                 />
             )}
         </motion.div>
+    );
+};
+
+const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment }) => {
+    const [currentDate, setCurrentDate] = useState(new Date());
+
+    const getDaysInMonth = (date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay();
+
+        const days = [];
+        // Add empty cells for days before the first of the month
+        for (let i = 0; i < startingDayOfWeek; i++) {
+            days.push(null);
+        }
+        // Add all days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+            days.push(new Date(year, month, day));
+        }
+        return days;
+    };
+
+    const getAppointmentsForDay = (date) => {
+        if (!date) return [];
+        return appointments.filter(appt => {
+            const apptDate = new Date(appt.startTime);
+            return apptDate.toDateString() === date.toDateString();
+        });
+    };
+
+    const goToPreviousMonth = () => {
+        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    };
+
+    const goToNextMonth = () => {
+        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    };
+
+    const goToToday = () => {
+        setCurrentDate(new Date());
+    };
+
+    const isToday = (date) => {
+        if (!date) return false;
+        const today = new Date();
+        return date.toDateString() === today.toDateString();
+    };
+
+    const monthYear = currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    const days = getDaysInMonth(currentDate);
+    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    // Stylist colors for visual distinction
+    const stylistColors = {
+        'Jo': 'bg-blue-100 text-blue-800 border-blue-200',
+        'Nisha': 'bg-purple-100 text-purple-800 border-purple-200',
+        'default': 'bg-stone-100 text-stone-800 border-stone-200'
+    };
+
+    return (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+            {/* Calendar Header */}
+            <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">{monthYear}</h3>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={goToToday}
+                        className="px-3 py-2 text-sm text-stone-800 hover:bg-stone-100 rounded-lg transition-all"
+                    >
+                        Today
+                    </button>
+                    <button
+                        onClick={goToPreviousMonth}
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+                    <button
+                        onClick={goToNextMonth}
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+                    >
+                        <ChevronRight size={20} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-2">
+                {/* Week day headers */}
+                {weekDays.map(day => (
+                    <div key={day} className="text-center text-sm font-medium text-gray-600 py-2">
+                        {day}
+                    </div>
+                ))}
+
+                {/* Calendar days */}
+                {days.map((date, index) => {
+                    const dayAppointments = getAppointmentsForDay(date);
+                    const isTodayDate = isToday(date);
+
+                    return (
+                        <div
+                            key={index}
+                            className={`min-h-[120px] border rounded-lg p-2 ${!date
+                                    ? 'bg-gray-50'
+                                    : isTodayDate
+                                        ? 'bg-amber-50 border-amber-300'
+                                        : 'bg-white border-gray-200'
+                                }`}
+                        >
+                            {date && (
+                                <>
+                                    <div className={`text-sm font-medium mb-2 ${isTodayDate ? 'text-amber-900' : 'text-gray-700'
+                                        }`}>
+                                        {date.getDate()}
+                                    </div>
+                                    <div className="space-y-1">
+                                        {dayAppointments.map(appt => {
+                                            const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            });
+                                            const colorClass = stylistColors[appt.stylist] || stylistColors.default;
+
+                                            return (
+                                                <div
+                                                    key={appt.id}
+                                                    className={`text-xs p-1.5 rounded border cursor-pointer hover:shadow-sm transition-shadow ${colorClass}`}
+                                                    onClick={() => onEditAppointment(appt)}
+                                                    title={`${appt.customer.name} - ${appt.customer.service}`}
+                                                >
+                                                    <div className="font-medium truncate">{time}</div>
+                                                    <div className="truncate">{appt.customer.name}</div>
+                                                    <div className="truncate text-xs opacity-75">{appt.stylist}</div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center gap-4 mt-6 pt-4 border-t border-gray-200">
+                <span className="text-sm text-gray-600">Stylists:</span>
+                {Object.entries(stylistColors).filter(([key]) => key !== 'default').map(([stylist, colorClass]) => (
+                    <div key={stylist} className="flex items-center gap-2">
+                        <div className={`w-4 h-4 rounded border ${colorClass}`}></div>
+                        <span className="text-sm text-gray-700">{stylist}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 };
 
