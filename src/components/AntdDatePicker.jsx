@@ -1,11 +1,12 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday } from 'date-fns';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 
 const AntdDatePicker = ({ value, onChange, className }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(value ? new Date(value) : new Date());
+    const [dropdownStyle, setDropdownStyle] = useState({});
+    const inputRef = useRef(null);
 
     // Parse value if string
     const selectedDate = value ? new Date(value) : null;
@@ -24,9 +25,37 @@ const AntdDatePicker = ({ value, onChange, className }) => {
     const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
+    // Calculate dropdown position when opened
+    useEffect(() => {
+        if (isOpen && inputRef.current) {
+            const rect = inputRef.current.getBoundingClientRect();
+            const dropdownHeight = 380; // Approximate calendar height
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+
+            // Position above if not enough space below
+            if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+                setDropdownStyle({
+                    position: 'fixed',
+                    bottom: `${window.innerHeight - rect.top + 8}px`,
+                    left: `${rect.left}px`,
+                    width: `${rect.width}px`,
+                });
+            } else {
+                setDropdownStyle({
+                    position: 'fixed',
+                    top: `${rect.bottom + 8}px`,
+                    left: `${rect.left}px`,
+                    width: `${rect.width}px`,
+                });
+            }
+        }
+    }, [isOpen]);
+
     return (
         <div className="relative w-full">
             <div
+                ref={inputRef}
                 className={`flex items-center justify-between p-3 border border-gray-300 rounded-lg cursor-pointer hover:border-[#3D2B1F] transition-colors bg-white ${className}`}
                 onClick={() => setIsOpen(!isOpen)}
             >
@@ -37,15 +66,26 @@ const AntdDatePicker = ({ value, onChange, className }) => {
             </div>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-2 p-4 bg-white rounded-xl shadow-xl border border-gray-100 w-full z-50 animate-in fade-in zoom-in-95 duration-200">
+                <div
+                    style={dropdownStyle}
+                    className="p-4 bg-white rounded-xl shadow-xl border border-gray-100 z-[9999] animate-in fade-in zoom-in-95 duration-200"
+                >
                     <div className="flex items-center justify-between mb-4">
-                        <button onClick={prevMonth} className="p-1 hover:bg-gray-100 rounded-full text-gray-600">
+                        <button
+                            type="button"
+                            onClick={prevMonth}
+                            className="p-1 hover:bg-gray-100 rounded-full text-gray-600"
+                        >
                             <ChevronLeft size={20} />
                         </button>
                         <span className="font-semibold text-gray-800">
                             {format(currentMonth, 'MMMM yyyy')}
                         </span>
-                        <button onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded-full text-gray-600">
+                        <button
+                            type="button"
+                            onClick={nextMonth}
+                            className="p-1 hover:bg-gray-100 rounded-full text-gray-600"
+                        >
                             <ChevronRight size={20} />
                         </button>
                     </div>
@@ -66,6 +106,7 @@ const AntdDatePicker = ({ value, onChange, className }) => {
                             return (
                                 <button
                                     key={date.toString()}
+                                    type="button"
                                     onClick={() => handleDateClick(date)}
                                     className={`
                                         h-10 w-full rounded-lg text-sm flex items-center justify-center transition-all
@@ -84,7 +125,7 @@ const AntdDatePicker = ({ value, onChange, className }) => {
             )}
 
             {isOpen && (
-                <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+                <div className="fixed inset-0 z-[9998]" onClick={() => setIsOpen(false)} />
             )}
         </div>
     );

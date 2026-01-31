@@ -1693,7 +1693,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                         />
                                         {clientSearch && !newAppt.client_id && (
                                             <div className="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                                {filteredClientsSearch && filteredClientsSearch.length > 0 ? (
+                                                {filteredClientsSearch?.length > 0 ? (
                                                     filteredClientsSearch.map(c => (
                                                         <div
                                                             key={c.id}
@@ -1708,12 +1708,12 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                         </div>
                                                     ))
                                                 ) : (
-                                                    <div className="p-2 text-sm text-center">
+                                                    <div className="p-3 text-sm text-center">
                                                         <p className="text-gray-500 mb-2">No clients found</p>
                                                         <button
                                                             type="button"
                                                             onClick={() => setIsAddingNewClient(true)}
-                                                            className="text-xs bg-[#3D2B1F] text-white px-3 py-1.5 rounded-md hover:bg-opacity-90 w-full"
+                                                            className="text-sm bg-[#3D2B1F] text-white px-4 py-2 rounded-md hover:bg-opacity-90 w-full font-medium"
                                                         >
                                                             + Add "{clientSearch}"
                                                         </button>
