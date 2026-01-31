@@ -2571,14 +2571,14 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
         const isTodayDate = isToday(currentDate);
 
         return (
-            <div className="max-w-2xl mx-auto">
-                <div className={`text-center p-4 rounded-lg mb-4 ${isTodayDate ? 'bg-amber-100' : 'bg-gray-50'
+            <div className="w-full">
+                <div className={`text-center p-6 md:p-8 rounded-lg mb-6 ${isTodayDate ? 'bg-amber-100' : 'bg-gray-50'
                     }`}>
-                    <div className="text-sm text-gray-600">{WEEK_DAYS[currentDate.getDay()]}</div>
-                    <div className={`text-2xl font-bold ${isTodayDate ? 'text-amber-900' : 'text-gray-900'}`}>
+                    <div className="text-base md:text-lg text-gray-600 mb-2">{WEEK_DAYS[currentDate.getDay()]}</div>
+                    <div className={`text-4xl md:text-5xl font-bold mb-2 ${isTodayDate ? 'text-amber-900' : 'text-gray-900'}`}>
                         {currentDate.getDate()}
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-base md:text-lg text-gray-600">
                         {currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
                     </div>
                 </div>
@@ -2588,12 +2588,12 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
                         const slotAppts = getAppointmentsForTimeSlot(currentDate, hour);
 
                         return (
-                            <div key={hour} className="flex gap-3">
-                                <div className="w-20 text-sm text-gray-600 font-medium pt-2 text-right">
+                            <div key={hour} className="flex gap-4">
+                                <div className="w-24 text-base text-gray-600 font-medium pt-2 text-right">
                                     {hour}:00
                                 </div>
                                 <div
-                                    className={`flex-1 min-h-[100px] border rounded-lg p-2 cursor-pointer transition-colors hover:bg-stone-50 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}
+                                    className={`flex-1 min-h-[100px] border rounded-lg p-4 cursor-pointer transition-colors hover:bg-stone-50 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}
                                     onClick={() => onSlotClick(currentDate, hour)}
                                 >
                                     {slotAppts.map(appt => {
