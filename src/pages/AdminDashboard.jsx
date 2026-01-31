@@ -810,9 +810,15 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                                 showMessage={showMessage}
                             />
                         </div>
-                        <div className="relative flex-grow rounded-lg overflow-hidden border border-gray-200 bg-stone-50 min-h-[140px]">
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-stone-50 shadow-sm">
                             {settings.hero_bg_url ? (
-                                <img src={settings.hero_bg_url} alt="Hero BG Preview" className="w-full h-full object-cover" />
+                                <>
+                                    <img src={settings.hero_bg_url} alt="Hero BG Preview" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-[#3D2B1F]/60" />
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="text-white/30 text-[10px] uppercase tracking-[0.2em] font-semibold">Hero Preview</div>
+                                    </div>
+                                </>
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
                                     No image selected
