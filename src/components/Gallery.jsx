@@ -87,7 +87,7 @@ const Gallery = ({ images = [], settings = {} }) => {
                         fontSize: 'clamp(2.5rem, 8vw, 4rem)',
                         color: 'var(--accent-cream)',
                         marginBottom: '15px'
-                    }}>{settings.gallery_section_name || 'Gallery'}</h2>
+                    }}>{settings.gallery_heading_name || 'Gallery'}</h2>
                     <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--accent-cream)', margin: '0 auto 20px' }}></div>
                     <a
                         href="https://www.instagram.com/hair.studio938/"

@@ -61,19 +61,19 @@ const Navbar = ({ settings }) => {
             <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px', fontWeight: '500' }}>
                 <a href="#home">Home</a>
                 {settings.show_services_section !== 'false' && (
-                    <a href="#services">{settings.services_section_name || 'Services'}</a>
+                    <a href="#services">{settings.services_menu_name || 'Services'}</a>
                 )}
                 {settings.show_team_section !== 'false' && (
-                    <a href="#team">{settings.team_section_name || 'Team'}</a>
+                    <a href="#team">{settings.team_menu_name || 'Team'}</a>
                 )}
                 {settings.show_pricing_section !== 'false' && (
-                    <a href="#pricing">{settings.pricing_section_name || 'Pricing'}</a>
+                    <a href="#pricing">{settings.pricing_menu_name || 'Pricing'}</a>
                 )}
                 {settings.show_gallery_section !== 'false' && (
-                    <a href="#gallery">{settings.gallery_section_name || 'Gallery'}</a>
+                    <a href="#gallery">{settings.gallery_menu_name || 'Gallery'}</a>
                 )}
                 {settings.show_testimonials_section === 'true' && (
-                    <a href="#testimonials">{settings.testimonials_section_name || 'Testimonials'}</a>
+                    <a href="#testimonials">{settings.testimonials_menu_name || 'Testimonials'}</a>
                 )}
                 <a href="#contact">Contact</a>
                 <a href="#booking" className="btn-primary" style={{
@@ -95,19 +95,19 @@ const Navbar = ({ settings }) => {
             <div className="nav-links-mobile">
                 <a href="#home" onClick={toggleMenu}>Home</a>
                 {settings.show_services_section !== 'false' && (
-                    <a href="#services" onClick={toggleMenu}>{settings.services_section_name || 'Services'}</a>
+                    <a href="#services" onClick={toggleMenu}>{settings.services_menu_name || 'Services'}</a>
                 )}
                 {settings.show_team_section !== 'false' && (
-                    <a href="#team" onClick={toggleMenu}>{settings.team_section_name || 'Team'}</a>
+                    <a href="#team" onClick={toggleMenu}>{settings.team_menu_name || 'Team'}</a>
                 )}
                 {settings.show_pricing_section !== 'false' && (
-                    <a href="#pricing" onClick={toggleMenu}>{settings.pricing_section_name || 'Pricing'}</a>
+                    <a href="#pricing" onClick={toggleMenu}>{settings.pricing_menu_name || 'Pricing'}</a>
                 )}
                 {settings.show_gallery_section !== 'false' && (
-                    <a href="#gallery" onClick={toggleMenu}>{settings.gallery_section_name || 'Gallery'}</a>
+                    <a href="#gallery" onClick={toggleMenu}>{settings.gallery_menu_name || 'Gallery'}</a>
                 )}
                 {settings.show_testimonials_section === 'true' && (
-                    <a href="#testimonials" onClick={toggleMenu}>{settings.testimonials_section_name || 'Testimonials'}</a>
+                    <a href="#testimonials" onClick={toggleMenu}>{settings.testimonials_menu_name || 'Testimonials'}</a>
                 )}
                 <a href="#contact" onClick={toggleMenu}>Contact</a>
                 <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
@@ -225,7 +225,7 @@ const Services = ({ services = [], settings = {} }) => {
         <section id="services" style={{ padding: '120px 50px', backgroundColor: '#FFFFFF' }}>
             <div style={{ textAlign: 'center', marginBottom: '80px' }}>
                 <h2 style={{ fontSize: '3rem', color: 'var(--primary-brown)', marginBottom: '15px' }}>
-                    {settings.services_section_name || 'Our Services'}
+                    {settings.services_heading_name || 'Our Services'}
                 </h2>
                 <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--primary-brown)', margin: '0 auto' }}></div>
             </div>
@@ -275,7 +275,7 @@ const TeamSection = ({ team = [], settings = {} }) => {
         <section id="team" style={{ padding: '120px 50px', backgroundColor: 'var(--soft-cream)' }}>
             <div style={{ textAlign: 'center', marginBottom: '80px' }}>
                 <h2 style={{ fontSize: '3rem', color: 'var(--primary-brown)', marginBottom: '15px' }}>
-                    {settings.team_section_name || 'Meet the Dream Team'}
+                    {settings.team_heading_name || 'Meet the Dream Team'}
                 </h2>
                 <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--primary-brown)', margin: '0 auto' }}></div>
             </div>
@@ -410,7 +410,7 @@ const PriceList = ({ pricing = [], settings = {} }) => {
                     fontWeight: '400',
                     lineHeight: '1'
                 }}>
-                    {settings.pricing_section_name || 'Price list'}
+                    {settings.pricing_heading_name || 'Price list'}
                 </h2>
 
                 <div className="pricing-info" style={{

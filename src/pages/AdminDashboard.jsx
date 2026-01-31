@@ -310,11 +310,13 @@ const ImageUploader = ({ onUpload, folder = 'general', showMessage }) => {
     );
 };
 
-const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultName, description }) => {
+const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultMenuName, defaultHeadingName, description }) => {
     const showKey = `show_${sectionId}_section`;
-    const nameKey = `${sectionId}_section_name`;
+    const menuNameKey = `${sectionId}_menu_name`;
+    const headingNameKey = `${sectionId}_heading_name`;
     const isVisible = settings?.[showKey] !== 'false'; // Default to true if not set
-    const sectionName = settings?.[nameKey] || defaultName;
+    const menuName = settings?.[menuNameKey] || defaultMenuName;
+    const headingName = settings?.[headingNameKey] || defaultHeadingName;
 
     const handleSaveSetting = async (key, value) => {
         try {
@@ -334,7 +336,7 @@ const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultN
     return (
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-4 mb-8">
             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">Section Configuration</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="flex items-center justify-between p-4 bg-stone-50 rounded-lg border border-stone-100">
                     <div>
                         <p className="font-medium text-gray-900">Show Section</p>
@@ -349,16 +351,30 @@ const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultN
                     </button>
                 </div>
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-500 uppercase">Section Name</label>
+                    <label className="text-xs font-medium text-gray-500 uppercase">Menu Name</label>
                     <div className="flex gap-2">
                         <input
-                            value={sectionName}
-                            onChange={(e) => setSettings(prev => ({ ...prev, [nameKey]: e.target.value }))}
-                            onBlur={(e) => handleSaveSetting(nameKey, e.target.value)}
-                            placeholder={`e.g. ${defaultName}`}
+                            value={menuName}
+                            onChange={(e) => setSettings(prev => ({ ...prev, [menuNameKey]: e.target.value }))}
+                            onBlur={(e) => handleSaveSetting(menuNameKey, e.target.value)}
+                            placeholder={`e.g. ${defaultMenuName}`}
                             className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
                         />
                     </div>
+                    <p className="text-xs text-gray-400">Text shown in navigation menu</p>
+                </div>
+                <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-500 uppercase">Section Heading</label>
+                    <div className="flex gap-2">
+                        <input
+                            value={headingName}
+                            onChange={(e) => setSettings(prev => ({ ...prev, [headingNameKey]: e.target.value }))}
+                            onBlur={(e) => handleSaveSetting(headingNameKey, e.target.value)}
+                            placeholder={`e.g. ${defaultHeadingName}`}
+                            className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                    </div>
+                    <p className="text-xs text-gray-400">Text shown as page section title</p>
                 </div>
             </div>
         </div>
@@ -1005,7 +1021,8 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings }) 
                 settings={settings}
                 setSettings={setSettings}
                 showMessage={showMessage}
-                defaultName="Services"
+                defaultMenuName="Services"
+                defaultHeadingName="Our Services"
                 description="Enable or disable the services section and customize its heading."
             />
             <div className="flex items-center justify-between mb-6">
@@ -1142,7 +1159,8 @@ const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) =>
                 settings={settings}
                 setSettings={setSettings}
                 showMessage={showMessage}
-                defaultName="Pricing"
+                defaultMenuName="Pricing"
+                defaultHeadingName="Price list"
                 description="Enable or disable the pricing list section and customize its heading."
             />
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Price List</h2>
@@ -1305,7 +1323,8 @@ const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
                 settings={settings}
                 setSettings={setSettings}
                 showMessage={showMessage}
-                defaultName="Meet the Team"
+                defaultMenuName="Team"
+                defaultHeadingName="Meet the Dream Team"
                 description="Enable or disable the team section and customize its heading."
             />
             <div className="flex items-center justify-between mb-6">
@@ -1459,7 +1478,8 @@ const GalleryTab = ({ gallery, refresh, showMessage, settings, setSettings }) =>
                 settings={settings}
                 setSettings={setSettings}
                 showMessage={showMessage}
-                defaultName="Gallery"
+                defaultMenuName="Gallery"
+                defaultHeadingName="Gallery"
                 description="Enable or disable the gallery section and customize its heading."
             />
             <div className="flex items-center justify-between mb-6">
@@ -3639,6 +3659,16 @@ const TestimonialsTab = ({ testimonials, settings, setSettings, refresh, showMes
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+            <SectionConfig
+                sectionId="testimonials"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultMenuName="Testimonials"
+                defaultHeadingName="Customer Testimonials"
+                description="Enable or disable testimonials on the website and customize its heading."
+            />
+
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-semibold text-gray-900">Customer Testimonials</h2>
                 <button
@@ -3649,15 +3679,6 @@ const TestimonialsTab = ({ testimonials, settings, setSettings, refresh, showMes
                     <Plus size={18} /> Add Testimonial
                 </button>
             </div>
-
-            <SectionConfig
-                sectionId="testimonials"
-                settings={settings}
-                setSettings={setSettings}
-                showMessage={showMessage}
-                defaultName="Customer Testimonials"
-                description="Enable or disable testimonials on the website and customize its heading."
-            />
 
             {/* Testimonials List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
