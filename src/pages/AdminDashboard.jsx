@@ -1636,13 +1636,13 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
             <AnimatePresence>
                 {isAddModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#3D2B1F] text-[#EAE0D5]">
                                 <h3 className="text-lg font-semibold">{isAddingNewClient ? 'Add New Client' : 'New Appointment'}</h3>
                                 <button onClick={() => { setIsAddModalOpen(false); setIsAddingNewClient(false); }}><X size={20} /></button>
                             </div>
                             {isAddingNewClient ? (
-                                <div className="p-6 space-y-4">
+                                <div className="p-6 space-y-4 overflow-y-auto">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                                         <input
@@ -1678,7 +1678,28 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                     </div>
                                 </div>
                             ) : (
-                                <form onSubmit={handleAddAppointment} className="p-6 space-y-5">
+                                <form onSubmit={handleAddAppointment} className="flex-1 overflow-y-auto p-6 space-y-5">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Stylist</label>
+                                            <select className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.stylist} onChange={e => setNewAppt({ ...newAppt, stylist: e.target.value })}>
+                                                <option value="">-- Stylist --</option>
+                                                {stylists?.map(s => <option key={s.id || s} value={s.stylist_name || s.name || s}>{s.stylist_name || s.name || s}</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
+                                            <select className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.service} onChange={e => setNewAppt({ ...newAppt, service: e.target.value })}>
+                                                <option value="">-- Service --</option>
+                                                {pricing?.map(p => (
+                                                    <option key={p.id} value={p.item_name}>
+                                                        {p.item_name} ({p.duration_minutes || 60}m) - {p.price}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
                                     <div className="relative">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Select Client</label>
                                         <input
@@ -1730,26 +1751,6 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                 <X size={16} />
                                             </button>
                                         )}
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Stylist</label>
-                                            <select className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.stylist} onChange={e => setNewAppt({ ...newAppt, stylist: e.target.value })}>
-                                                <option value="">-- Stylist --</option>
-                                                {stylists?.map(s => <option key={s.id || s} value={s.stylist_name || s.name || s}>{s.stylist_name || s.name || s}</option>)}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
-                                            <select className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.service} onChange={e => setNewAppt({ ...newAppt, service: e.target.value })}>
-                                                <option value="">-- Service --</option>
-                                                {pricing?.map(p => (
-                                                    <option key={p.id} value={p.item_name}>
-                                                        {p.item_name} ({p.duration_minutes || 60}m) - {p.price}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
                                     </div>
 
                                     <div className="md:col-span-2 space-y-3 pt-2 border-t border-gray-100">
