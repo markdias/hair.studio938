@@ -480,9 +480,9 @@ const BookingSystem = () => {
                                             ) : (
                                                 <button
                                                     onClick={handleBooking}
-                                                    disabled={!booking.name || !booking.email || isSubmitting}
+                                                    disabled={!booking.name || (!booking.email && !booking.phone) || isSubmitting}
                                                     className="btn-primary"
-                                                    style={{ opacity: (!booking.name || !booking.email || isSubmitting) ? 0.5 : 1 }}
+                                                    style={{ opacity: (!booking.name || (!booking.email && !booking.phone) || isSubmitting) ? 0.5 : 1 }}
                                                 >
                                                     {isSubmitting ? (
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
