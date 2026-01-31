@@ -549,6 +549,19 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
         });
     }
 
+    // Calculate optimal number of columns for balanced rows
+    const totalCards = contactCards.length;
+    let columns;
+    if (totalCards <= 3) {
+        columns = totalCards; // 1-3 items: all in one row
+    } else if (totalCards === 4) {
+        columns = 2; // 4 items: 2x2 grid
+    } else if (totalCards <= 6) {
+        columns = 3; // 5-6 items: 3 columns
+    } else {
+        columns = 4; // 7+ items: 4 columns
+    }
+
     return (
         <section id="contact" style={{
             padding: '120px 20px',
@@ -562,7 +575,7 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
 
                 <div className="contact-grid" style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gridTemplateColumns: `repeat(${columns}, 1fr)`,
                     gap: '30px',
                     marginTop: '60px'
                 }}>
