@@ -33,7 +33,6 @@ const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const TIME_SLOTS = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
 
 const GENERAL_FIELDS = [
-    { key: 'business_name', label: 'Business Name', icon: <Info size={16} /> },
     { key: 'hero_title', label: 'Hero Title', icon: <Info size={16} /> },
     { key: 'hero_subtitle', label: 'Hero Subtitle', icon: <Info size={16} /> },
     { key: 'phone', label: 'Phone Number', icon: <Phone size={16} /> },
@@ -790,6 +789,31 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">General Settings</h2>
+
+            {/* Dedicated Business Name Editor */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+                    <Scissors size={18} />
+                    Business Name
+                </label>
+                <div className="flex gap-3">
+                    <input
+                        type="text"
+                        placeholder="e.g. Studio 938"
+                        value={settings.business_name || ''}
+                        onChange={(e) => setSettings({ ...settings, business_name: e.target.value })}
+                        className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-lg font-medium"
+                    />
+                    <button
+                        onClick={() => handleSave('business_name', settings.business_name)}
+                        className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center gap-2"
+                        style={{ backgroundColor: "var(--primary-brown)" }}
+                    >
+                        <Save size={18} />
+                        Update Name
+                    </button>
+                </div>
+            </div>
 
             {/* Branding & Hero Background Side-by-Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
