@@ -243,7 +243,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'pricing': return <PricingTab pricing={data.pricing} setPricing={setData.setPricing} showMessage={showMessage} />;
         case 'team': return <TeamTab stylists={data.stylists} refresh={refresh} showMessage={showMessage} />;
         case 'gallery': return <GalleryTab gallery={data.gallery} setGallery={setData.setGallery} showMessage={showMessage} />;
-        case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} />;
+        case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} />;
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} />;
         default: return null;
@@ -1262,7 +1262,7 @@ const GalleryTab = ({ gallery, refresh, showMessage }) => {
     );
 };
 
-const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, services, stylists, pricing }) => {
+const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, services, stylists, pricing, openingHours }) => {
     const [loading, setLoading] = useState(false);
     const [editingAppt, setEditingAppt] = useState(null);
     const [filterStylist, setFilterStylist] = useState('all');
@@ -1276,6 +1276,18 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
     const filteredClientsSearch = clientSearch
         ? clients?.filter(c => c.name.toLowerCase().includes(clientSearch.toLowerCase()) || c.email.toLowerCase().includes(clientSearch.toLowerCase()))
         : [];
+
+    const handleSlotClick = (date, hour) => {
+        const dateStr = date.toLocaleDateString('en-CA');
+        const timeStr = `${hour.toString().padStart(2, '0')}:00`;
+        setNewAppt(prev => ({
+            ...prev,
+            date: dateStr,
+            time: timeStr,
+            stylist: filterStylist !== 'all' ? filterStylist : ''
+        }));
+        setIsAddModalOpen(true);
+    };
 
     useEffect(() => {
         fetchAppointments();
@@ -1563,6 +1575,8 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                     onEditAppointment={setEditingAppt}
                     onDeleteAppointment={handleDelete}
                     stylists={stylists}
+                    openingHours={openingHours}
+                    onSlotClick={handleSlotClick}
                 />
             )}
 
@@ -1663,21 +1677,30 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
 
 
 
-const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, stylists }) => {
+const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, stylists, openingHours, onSlotClick = () => { } }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [calendarViewMode, setCalendarViewMode] = useState('week'); // 'month', 'week', 'day'
+
+    const parsedOpeningHours = React.useMemo(() => parseOpeningHours(openingHours), [openingHours]);
+
+    const isDayOpen = (date) => {
+        if (!openingHours || openingHours === '') return true;
+        const dayName = WEEK_DAYS[date.getDay()];
+        const slots = parsedOpeningHours[dayName];
+        return slots ? slots.some(s => s) : true;
+    };
 
     // Helper functions
     const getWeekDays = (date) => {
         const day = date.getDay();
-        const diff = date.getDate() - day; // Get Monday
-        const monday = new Date(date);
-        monday.setDate(diff);
+        const diff = date.getDate() - day;
+        const sunday = new Date(date);
+        sunday.setDate(diff);
 
         const week = [];
         for (let i = 0; i < 7; i++) {
-            const d = new Date(monday);
-            d.setDate(monday.getDate() + i);
+            const d = new Date(sunday);
+            d.setDate(sunday.getDate() + i);
             week.push(d);
         }
         return week;
@@ -1752,8 +1775,6 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
         }
     };
 
-
-
     const renderMonthView = () => {
         const days = getDaysInMonth(currentDate);
 
@@ -1767,48 +1788,62 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
                 ))}
 
                 {days.map((date, index) => {
-                    const dayAppointments = getAppointmentsForDay(date);
+                    const isDateOpen = date && isDayOpen(date);
+                    const dayAppointments = date ? getAppointmentsForDay(date) : [];
                     const isTodayDate = isToday(date);
 
                     return (
                         <div
                             key={index}
-                            className={`min-h-[80px] sm:min-h-[100px] md:min-h-[120px] border rounded-md md:rounded-lg p-1 md:p-2 ${!date ? 'bg-gray-50' : isTodayDate ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200'
+                            className={`min-h-[80px] sm:min-h-[100px] md:min-h-[120px] border rounded-md md:rounded-lg p-1 md:p-2 ${!date
+                                    ? 'bg-gray-50'
+                                    : !isDateOpen
+                                        ? 'bg-gray-50 border-gray-100 opacity-60'
+                                        : isTodayDate
+                                            ? 'bg-amber-50 border-amber-300'
+                                            : 'bg-white border-gray-200'
                                 }`}
                         >
                             {date && (
                                 <>
-                                    <div className={`text-xs md:text-sm font-medium mb-1 md:mb-2 ${isTodayDate ? 'text-amber-900' : 'text-gray-700'
+                                    <div className={`text-xs md:text-sm font-medium mb-1 md:mb-2 ${isTodayDate ? 'text-amber-900' : isDateOpen ? 'text-gray-700' : 'text-gray-400'
                                         }`}>
                                         {date.getDate()}
                                     </div>
-                                    <div className="space-y-0.5 md:space-y-1">
-                                        {dayAppointments.slice(0, 3).map(appt => {
-                                            const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            });
-                                            const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
+                                    {isDateOpen && (
+                                        <div className="space-y-0.5 md:space-y-1">
+                                            {dayAppointments.slice(0, 3).map(appt => {
+                                                const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                });
+                                                const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
 
-                                            return (
-                                                <div
-                                                    key={appt.id}
-                                                    className={`text-[10px] sm:text-xs p-1 sm:p-1.5 rounded border cursor-pointer hover:shadow-sm transition-shadow active:scale-95 ${colorClass}`}
-                                                    onClick={() => onEditAppointment(appt)}
-                                                    title={`${appt.customer.name} - ${appt.customer.service}`}
-                                                >
-                                                    <div className="font-medium truncate">{time}</div>
-                                                    <div className="truncate hidden sm:block">{appt.customer.name}</div>
-                                                    <div className="truncate text-[9px] sm:text-xs opacity-75 hidden md:block">{appt.stylist}</div>
+                                                return (
+                                                    <div
+                                                        key={appt.id}
+                                                        className={`text-[10px] sm:text-xs p-1 sm:p-1.5 rounded border cursor-pointer hover:shadow-sm transition-shadow active:scale-95 ${colorClass}`}
+                                                        onClick={(e) => { e.stopPropagation(); onEditAppointment(appt); }}
+                                                        title={`${appt.customer.name} - ${appt.customer.service}`}
+                                                    >
+                                                        <div className="font-medium truncate">{time}</div>
+                                                        <div className="truncate hidden sm:block">{appt.customer.name}</div>
+                                                        <div className="truncate text-[9px] sm:text-xs opacity-75 hidden md:block">{appt.stylist}</div>
+                                                    </div>
+                                                );
+                                            })}
+                                            {dayAppointments.length > 3 && (
+                                                <div className="text-[9px] sm:text-xs text-gray-500 text-center">
+                                                    +{dayAppointments.length - 3} more
                                                 </div>
-                                            );
-                                        })}
-                                        {dayAppointments.length > 3 && (
-                                            <div className="text-[9px] sm:text-xs text-gray-500 text-center">
-                                                +{dayAppointments.length - 3} more
-                                            </div>
-                                        )}
-                                    </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    {!isDateOpen && date && (
+                                        <div className="flex items-center justify-center h-1/2">
+                                            <span className="text-[10px] text-gray-400 italic">Closed</span>
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>
@@ -1820,14 +1855,23 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
 
     const renderWeekView = () => {
         const week = getWeekDays(currentDate);
+        const filteredWeek = week.filter(d => isDayOpen(d));
+
+        if (filteredWeek.length === 0) {
+            return (
+                <div className="p-12 text-center bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="text-gray-500">The salon is closed on all days this week.</p>
+                </div>
+            );
+        }
 
         return (
             <div className="overflow-x-auto">
                 <div className="min-w-[600px]">
                     {/* Header */}
-                    <div className="grid grid-cols-8 gap-1 mb-2">
-                        <div className="text-xs font-medium text-gray-600 p-2">Time</div>
-                        {week.map((date, i) => {
+                    <div className="grid gap-1 mb-2" style={{ gridTemplateColumns: `80px repeat(${filteredWeek.length}, minmax(0, 1fr))` }}>
+                        <div className="text-xs font-medium text-gray-600 p-2 text-center">Time</div>
+                        {filteredWeek.map((date, i) => {
                             const isTodayDate = isToday(date);
                             return (
                                 <div key={i} className={`text-center p-2 rounded-t-lg ${isTodayDate ? 'bg-amber-100' : 'bg-gray-50'
@@ -1844,17 +1888,20 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
                     {/* Time slots */}
                     <div className="space-y-1">
                         {TIME_SLOTS.map(hour => (
-                            <div key={hour} className="grid grid-cols-8 gap-1">
-                                <div className="text-xs text-gray-600 p-2 font-medium">
+                            <div key={hour} className="grid gap-1" style={{ gridTemplateColumns: `80px repeat(${filteredWeek.length}, minmax(0, 1fr))` }}>
+                                <div className="text-xs text-gray-600 p-2 font-medium flex items-center justify-center">
                                     {hour}:00
                                 </div>
-                                {week.map((date, i) => {
+                                {filteredWeek.map((date, i) => {
                                     const slotAppts = getAppointmentsForTimeSlot(date, hour);
                                     const isTodayDate = isToday(date);
 
                                     return (
-                                        <div key={i} className={`min-h-[60px] border rounded p-1 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'
-                                            }`}>
+                                        <div
+                                            key={i}
+                                            className={`min-h-[60px] border rounded p-1 cursor-pointer transition-colors hover:bg-stone-50 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}
+                                            onClick={() => onSlotClick(date, hour)}
+                                        >
                                             {slotAppts.map(appt => {
                                                 const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
                                                 const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
@@ -1866,7 +1913,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
                                                     <div
                                                         key={appt.id}
                                                         className={`text-xs p-2 rounded border cursor-pointer hover:shadow-md transition-all mb-1 ${colorClass}`}
-                                                        onClick={() => onEditAppointment(appt)}
+                                                        onClick={(e) => { e.stopPropagation(); onEditAppointment(appt); }}
                                                     >
                                                         <div className="font-semibold">{time}</div>
                                                         <div className="truncate font-medium">{appt.customer.name}</div>
@@ -1886,7 +1933,16 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
     };
 
     const renderDayView = () => {
-        const dayAppts = getAppointmentsForDay(currentDate);
+        if (!isDayOpen(currentDate)) {
+            return (
+                <div className="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-lg border border-gray-200">
+                    <Clock size={48} className="text-gray-300 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900">Salon is Closed</h3>
+                    <p className="text-gray-500">The salon is not open on {currentDate.toLocaleDateString('en-GB', { weekday: 'long' })}.</p>
+                </div>
+            );
+        }
+
         const isTodayDate = isToday(currentDate);
 
         return (
@@ -1908,11 +1964,13 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
 
                         return (
                             <div key={hour} className="flex gap-3">
-                                <div className="w-20 text-sm text-gray-600 font-medium pt-2">
+                                <div className="w-20 text-sm text-gray-600 font-medium pt-2 text-right">
                                     {hour}:00
                                 </div>
-                                <div className={`flex-1 min-h-[60px] border rounded-lg p-2 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'
-                                    }`}>
+                                <div
+                                    className={`flex-1 min-h-[60px] border rounded-lg p-2 cursor-pointer transition-colors hover:bg-stone-50 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}
+                                    onClick={() => onSlotClick(currentDate, hour)}
+                                >
                                     {slotAppts.map(appt => {
                                         const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
                                         const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
@@ -1924,7 +1982,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
                                             <div
                                                 key={appt.id}
                                                 className={`p-3 rounded-lg border cursor-pointer hover:shadow-md transition-all mb-2 ${colorClass}`}
-                                                onClick={() => onEditAppointment(appt)}
+                                                onClick={(e) => { e.stopPropagation(); onEditAppointment(appt); }}
                                             >
                                                 <div className="flex items-center justify-between mb-2">
                                                     <span className="font-semibold text-sm">{time}</span>
