@@ -1287,1286 +1287,310 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
             stylist: filterStylist !== 'all' ? filterStylist : ''
         }));
         setIsAddModalOpen(true);
-        const handleSlotClick = (date, hour) => {
-            const dateStr = date.toLocaleDateString('en-CA');
-            const timeStr = `${hour.toString().padStart(2, '0')}:00`;
-            setNewAppt(prev => ({
-                ...prev,
-                date: dateStr,
-                time: timeStr,
-                stylist: filterStylist !== 'all' ? filterStylist : ''
-            }));
-            setIsAddModalOpen(true);
-        };
-
-        const [timeSlots, setTimeSlots] = useState([]);
-        const [isLoadingSlots, setIsLoadingSlots] = useState(false);
-
-        useEffect(() => {
-            if (newAppt.date) {
-                const fetchAvailability = async () => {
-                    setIsLoadingSlots(true);
-                    try {
-                        const stylistParam = newAppt.stylist ? `&stylist=${encodeURIComponent(newAppt.stylist)}` : '';
-                        const res = await fetch(`/api/availability?date=${newAppt.date}${stylistParam}`);
-                        if (res.ok) {
-                            const data = await res.json();
-                            setTimeSlots(data.slots || []);
-                        } else {
-                            setTimeSlots([]);
-                        }
-                    } catch (err) {
-                        console.error('Error fetching availability:', err);
-                        setTimeSlots([]);
-                    } finally {
-                        setIsLoadingSlots(false);
-                    }
-                };
-                fetchAvailability();
-            } else {
-                setTimeSlots([]);
-            }
-        }, [newAppt.date, newAppt.stylist]);
-
-        useEffect(() => {
-            fetchAppointments();
-        }, []);
-
-        const fetchAppointments = async () => {
-            setLoading(true);
-            try {
-                const response = await fetch('/api/appointments/list');
-                const data = await response.json();
-                if (data.appointments) {
-                    setAppointments(data.appointments);
-                }
-            } catch (err) {
-                console.error('Fetch error:', err);
-                showMessage('error', 'Failed to load appointments');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const handleAddAppointment = async (e) => {
-            e.preventDefault();
-            const client = clients.find(c => c.id === newAppt.client_id);
-            if (!client) return showMessage('error', 'Select a client first');
-
-            // Get duration from selected service in pricing list
-            const selectedPriceItem = pricing?.find(p => p.item_name === newAppt.service);
-            const duration = selectedPriceItem?.duration_minutes || 60;
-
-            try {
-                const res = await fetch('/api/book', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        stylist: newAppt.stylist,
-                        service: newAppt.service,
-                        date: newAppt.date,
-                        time: newAppt.time,
-                        name: client.name,
-                        email: client.email,
-                        phone: client.phone,
-                        duration_minutes: duration
-                    })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showMessage('success', 'Appointment created!');
-                    setIsAddModalOpen(false);
-                    fetchAppointments();
-                    setNewAppt({ client_id: '', stylist: '', service: '', date: '', time: '' });
-                    setClientSearch(''); // Reset search
-                } else {
-                    showMessage('error', data.error || 'Failed to create');
-                }
-            } catch (err) {
-                showMessage('error', 'API Error');
-            }
-        };
-
-        const handleDelete = async (appt) => {
-            if (!confirm(`Delete appointment for ${appt.customer.name}?`)) return;
-
-            try {
-                const response = await fetch('/api/appointments/delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ eventId: appt.id, calendarId: appt.calendarId })
-                });
-
-                if (response.ok) {
-                    showMessage('success', 'Appointment deleted');
-                    fetchAppointments();
-                } else {
-                    throw new Error('Delete failed');
-                }
-            } catch (err) {
-                showMessage('error', 'Failed to delete appointment');
-            }
-        };
-
-        // ... existing handleUpdate ...
-        const handleUpdate = async (updatedData) => {
-            try {
-                const response = await fetch('/api/appointments/update', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        eventId: editingAppt.id,
-                        calendarId: editingAppt.calendarId,
-                        updates: updatedData
-                    })
-                });
-
-                if (response.ok) {
-                    showMessage('success', 'Appointment updated');
-                    setEditingAppt(null);
-                    fetchAppointments();
-                } else {
-                    throw new Error('Update failed');
-                }
-            } catch (err) {
-                showMessage('error', 'Failed to update appointment');
-            }
-        };
-
-        const filteredAppointments = appointments.filter(appt => {
-            const matchesStylist = filterStylist === 'all' || appt.stylist === filterStylist;
-            const matchesSearch = !searchQuery ||
-                appt.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                appt.customer.email.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesStylist && matchesSearch;
-        });
-
-        const uniqueStylists = [...new Set(appointments.map(a => a.stylist))];
-
-        const formatDateTime = (dateString) => {
-            const date = new Date(dateString);
-            return date.toLocaleString('en-GB', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        };
-
-        const isToday = (dateString) => {
-            const date = new Date(dateString);
-            const today = new Date();
-            return date.toDateString() === today.toDateString();
-        };
-
-        const isPast = (dateString) => {
-            return new Date(dateString) < new Date();
-        };
-
-        return (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
-                    <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Appointments</h2>
-                    <div className="flex flex-wrap items-center gap-2">
-                        {/* View Toggle */}
-                        <div className="flex bg-gray-100 rounded-lg p-1">
-                            <button
-                                onClick={() => setViewMode('list')}
-                                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-all text-sm ${viewMode === 'list' ? 'bg-white text-stone-800 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
-                            >
-                                <List size={16} /> List
-                            </button>
-                            <button
-                                onClick={() => setViewMode('calendar')}
-                                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-all text-sm ${viewMode === 'calendar' ? 'bg-white text-stone-800 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
-                            >
-                                <Calendar size={16} /> Calendar
-                            </button>
-                        </div>
-
-                        <button
-                            onClick={() => setIsAddModalOpen(true)}
-                            className="bg-[#3D2B1F] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-opacity-90"
-                            style={{ backgroundColor: "#3D2B1F" }}
-                        >
-                            <Plus size={18} /> New Appointment
-                        </button>
-
-                        <button
-                            onClick={fetchAppointments}
-                            className="flex items-center gap-2 px-3 py-2 bg-stone-100 text-stone-900 rounded-lg hover:bg-stone-200 transition-colors"
-                            disabled={loading}
-                        >
-                            {loading ? <Loader2 size={16} className="animate-spin" /> : <Calendar size={16} />} Refresh
-                        </button>
-                    </div>
-                </div>
-
-                {/* Filters */}
-                <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 mb-4 md:mb-6 space-y-3 md:space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                        <div>
-                            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Filter by Stylist</label>
-                            <select
-                                value={filterStylist}
-                                onChange={(e) => setFilterStylist(e.target.value)}
-                                className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
-                            >
-                                <option value="all">All Stylists</option>
-                                {uniqueStylists.map(s => (
-                                    <option key={s} value={s}>{s}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Search Customer</label>
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="Search by name or email..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-9 md:pl-10 pr-3 md:pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
-                                />
-                                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Content View */}
-                {viewMode === 'list' ? (
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm text-gray-600">
-                                <thead className="bg-gray-50 text-gray-900 font-medium border-b border-gray-200">
-                                    <tr>
-                                        <th className="px-6 py-3">Date & Time</th>
-                                        <th className="px-6 py-3">Customer</th>
-                                        <th className="px-6 py-3">Service</th>
-                                        <th className="px-6 py-3">Stylist</th>
-                                        <th className="px-6 py-3 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {filteredAppointments.map(appt => (
-                                        <tr key={appt.id} className={`hover:bg-gray-50 transition-colors ${isPast(appt.startTime) ? 'opacity-60 bg-gray-50' : ''}`}>
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-gray-900">{formatDateTime(appt.startTime)}</span>
-                                                    {isToday(appt.startTime) && <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded-full w-fit mt-1">Today</span>}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div>
-                                                    <div className="font-medium text-gray-900">{appt.customer.name}</div>
-                                                    <div className="text-xs text-gray-500">{appt.customer.email}</div>
-                                                    <div className="text-xs text-gray-500">{appt.customer.phone}</div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-100 text-stone-700 font-medium text-xs">
-                                                    <Scissors size={12} />
-                                                    {appt.service}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium text-xs ${STYLIST_COLORS[appt.stylist] || STYLIST_COLORS['default']}`}>
-                                                    <User size={12} />
-                                                    {appt.stylist}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <button
-                                                        onClick={() => setEditingAppt(appt)}
-                                                        className="p-1 text-gray-500 hover:text-stone-800 hover:bg-stone-100 rounded transition-colors"
-                                                        title="Edit Appointment"
-                                                    >
-                                                        <Edit size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(appt)}
-                                                        className="p-1 text-gray-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                                                        title="Delete Appointment"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {filteredAppointments.length === 0 && (
-                                        <tr>
-                                            <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
-                                                No appointments found matching your filters.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                ) : (
-                    <CalendarView
-                        appointments={filteredAppointments}
-                        onEditAppointment={setEditingAppt}
-                        onDeleteAppointment={handleDelete}
-                        stylists={stylists}
-                        openingHours={openingHours}
-                        onSlotClick={handleSlotClick}
-                    />
-                )}
-
-                {/* Add Appointment Modal */}
-                <AnimatePresence>
-                    {isAddModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-                                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#3D2B1F] text-[#EAE0D5]">
-                                    <h3 className="text-lg font-semibold">New Appointment</h3>
-                                    <button onClick={() => setIsAddModalOpen(false)}><X size={20} /></button>
-                                </div>
-                                <form onSubmit={handleAddAppointment} className="p-6 space-y-4">
-                                    <div className="relative">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Select Client</label>
-                                        <input
-                                            type="text"
-                                            placeholder="Search client..."
-                                            value={clients?.find(c => c.id === newAppt.client_id)?.name || clientSearch}
-                                            onChange={(e) => {
-                                                setClientSearch(e.target.value);
-                                                if (newAppt.client_id) setNewAppt({ ...newAppt, client_id: '' }); // Clear selection on edit
-                                            }}
-                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]"
-                                        />
-                                        {clientSearch && !newAppt.client_id && (
-                                            <div className="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                                {filteredClientsSearch?.length > 0 ? (
-                                                    filteredClientsSearch.map(c => (
-                                                        <div
-                                                            key={c.id}
-                                                            className="p-2 hover:bg-gray-50 cursor-pointer text-sm"
-                                                            onClick={() => {
-                                                                setNewAppt({ ...newAppt, client_id: c.id });
-                                                                setClientSearch('');
-                                                            }}
-                                                        >
-                                                            <div className="font-medium">{c.name}</div>
-                                                            <div className="text-xs text-gray-500">{c.email}</div>
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    <div className="p-2 text-sm text-gray-500">No clients found</div>
-                                                )}
-                                            </div>
-                                        )}
-                                        {newAppt.client_id && (
-                                            <button
-                                                type="button"
-                                                onClick={() => { setNewAppt({ ...newAppt, client_id: '' }); setClientSearch(''); }}
-                                                className="absolute right-2 top-8 text-gray-400 hover:text-gray-600"
-                                            >
-                                                <X size={16} />
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Stylist</label>
-                                            <select className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.stylist} onChange={e => setNewAppt({ ...newAppt, stylist: e.target.value })}>
-                                                <option value="">-- Stylist --</option>
-                                                {stylists?.map(s => <option key={s.id || s} value={s.stylist_name || s.name || s}>{s.stylist_name || s.name || s}</option>)}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
-                                            <select className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.service} onChange={e => setNewAppt({ ...newAppt, service: e.target.value })}>
-                                                <option value="">-- Service --</option>
-                                                {pricing?.map(p => (
-                                                    <option key={p.id} value={p.item_name}>
-                                                        {p.item_name} ({p.duration_minutes || 60}m) - {p.price}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                                            <input type="date" className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.date} onChange={e => setNewAppt({ ...newAppt, date: e.target.value })} />
-                                        </div>
-                                        <div className="relative">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-                                            {isLoadingSlots ? (
-                                                <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
-                                                    <Loader2 size={16} className="animate-spin" /> Checking availability...
-                                                </div>
-                                            ) : (
-                                                <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto custom-scrollbar border border-gray-200 rounded-lg p-2">
-                                                    {timeSlots.length > 0 ? (
-                                                        timeSlots.map(t => (
-                                                            <button
-                                                                key={t}
-                                                                type="button"
-                                                                onClick={() => setNewAppt({ ...newAppt, time: t })}
-                                                                className={`px-2 py-1.5 text-xs rounded border transition-all ${newAppt.time === t
-                                                                    ? 'bg-[#3D2B1F] text-white border-[#3D2B1F] font-medium'
-                                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                                                    }`}
-                                                            >
-                                                                {t}
-                                                            </button>
-                                                        ))
-                                                    ) : (
-                                                        <div className="col-span-4 text-xs text-center text-gray-500 py-2 border border-dashed border-gray-300 rounded-lg">
-                                                            {newAppt.date ? 'No slots available' : 'Select a date first'}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <button type="submit" className="w-full py-3 bg-[#3D2B1F] text-white rounded-lg mt-4 font-medium hover:bg-opacity-90 transition-colors" style={{ backgroundColor: '#3D2B1F' }}>
-                                        Confirm Booking
-                                    </button>
-                                </form>
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
-            </motion.div>
-        );
     };
 
+    const [timeSlots, setTimeSlots] = useState([]);
+    const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
-
-    const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, stylists, openingHours, onSlotClick = () => { } }) => {
-        const [currentDate, setCurrentDate] = useState(new Date());
-        const [calendarViewMode, setCalendarViewMode] = useState('week'); // 'month', 'week', 'day'
-
-        const parsedOpeningHours = React.useMemo(() => parseOpeningHours(openingHours), [openingHours]);
-
-        const isDayOpen = (date) => {
-            if (!openingHours || openingHours === '') return true;
-            const dayName = WEEK_DAYS[date.getDay()];
-            const slots = parsedOpeningHours[dayName];
-            return slots ? slots.some(s => s) : true;
-        };
-
-        // Helper functions
-        const getWeekDays = (date) => {
-            const day = date.getDay();
-            const diff = date.getDate() - day;
-            const sunday = new Date(date);
-            sunday.setDate(diff);
-
-            const week = [];
-            for (let i = 0; i < 7; i++) {
-                const d = new Date(sunday);
-                d.setDate(sunday.getDate() + i);
-                week.push(d);
-            }
-            return week;
-        };
-
-        const getDaysInMonth = (date) => {
-            const year = date.getFullYear();
-            const month = date.getMonth();
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const daysInMonth = lastDay.getDate();
-            const startingDayOfWeek = firstDay.getDay();
-
-            const days = [];
-            for (let i = 0; i < startingDayOfWeek; i++) {
-                days.push(null);
-            }
-            for (let day = 1; day <= daysInMonth; day++) {
-                days.push(new Date(year, month, day));
-            }
-            return days;
-        };
-
-        const getAppointmentsForDay = (date) => {
-            if (!date) return [];
-            return appointments.filter(appt => {
-                const apptDate = new Date(appt.startTime);
-                return apptDate.toDateString() === date.toDateString();
-            }).sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
-        };
-
-        const getAppointmentsForTimeSlot = (date, hour) => {
-            const dayAppts = getAppointmentsForDay(date);
-            return dayAppts.filter(appt => {
-                const apptHour = new Date(appt.startTime).getHours();
-                return apptHour === hour;
-            });
-        };
-
-        const navigate = (direction) => {
-            const newDate = new Date(currentDate);
-            if (calendarViewMode === 'month') {
-                newDate.setMonth(newDate.getMonth() + direction);
-            } else if (calendarViewMode === 'week') {
-                newDate.setDate(newDate.getDate() + (direction * 7));
-            } else {
-                newDate.setDate(newDate.getDate() + direction);
-            }
-            setCurrentDate(newDate);
-        };
-
-        const goToToday = () => {
-            setCurrentDate(new Date());
-        };
-
-        const isToday = (date) => {
-            if (!date) return false;
-            const today = new Date();
-            return date.toDateString() === today.toDateString();
-        };
-
-        const formatDateHeader = () => {
-            if (calendarViewMode === 'month') {
-                return currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
-            } else if (calendarViewMode === 'week') {
-                const week = getWeekDays(currentDate);
-                const start = week[0].toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-                const end = week[6].toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                return `${start} - ${end}`;
-            } else {
-                return currentDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-            }
-        };
-
-        const renderMonthView = () => {
-            const days = getDaysInMonth(currentDate);
-
-            return (
-                <div className="grid grid-cols-7 gap-1 md:gap-2">
-                    {WEEK_DAYS.map(day => (
-                        <div key={day} className="text-center text-xs md:text-sm font-medium text-gray-600 py-1 md:py-2">
-                            <span className="hidden sm:inline">{day}</span>
-                            <span className="sm:hidden">{day.substring(0, 1)}</span>
-                        </div>
-                    ))}
-
-                    {days.map((date, index) => {
-                        const isDateOpen = date && isDayOpen(date);
-                        const dayAppointments = date ? getAppointmentsForDay(date) : [];
-                        const isTodayDate = isToday(date);
-
-                        return (
-                            <div
-                                key={index}
-                                className={`min-h-[80px] sm:min-h-[100px] md:min-h-[120px] border rounded-md md:rounded-lg p-1 md:p-2 ${!date
-                                    ? 'bg-gray-50'
-                                    : !isDateOpen
-                                        ? 'bg-gray-50 border-gray-100 opacity-60'
-                                        : isTodayDate
-                                            ? 'bg-amber-50 border-amber-300'
-                                            : 'bg-white border-gray-200'
-                                    }`}
-                            >
-                                {date && (
-                                    <>
-                                        <div className={`text-xs md:text-sm font-medium mb-1 md:mb-2 ${isTodayDate ? 'text-amber-900' : isDateOpen ? 'text-gray-700' : 'text-gray-400'
-                                            }`}>
-                                            {date.getDate()}
-                                        </div>
-                                        {isDateOpen && (
-                                            <div className="space-y-0.5 md:space-y-1">
-                                                {dayAppointments.slice(0, 3).map(appt => {
-                                                    const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    });
-                                                    const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
-
-                                                    return (
-                                                        <div
-                                                            key={appt.id}
-                                                            className={`text-[10px] sm:text-xs p-1 sm:p-1.5 rounded border cursor-pointer hover:shadow-sm transition-shadow active:scale-95 ${colorClass}`}
-                                                            onClick={(e) => { e.stopPropagation(); onEditAppointment(appt); }}
-                                                            title={`${appt.customer.name} - ${appt.customer.service}`}
-                                                        >
-                                                            <div className="font-medium truncate">{time}</div>
-                                                            <div className="truncate hidden sm:block">{appt.customer.name}</div>
-                                                            <div className="truncate text-[9px] sm:text-xs opacity-75 hidden md:block">{appt.stylist}</div>
-                                                        </div>
-                                                    );
-                                                })}
-                                                {dayAppointments.length > 3 && (
-                                                    <div className="text-[9px] sm:text-xs text-gray-500 text-center">
-                                                        +{dayAppointments.length - 3} more
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                        {!isDateOpen && date && (
-                                            <div className="flex items-center justify-center h-1/2">
-                                                <span className="text-[10px] text-gray-400 italic">Closed</span>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
-            );
-        };
-
-        const renderWeekView = () => {
-            const week = getWeekDays(currentDate);
-            const filteredWeek = week.filter(d => isDayOpen(d));
-
-            if (filteredWeek.length === 0) {
-                return (
-                    <div className="p-12 text-center bg-gray-50 rounded-lg border border-gray-200">
-                        <p className="text-gray-500">The salon is closed on all days this week.</p>
-                    </div>
-                );
-            }
-
-            return (
-                <div className="overflow-x-auto">
-                    <div className="min-w-[600px]">
-                        {/* Header */}
-                        <div className="grid gap-1 mb-2" style={{ gridTemplateColumns: `80px repeat(${filteredWeek.length}, minmax(0, 1fr))` }}>
-                            <div className="text-xs font-medium text-gray-600 p-2 text-center">Time</div>
-                            {filteredWeek.map((date, i) => {
-                                const isTodayDate = isToday(date);
-                                return (
-                                    <div key={i} className={`text-center p-2 rounded-t-lg ${isTodayDate ? 'bg-amber-100' : 'bg-gray-50'
-                                        }`}>
-                                        <div className="text-xs font-medium text-gray-600">{WEEK_DAYS[date.getDay()]}</div>
-                                        <div className={`text-sm font-semibold ${isTodayDate ? 'text-amber-900' : 'text-gray-900'}`}>
-                                            {date.getDate()}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {/* Time slots */}
-                        <div className="space-y-1">
-                            {TIME_SLOTS.map(hour => (
-                                <div key={hour} className="grid gap-1" style={{ gridTemplateColumns: `80px repeat(${filteredWeek.length}, minmax(0, 1fr))` }}>
-                                    <div className="text-xs text-gray-600 p-2 font-medium flex items-center justify-center">
-                                        {hour}:00
-                                    </div>
-                                    {filteredWeek.map((date, i) => {
-                                        const slotAppts = getAppointmentsForTimeSlot(date, hour);
-                                        const isTodayDate = isToday(date);
-
-                                        return (
-                                            <div
-                                                key={i}
-                                                className={`min-h-[60px] border rounded p-1 cursor-pointer transition-colors hover:bg-stone-50 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}
-                                                onClick={() => onSlotClick(date, hour)}
-                                            >
-                                                {slotAppts.map(appt => {
-                                                    const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
-                                                    const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    });
-
-                                                    return (
-                                                        <div
-                                                            key={appt.id}
-                                                            className={`text-xs p-2 rounded border cursor-pointer hover:shadow-md transition-all mb-1 ${colorClass}`}
-                                                            onClick={(e) => { e.stopPropagation(); onEditAppointment(appt); }}
-                                                        >
-                                                            <div className="font-semibold">{time}</div>
-                                                            <div className="truncate font-medium">{appt.customer.name}</div>
-                                                            <div className="truncate text-xs opacity-75">{appt.customer.service}</div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const renderDayView = () => {
-            if (!isDayOpen(currentDate)) {
-                return (
-                    <div className="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-lg border border-gray-200">
-                        <Clock size={48} className="text-gray-300 mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900">Salon is Closed</h3>
-                        <p className="text-gray-500">The salon is not open on {currentDate.toLocaleDateString('en-GB', { weekday: 'long' })}.</p>
-                    </div>
-                );
-            }
-
-            const isTodayDate = isToday(currentDate);
-
-            return (
-                <div className="max-w-2xl mx-auto">
-                    <div className={`text-center p-4 rounded-lg mb-4 ${isTodayDate ? 'bg-amber-100' : 'bg-gray-50'
-                        }`}>
-                        <div className="text-sm text-gray-600">{WEEK_DAYS[currentDate.getDay()]}</div>
-                        <div className={`text-2xl font-bold ${isTodayDate ? 'text-amber-900' : 'text-gray-900'}`}>
-                            {currentDate.getDate()}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                            {currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        {TIME_SLOTS.map(hour => {
-                            const slotAppts = getAppointmentsForTimeSlot(currentDate, hour);
-
-                            return (
-                                <div key={hour} className="flex gap-3">
-                                    <div className="w-20 text-sm text-gray-600 font-medium pt-2 text-right">
-                                        {hour}:00
-                                    </div>
-                                    <div
-                                        className={`flex-1 min-h-[60px] border rounded-lg p-2 cursor-pointer transition-colors hover:bg-stone-50 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}
-                                        onClick={() => onSlotClick(currentDate, hour)}
-                                    >
-                                        {slotAppts.map(appt => {
-                                            const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
-                                            const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            });
-
-                                            return (
-                                                <div
-                                                    key={appt.id}
-                                                    className={`p-3 rounded-lg border cursor-pointer hover:shadow-md transition-all mb-2 ${colorClass}`}
-                                                    onClick={(e) => { e.stopPropagation(); onEditAppointment(appt); }}
-                                                >
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <span className="font-semibold text-sm">{time}</span>
-                                                        <span className="text-xs px-2 py-1 rounded bg-white bg-opacity-50">
-                                                            {appt.stylist}
-                                                        </span>
-                                                    </div>
-                                                    <div className="font-medium">{appt.customer.name}</div>
-                                                    <div className="text-sm opacity-75">{appt.customer.service}</div>
-                                                    {appt.customer.phone && (
-                                                        <div className="text-xs mt-1 opacity-75">{appt.customer.phone}</div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            );
-        };
-
-        return (
-            <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-6">
-                {/* Calendar Header */}
-                <div className="flex flex-col gap-3 mb-4 md:mb-6">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <h3 className="text-lg md:text-xl font-semibold text-gray-900">{formatDateHeader()}</h3>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={goToToday}
-                                className="px-3 py-2 text-xs md:text-sm text-stone-800 hover:bg-stone-100 rounded-lg transition-all"
-                            >
-                                Today
-                            </button>
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-                            >
-                                <ChevronLeft size={20} />
-                            </button>
-                            <button
-                                onClick={() => navigate(1)}
-                                className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-                            >
-                                <ChevronRight size={20} />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* View Mode Selector */}
-                    <div className="flex bg-gray-100 rounded-lg p-1 w-full sm:w-auto">
-                        <button
-                            onClick={() => setCalendarViewMode('day')}
-                            className={`flex-1 sm:flex-none px-3 py-2 rounded-md transition-all text-xs md:text-sm ${calendarViewMode === 'day'
-                                ? 'bg-white text-stone-800 shadow-sm font-medium'
-                                : 'text-gray-600 hover:text-gray-900'
-                                }`}
-                        >
-                            Day
-                        </button>
-                        <button
-                            onClick={() => setCalendarViewMode('week')}
-                            className={`flex-1 sm:flex-none px-3 py-2 rounded-md transition-all text-xs md:text-sm ${calendarViewMode === 'week'
-                                ? 'bg-white text-stone-800 shadow-sm font-medium'
-                                : 'text-gray-600 hover:text-gray-900'
-                                }`}
-                        >
-                            Week
-                        </button>
-                        <button
-                            onClick={() => setCalendarViewMode('month')}
-                            className={`flex-1 sm:flex-none px-3 py-2 rounded-md transition-all text-xs md:text-sm ${calendarViewMode === 'month'
-                                ? 'bg-white text-stone-800 shadow-sm font-medium'
-                                : 'text-gray-600 hover:text-gray-900'
-                                }`}
-                        >
-                            Month
-                        </button>
-                    </div>
-                </div>
-
-                {/* Calendar Content */}
-                {calendarViewMode === 'month' && renderMonthView()}
-                {calendarViewMode === 'week' && renderWeekView()}
-                {calendarViewMode === 'day' && renderDayView()}
-
-                {/* Legend */}
-                <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-4 md:mt-6 pt-3 md:pt-4 border-t border-gray-200">
-                    <span className="text-xs md:text-sm text-gray-600">Stylists:</span>
-                    {stylists?.map(stylist => {
-                        const name = stylist.stylist_name || stylist.name || stylist;
-                        const colorClass = STYLIST_COLORS[name] || STYLIST_COLORS.default;
-                        return (
-                            <div key={name} className="flex items-center gap-1 md:gap-2">
-                                <div className={`w-3 h-3 md:w-4 md:h-4 rounded border ${colorClass}`}></div>
-                                <span className="text-xs md:text-sm text-gray-700">{name}</span>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        );
-    };
-
-    const EditAppointmentModal = ({ appointment, onClose, onSave }) => {
-        const [formData, setFormData] = useState({
-            name: appointment.customer.name,
-            email: appointment.customer.email,
-            phone: appointment.customer.phone,
-            service: appointment.customer.service,
-            date: appointment.startTime.split('T')[0],
-            time: appointment.startTime.split('T')[1].substring(0, 5),
-        });
-
-        const handleSubmit = () => {
-            const startDateTime = new Date(`${formData.date}T${formData.time}:00`).toISOString();
-            const endDateTime = new Date(new Date(`${formData.date}T${formData.time}:00`).getTime() + 60 * 60 * 1000).toISOString();
-
-            onSave({
-                customer: {
-                    name: formData.name,
-                    email: formData.email,
-                    phone: formData.phone
-                },
-                service: formData.service,
-                startTime: startDateTime,
-                endTime: endDateTime
-            });
-        };
-
-        return (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
-                >
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-semibold text-gray-900">Edit Appointment</h3>
-                        <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-all">
-                            <X size={20} />
-                        </button>
-                    </div>
-
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
-                            <input
-                                type="text"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <input
-                                type="email"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                            <input
-                                type="tel"
-                                value={formData.phone}
-                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
-                            <input
-                                type="text"
-                                value={formData.service}
-                                onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                                <input
-                                    type="date"
-                                    value={formData.date}
-                                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-                                <input
-                                    type="time"
-                                    value={formData.time}
-                                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3 mt-6">
-                        <button
-                            onClick={handleSubmit}
-                            className="flex-grow text-white py-2 rounded-lg transition-all"
-                            style={{ backgroundColor: "#3D2B1F" }}
-                        >
-                            Save Changes
-                        </button>
-                        <button
-                            onClick={onClose}
-                            className="px-6 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </motion.div>
-            </div>
-        );
-    };
-
-
-    const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
-
-        const [template, setTemplate] = useState(settings.email_template || DEFAULT_EMAIL_TEMPLATE.trim());
-        const [subject, setSubject] = useState(settings.email_subject || 'Booking Confirmation - Studio 938');
-        const [isSaving, setIsSaving] = useState(false);
-        const [showPreview, setShowPreview] = useState(false);
-
-        useEffect(() => {
-            if (settings.email_template) {
-                setTemplate(settings.email_template);
-            } else {
-                setTemplate(DEFAULT_EMAIL_TEMPLATE.trim());
-            }
-            if (settings.email_subject) {
-                setSubject(settings.email_subject);
-            }
-        }, [settings.email_template, settings.email_subject]);
-
-        const handleSave = async (content = template) => {
-            setIsSaving(true);
-            try {
-                // Save template
-                const { error: templateError } = await supabase
-                    .from('site_settings')
-                    .upsert({ key: 'email_template', value: content });
-                if (templateError) throw templateError;
-
-                // Save subject
-                const { error: subjectError } = await supabase
-                    .from('site_settings')
-                    .upsert({ key: 'email_subject', value: subject });
-                if (subjectError) throw subjectError;
-
-                showMessage('success', 'Email settings updated!');
-                refresh();
-            } catch (err) {
-                showMessage('error', err.message);
-            } finally {
-                setIsSaving(false);
-            }
-        };
-
-        const resetToDefault = async () => {
-            if (confirm('Reset to default template? This will overwrite your current changes and save to the database.')) {
-                const content = DEFAULT_EMAIL_TEMPLATE.trim();
-                const defaultSubject = 'Booking Confirmation - Studio 938';
-                setTemplate(content);
-                setSubject(defaultSubject);
-
-                // We need to save both
-                setIsSaving(true);
+    useEffect(() => {
+        if (newAppt.date) {
+            const fetchAvailability = async () => {
+                setIsLoadingSlots(true);
                 try {
-                    await supabase.from('site_settings').upsert({ key: 'email_template', value: content });
-                    await supabase.from('site_settings').upsert({ key: 'email_subject', value: defaultSubject });
-                    showMessage('success', 'Reset to defaults!');
-                    refresh();
+                    const stylistParam = newAppt.stylist ? `&stylist=${encodeURIComponent(newAppt.stylist)}` : '';
+                    const res = await fetch(`/api/availability?date=${newAppt.date}${stylistParam}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setTimeSlots(data.slots || []);
+                    } else {
+                        setTimeSlots([]);
+                    }
                 } catch (err) {
-                    showMessage('error', err.message);
+                    console.error('Error fetching availability:', err);
+                    setTimeSlots([]);
                 } finally {
-                    setIsSaving(false);
+                    setIsLoadingSlots(false);
                 }
+            };
+            fetchAvailability();
+        } else {
+            setTimeSlots([]);
+        }
+    }, [newAppt.date, newAppt.stylist]);
+
+    useEffect(() => {
+        fetchAppointments();
+    }, []);
+
+    const fetchAppointments = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('/api/appointments/list');
+            const data = await response.json();
+            if (data.appointments) {
+                setAppointments(data.appointments);
             }
-        };
-
-        const previewHtml = template
-            .replace(/{{name}}/g, 'Jane Doe')
-            .replace(/{{service}}/g, 'Full Balayage')
-            .replace(/{{stylist}}/g, 'Jo')
-            .replace(/{{date}}/g, 'Friday, 30 January 2026')
-            .replace(/{{time}}/g, '14:30')
-            .replace(/{{salon_phone}}/g, settings.phone || '020 8445 1122')
-            .replace(/{{salon_location}}/g, settings.address || '938 High Road, London');
-
-
-        return (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 className="text-2xl font-semibold text-gray-900">Email Settings</h2>
-                        <p className="text-sm text-gray-500 mt-1">Customize the booking confirmation email sent to customers.</p>
-                    </div>
-                    <div className="flex gap-3">
-                        <button
-                            onClick={resetToDefault}
-                            className="px-4 py-2 text-stone-600 hover:text-stone-800 text-sm font-medium transition-colors"
-                        >
-                            Reset to Default
-                        </button>
-                        <button
-                            onClick={() => handleSave()}
-                            disabled={isSaving}
-                            className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-stone-900 flex items-center gap-2 transition-all disabled:opacity-50"
-                            style={{ backgroundColor: "#3D2B1F" }}
-                        >
-                            {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                            Save Settings
-                        </button>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Editor Section */}
-                    <div className="lg:col-span-2 space-y-6">
-                        {/* Subject Line Input */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Email Subject Line</label>
-                            <input
-                                type="text"
-                                value={subject}
-                                onChange={(e) => setSubject(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] focus:border-transparent outline-none"
-                                placeholder="e.g. Your Appointment at Studio 938"
-                            />
-                        </div>
-
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                    <Mail size={16} className="text-gray-500" />
-                                    <span className="text-sm font-medium text-gray-700">
-                                        {showPreview ? 'Live Preview' : 'HTML Editor'}
-                                    </span>
-                                </div>
-                                <button
-                                    onClick={() => setShowPreview(!showPreview)}
-                                    className="text-xs font-semibold text-stone-800 bg-stone-100 hover:bg-stone-200 px-3 py-1 rounded-full transition-all"
-                                >
-                                    {showPreview ? 'Edit HTML' : 'Show Preview'}
-                                </button>
-                            </div>
-
-                            {showPreview ? (
-                                <div className="h-[500px] overflow-y-auto p-8 bg-gray-50 flex items-start justify-center">
-                                    <div
-                                        className="bg-white shadow-lg rounded-xl overflow-hidden w-full max-w-[600px]"
-                                        dangerouslySetInnerHTML={{ __html: previewHtml }}
-                                    />
-                                </div>
-                            ) : (
-                                <textarea
-                                    value={template}
-                                    onChange={(e) => setTemplate(e.target.value)}
-                                    placeholder="Paste your HTML template here..."
-                                    className="w-full h-[500px] p-4 font-mono text-sm focus:ring-0 border-none outline-none resize-none"
-                                    spellCheck="false"
-                                />
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Sidebar Section */}
-                    <div className="space-y-6">
-                        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                            <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <Info size={16} className="text-stone-800" />
-                                Available Variables
-                            </h3>
-                            <p className="text-xs text-gray-500 mb-4">
-                                Copy and paste these tags into your template. They will be automatically replaced with booking details.
-                            </p>
-                            <div className="space-y-3">
-                                {EMAIL_VARIABLES.map(v => (
-                                    <div key={v.tag} className="flex flex-col gap-1">
-                                        <code className="text-[11px] bg-stone-100 text-stone-800 px-2 py-1 rounded inline-block w-fit font-bold">
-                                            {v.tag}
-                                        </code>
-                                        <span className="text-[10px] text-gray-500 ml-1">{v.desc}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="bg-amber-50 rounded-xl border border-amber-200 p-6">
-                            <h3 className="text-sm font-bold text-amber-900 mb-2">Pro Tip</h3>
-                            <p className="text-xs text-amber-800 leading-relaxed">
-                                You can use standard HTML tags like <code>&lt;b&gt;</code>, <code>&lt;hr&gt;</code>, or <code>&lt;img&gt;</code> to style your confirmation emails. Make sure all styles are inline for maximum compatibility across email clients!
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </motion.div>
-        );
+        } catch (err) {
+            console.error('Fetch error:', err);
+            showMessage('error', 'Failed to load appointments');
+        } finally {
+            setLoading(false);
+        }
     };
 
+    const handleAddAppointment = async (e) => {
+        e.preventDefault();
+        const client = clients.find(c => c.id === newAppt.client_id);
+        if (!client) return showMessage('error', 'Select a client first');
 
+        // Get duration from selected service in pricing list
+        const selectedPriceItem = pricing?.find(p => p.item_name === newAppt.service);
+        const duration = selectedPriceItem?.duration_minutes || 60;
 
-    // --- CLIENTS TAB COMPONENT ---
-    const ClientsTab = ({ clients, setClients, showMessage, refreshClients }) => {
-        const [searchTerm, setSearchTerm] = useState('');
-        const [isModalOpen, setIsModalOpen] = useState(false);
-        const [editingClient, setEditingClient] = useState(null);
-        const [formData, setFormData] = useState({ name: '', email: '', phone: '', notes: '' });
-
-        const filteredClients = clients.filter(c =>
-            c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (c.phone && c.phone.includes(searchTerm))
-        );
-
-        const handleOpenModal = (client = null) => {
-            if (client) {
-                setEditingClient(client);
-                setFormData({ name: client.name, email: client.email, phone: client.phone || '', notes: client.notes || '' });
+        try {
+            const res = await fetch('/api/book', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    stylist: newAppt.stylist,
+                    service: newAppt.service,
+                    date: newAppt.date,
+                    time: newAppt.time,
+                    name: client.name,
+                    email: client.email,
+                    phone: client.phone,
+                    duration_minutes: duration
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showMessage('success', 'Appointment created!');
+                setIsAddModalOpen(false);
+                fetchAppointments();
+                setNewAppt({ client_id: '', stylist: '', service: '', date: '', time: '' });
+                setClientSearch(''); // Reset search
             } else {
-                setEditingClient(null);
-                setFormData({ name: '', email: '', phone: '', notes: '' });
+                showMessage('error', data.error || 'Failed to create');
             }
-            setIsModalOpen(true);
-        };
+        } catch (err) {
+            showMessage('error', 'API Error');
+        }
+    };
 
-        const handleSave = async (e) => {
-            e.preventDefault();
-            try {
-                const { error } = await supabase
-                    .from('clients')
-                    .upsert({
-                        ...(editingClient && { id: editingClient.id }),
-                        ...formData
-                    })
-                    .select()
-                    .single();
+    const handleDelete = async (appt) => {
+        if (!confirm(`Delete appointment for ${appt.customer.name}?`)) return;
 
-                if (error) throw error;
+        try {
+            const response = await fetch('/api/appointments/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ eventId: appt.id, calendarId: appt.calendarId })
+            });
 
-                showMessage('success', editingClient ? 'Client updated' : 'Client created');
-                setIsModalOpen(false);
-                refreshClients();
-            } catch (err) {
-                showMessage('error', err.message);
+            if (response.ok) {
+                showMessage('success', 'Appointment deleted');
+                fetchAppointments();
+            } else {
+                throw new Error('Delete failed');
             }
-        };
+        } catch (err) {
+            showMessage('error', 'Failed to delete appointment');
+        }
+    };
 
-        return (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                    <h2 className="text-2xl font-semibold text-gray-900">Client Management</h2>
+    // ... existing handleUpdate ...
+    const handleUpdate = async (updatedData) => {
+        try {
+            const response = await fetch('/api/appointments/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    eventId: editingAppt.id,
+                    calendarId: editingAppt.calendarId,
+                    updates: updatedData
+                })
+            });
+
+            if (response.ok) {
+                showMessage('success', 'Appointment updated');
+                setEditingAppt(null);
+                fetchAppointments();
+            } else {
+                throw new Error('Update failed');
+            }
+        } catch (err) {
+            showMessage('error', 'Failed to update appointment');
+        }
+    };
+
+    const filteredAppointments = appointments.filter(appt => {
+        const matchesStylist = filterStylist === 'all' || appt.stylist === filterStylist;
+        const matchesSearch = !searchQuery ||
+            appt.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            appt.customer.email.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesStylist && matchesSearch;
+    });
+
+    const uniqueStylists = [...new Set(appointments.map(a => a.stylist))];
+
+    const formatDateTime = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleString('en-GB', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    const isToday = (dateString) => {
+        const date = new Date(dateString);
+        const today = new Date();
+        return date.toDateString() === today.toDateString();
+    };
+
+    const isPast = (dateString) => {
+        return new Date(dateString) < new Date();
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
+                <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Appointments</h2>
+                <div className="flex flex-wrap items-center gap-2">
+                    {/* View Toggle */}
+                    <div className="flex bg-gray-100 rounded-lg p-1">
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-all text-sm ${viewMode === 'list' ? 'bg-white text-stone-800 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                        >
+                            <List size={16} /> List
+                        </button>
+                        <button
+                            onClick={() => setViewMode('calendar')}
+                            className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-all text-sm ${viewMode === 'calendar' ? 'bg-white text-stone-800 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                        >
+                            <Calendar size={16} /> Calendar
+                        </button>
+                    </div>
+
                     <button
-                        onClick={() => handleOpenModal()}
+                        onClick={() => setIsAddModalOpen(true)}
                         className="bg-[#3D2B1F] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-opacity-90"
                         style={{ backgroundColor: "#3D2B1F" }}
                     >
-                        <Plus size={18} /> Add Client
+                        <Plus size={18} /> New Appointment
+                    </button>
+
+                    <button
+                        onClick={fetchAppointments}
+                        className="flex items-center gap-2 px-3 py-2 bg-stone-100 text-stone-900 rounded-lg hover:bg-stone-200 transition-colors"
+                        disabled={loading}
+                    >
+                        {loading ? <Loader2 size={16} className="animate-spin" /> : <Calendar size={16} />} Refresh
                     </button>
                 </div>
+            </div>
 
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
-                        <Search size={18} className="text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search clients..."
-                            className="bg-transparent border-none outline-none text-sm w-full"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+            {/* Filters */}
+            <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 mb-4 md:mb-6 space-y-3 md:space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                    <div>
+                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Filter by Stylist</label>
+                        <select
+                            value={filterStylist}
+                            onChange={(e) => setFilterStylist(e.target.value)}
+                            className="w-full px-3 md:px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                        >
+                            <option value="all">All Stylists</option>
+                            {uniqueStylists.map(s => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
+                        </select>
                     </div>
+                    <div>
+                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Search Customer</label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Search by name or email..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 md:pl-10 pr-3 md:pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                            />
+                            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            {/* Content View */}
+            {viewMode === 'list' ? (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm text-gray-600">
                             <thead className="bg-gray-50 text-gray-900 font-medium border-b border-gray-200">
                                 <tr>
-                                    <th className="px-6 py-3">Name</th>
-                                    <th className="px-6 py-3">Contact</th>
-                                    <th className="px-6 py-3">Notes</th>
+                                    <th className="px-6 py-3">Date & Time</th>
+                                    <th className="px-6 py-3">Customer</th>
+                                    <th className="px-6 py-3">Service</th>
+                                    <th className="px-6 py-3">Stylist</th>
                                     <th className="px-6 py-3 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {filteredClients.map(client => (
-                                    <tr key={client.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-gray-900">{client.name}</td>
+                                {filteredAppointments.map(appt => (
+                                    <tr key={appt.id} className={`hover:bg-gray-50 transition-colors ${isPast(appt.startTime) ? 'opacity-60 bg-gray-50' : ''}`}>
                                         <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="flex items-center gap-1"><Mail size={12} /> {client.email}</span>
-                                                {client.phone && <span className="flex items-center gap-1"><Phone size={12} /> {client.phone}</span>}
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-gray-900">{formatDateTime(appt.startTime)}</span>
+                                                {isToday(appt.startTime) && <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded-full w-fit mt-1">Today</span>}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 truncate max-w-xs">{client.notes || '-'}</td>
+                                        <td className="px-6 py-4">
+                                            <div>
+                                                <div className="font-medium text-gray-900">{appt.customer.name}</div>
+                                                <div className="text-xs text-gray-500">{appt.customer.email}</div>
+                                                <div className="text-xs text-gray-500">{appt.customer.phone}</div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-100 text-stone-700 font-medium text-xs">
+                                                <Scissors size={12} />
+                                                {appt.service}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium text-xs ${STYLIST_COLORS[appt.stylist] || STYLIST_COLORS['default']}`}>
+                                                <User size={12} />
+                                                {appt.stylist}
+                                            </span>
+                                        </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => handleOpenModal(client)}
-                                                className="text-[#3D2B1F] hover:underline font-medium"
-                                            >
-                                                Edit
-                                            </button>
+                                            <div className="flex justify-end gap-2">
+                                                <button
+                                                    onClick={() => setEditingAppt(appt)}
+                                                    className="p-1 text-gray-500 hover:text-stone-800 hover:bg-stone-100 rounded transition-colors"
+                                                    title="Edit Appointment"
+                                                >
+                                                    <Edit size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(appt)}
+                                                    className="p-1 text-gray-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                                                    title="Delete Appointment"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
-                                {filteredClients.length === 0 && (
+                                {filteredAppointments.length === 0 && (
                                     <tr>
-                                        <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
-                                            No clients found.
+                                        <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                                            No appointments found matching your filters.
                                         </td>
                                     </tr>
                                 )}
@@ -2574,42 +1598,1008 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                         </table>
                     </div>
                 </div>
+            ) : (
+                <CalendarView
+                    appointments={filteredAppointments}
+                    onEditAppointment={setEditingAppt}
+                    onDeleteAppointment={handleDelete}
+                    stylists={stylists}
+                    openingHours={openingHours}
+                    onSlotClick={handleSlotClick}
+                />
+            )}
 
-                <AnimatePresence>
-                    {isModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-                                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#3D2B1F] text-[#EAE0D5]">
-                                    <h3 className="text-lg font-semibold">{editingClient ? 'Edit Client' : 'Add New Client'}</h3>
-                                    <button onClick={() => setIsModalOpen(false)}><X size={20} /></button>
+            {/* Add Appointment Modal */}
+            <AnimatePresence>
+                {isAddModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#3D2B1F] text-[#EAE0D5]">
+                                <h3 className="text-lg font-semibold">New Appointment</h3>
+                                <button onClick={() => setIsAddModalOpen(false)}><X size={20} /></button>
+                            </div>
+                            <form onSubmit={handleAddAppointment} className="p-6 space-y-4">
+                                <div className="relative">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Client</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Search client..."
+                                        value={clients?.find(c => c.id === newAppt.client_id)?.name || clientSearch}
+                                        onChange={(e) => {
+                                            setClientSearch(e.target.value);
+                                            if (newAppt.client_id) setNewAppt({ ...newAppt, client_id: '' }); // Clear selection on edit
+                                        }}
+                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]"
+                                    />
+                                    {clientSearch && !newAppt.client_id && (
+                                        <div className="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                            {filteredClientsSearch?.length > 0 ? (
+                                                filteredClientsSearch.map(c => (
+                                                    <div
+                                                        key={c.id}
+                                                        className="p-2 hover:bg-gray-50 cursor-pointer text-sm"
+                                                        onClick={() => {
+                                                            setNewAppt({ ...newAppt, client_id: c.id });
+                                                            setClientSearch('');
+                                                        }}
+                                                    >
+                                                        <div className="font-medium">{c.name}</div>
+                                                        <div className="text-xs text-gray-500">{c.email}</div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="p-2 text-sm text-gray-500">No clients found</div>
+                                            )}
+                                        </div>
+                                    )}
+                                    {newAppt.client_id && (
+                                        <button
+                                            type="button"
+                                            onClick={() => { setNewAppt({ ...newAppt, client_id: '' }); setClientSearch(''); }}
+                                            className="absolute right-2 top-8 text-gray-400 hover:text-gray-600"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    )}
                                 </div>
-                                <form onSubmit={handleSave} className="p-6 space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                        <input className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                        <input type="email" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                                        <input type="tel" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Stylist</label>
+                                        <select className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.stylist} onChange={e => setNewAppt({ ...newAppt, stylist: e.target.value })}>
+                                            <option value="">-- Stylist --</option>
+                                            {stylists?.map(s => <option key={s.id || s} value={s.stylist_name || s.name || s}>{s.stylist_name || s.name || s}</option>)}
+                                        </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                                        <textarea className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]" rows="3" value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
+                                        <select className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.service} onChange={e => setNewAppt({ ...newAppt, service: e.target.value })}>
+                                            <option value="">-- Service --</option>
+                                            {pricing?.map(p => (
+                                                <option key={p.id} value={p.item_name}>
+                                                    {p.item_name} ({p.duration_minutes || 60}m) - {p.price}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
-                                    <div className="flex gap-3 pt-4">
-                                        <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
-                                        <button type="submit" className="flex-1 py-2 bg-[#3D2B1F] text-white rounded-lg hover:bg-opacity-90">Save Client</button>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                        <input type="date" className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.date} onChange={e => setNewAppt({ ...newAppt, date: e.target.value })} />
                                     </div>
-                                </form>
-                            </motion.div>
+                                    <div className="relative">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                                        {isLoadingSlots ? (
+                                            <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
+                                                <Loader2 size={16} className="animate-spin" /> Checking availability...
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto custom-scrollbar border border-gray-200 rounded-lg p-2">
+                                                {timeSlots.length > 0 ? (
+                                                    timeSlots.map(t => (
+                                                        <button
+                                                            key={t}
+                                                            type="button"
+                                                            onClick={() => setNewAppt({ ...newAppt, time: t })}
+                                                            className={`px-2 py-1.5 text-xs rounded border transition-all ${newAppt.time === t
+                                                                ? 'bg-[#3D2B1F] text-white border-[#3D2B1F] font-medium'
+                                                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                                }`}
+                                                        >
+                                                            {t}
+                                                        </button>
+                                                    ))
+                                                ) : (
+                                                    <div className="col-span-4 text-xs text-center text-gray-500 py-2 border border-dashed border-gray-300 rounded-lg">
+                                                        {newAppt.date ? 'No slots available' : 'Select a date first'}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <button type="submit" className="w-full py-3 bg-[#3D2B1F] text-white rounded-lg mt-4 font-medium hover:bg-opacity-90 transition-colors" style={{ backgroundColor: '#3D2B1F' }}>
+                                    Confirm Booking
+                                </button>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
+
+
+
+const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, stylists, openingHours, onSlotClick = () => { } }) => {
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [calendarViewMode, setCalendarViewMode] = useState('week'); // 'month', 'week', 'day'
+
+    const parsedOpeningHours = React.useMemo(() => parseOpeningHours(openingHours), [openingHours]);
+
+    const isDayOpen = (date) => {
+        if (!openingHours || openingHours === '') return true;
+        const dayName = WEEK_DAYS[date.getDay()];
+        const slots = parsedOpeningHours[dayName];
+        return slots ? slots.some(s => s) : true;
+    };
+
+    // Helper functions
+    const getWeekDays = (date) => {
+        const day = date.getDay();
+        const diff = date.getDate() - day;
+        const sunday = new Date(date);
+        sunday.setDate(diff);
+
+        const week = [];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(sunday);
+            d.setDate(sunday.getDate() + i);
+            week.push(d);
+        }
+        return week;
+    };
+
+    const getDaysInMonth = (date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay();
+
+        const days = [];
+        for (let i = 0; i < startingDayOfWeek; i++) {
+            days.push(null);
+        }
+        for (let day = 1; day <= daysInMonth; day++) {
+            days.push(new Date(year, month, day));
+        }
+        return days;
+    };
+
+    const getAppointmentsForDay = (date) => {
+        if (!date) return [];
+        return appointments.filter(appt => {
+            const apptDate = new Date(appt.startTime);
+            return apptDate.toDateString() === date.toDateString();
+        }).sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+    };
+
+    const getAppointmentsForTimeSlot = (date, hour) => {
+        const dayAppts = getAppointmentsForDay(date);
+        return dayAppts.filter(appt => {
+            const apptHour = new Date(appt.startTime).getHours();
+            return apptHour === hour;
+        });
+    };
+
+    const navigate = (direction) => {
+        const newDate = new Date(currentDate);
+        if (calendarViewMode === 'month') {
+            newDate.setMonth(newDate.getMonth() + direction);
+        } else if (calendarViewMode === 'week') {
+            newDate.setDate(newDate.getDate() + (direction * 7));
+        } else {
+            newDate.setDate(newDate.getDate() + direction);
+        }
+        setCurrentDate(newDate);
+    };
+
+    const goToToday = () => {
+        setCurrentDate(new Date());
+    };
+
+    const isToday = (date) => {
+        if (!date) return false;
+        const today = new Date();
+        return date.toDateString() === today.toDateString();
+    };
+
+    const formatDateHeader = () => {
+        if (calendarViewMode === 'month') {
+            return currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+        } else if (calendarViewMode === 'week') {
+            const week = getWeekDays(currentDate);
+            const start = week[0].toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+            const end = week[6].toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            return `${start} - ${end}`;
+        } else {
+            return currentDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        }
+    };
+
+    const renderMonthView = () => {
+        const days = getDaysInMonth(currentDate);
+
+        return (
+            <div className="grid grid-cols-7 gap-1 md:gap-2">
+                {WEEK_DAYS.map(day => (
+                    <div key={day} className="text-center text-xs md:text-sm font-medium text-gray-600 py-1 md:py-2">
+                        <span className="hidden sm:inline">{day}</span>
+                        <span className="sm:hidden">{day.substring(0, 1)}</span>
+                    </div>
+                ))}
+
+                {days.map((date, index) => {
+                    const isDateOpen = date && isDayOpen(date);
+                    const dayAppointments = date ? getAppointmentsForDay(date) : [];
+                    const isTodayDate = isToday(date);
+
+                    return (
+                        <div
+                            key={index}
+                            className={`min-h-[80px] sm:min-h-[100px] md:min-h-[120px] border rounded-md md:rounded-lg p-1 md:p-2 ${!date
+                                ? 'bg-gray-50'
+                                : !isDateOpen
+                                    ? 'bg-gray-50 border-gray-100 opacity-60'
+                                    : isTodayDate
+                                        ? 'bg-amber-50 border-amber-300'
+                                        : 'bg-white border-gray-200'
+                                }`}
+                        >
+                            {date && (
+                                <>
+                                    <div className={`text-xs md:text-sm font-medium mb-1 md:mb-2 ${isTodayDate ? 'text-amber-900' : isDateOpen ? 'text-gray-700' : 'text-gray-400'
+                                        }`}>
+                                        {date.getDate()}
+                                    </div>
+                                    {isDateOpen && (
+                                        <div className="space-y-0.5 md:space-y-1">
+                                            {dayAppointments.slice(0, 3).map(appt => {
+                                                const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                });
+                                                const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
+
+                                                return (
+                                                    <div
+                                                        key={appt.id}
+                                                        className={`text-[10px] sm:text-xs p-1 sm:p-1.5 rounded border cursor-pointer hover:shadow-sm transition-shadow active:scale-95 ${colorClass}`}
+                                                        onClick={(e) => { e.stopPropagation(); onEditAppointment(appt); }}
+                                                        title={`${appt.customer.name} - ${appt.customer.service}`}
+                                                    >
+                                                        <div className="font-medium truncate">{time}</div>
+                                                        <div className="truncate hidden sm:block">{appt.customer.name}</div>
+                                                        <div className="truncate text-[9px] sm:text-xs opacity-75 hidden md:block">{appt.stylist}</div>
+                                                    </div>
+                                                );
+                                            })}
+                                            {dayAppointments.length > 3 && (
+                                                <div className="text-[9px] sm:text-xs text-gray-500 text-center">
+                                                    +{dayAppointments.length - 3} more
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    {!isDateOpen && date && (
+                                        <div className="flex items-center justify-center h-1/2">
+                                            <span className="text-[10px] text-gray-400 italic">Closed</span>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
-                    )}
-                </AnimatePresence>
-            </motion.div>
+                    );
+                })}
+            </div>
         );
     };
-    export default AdminDashboard;
+
+    const renderWeekView = () => {
+        const week = getWeekDays(currentDate);
+        const filteredWeek = week.filter(d => isDayOpen(d));
+
+        if (filteredWeek.length === 0) {
+            return (
+                <div className="p-12 text-center bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="text-gray-500">The salon is closed on all days this week.</p>
+                </div>
+            );
+        }
+
+        return (
+            <div className="overflow-x-auto">
+                <div className="min-w-[600px]">
+                    {/* Header */}
+                    <div className="grid gap-1 mb-2" style={{ gridTemplateColumns: `80px repeat(${filteredWeek.length}, minmax(0, 1fr))` }}>
+                        <div className="text-xs font-medium text-gray-600 p-2 text-center">Time</div>
+                        {filteredWeek.map((date, i) => {
+                            const isTodayDate = isToday(date);
+                            return (
+                                <div key={i} className={`text-center p-2 rounded-t-lg ${isTodayDate ? 'bg-amber-100' : 'bg-gray-50'
+                                    }`}>
+                                    <div className="text-xs font-medium text-gray-600">{WEEK_DAYS[date.getDay()]}</div>
+                                    <div className={`text-sm font-semibold ${isTodayDate ? 'text-amber-900' : 'text-gray-900'}`}>
+                                        {date.getDate()}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Time slots */}
+                    <div className="space-y-1">
+                        {TIME_SLOTS.map(hour => (
+                            <div key={hour} className="grid gap-1" style={{ gridTemplateColumns: `80px repeat(${filteredWeek.length}, minmax(0, 1fr))` }}>
+                                <div className="text-xs text-gray-600 p-2 font-medium flex items-center justify-center">
+                                    {hour}:00
+                                </div>
+                                {filteredWeek.map((date, i) => {
+                                    const slotAppts = getAppointmentsForTimeSlot(date, hour);
+                                    const isTodayDate = isToday(date);
+
+                                    return (
+                                        <div
+                                            key={i}
+                                            className={`min-h-[60px] border rounded p-1 cursor-pointer transition-colors hover:bg-stone-50 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}
+                                            onClick={() => onSlotClick(date, hour)}
+                                        >
+                                            {slotAppts.map(appt => {
+                                                const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
+                                                const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                });
+
+                                                return (
+                                                    <div
+                                                        key={appt.id}
+                                                        className={`text-xs p-2 rounded border cursor-pointer hover:shadow-md transition-all mb-1 ${colorClass}`}
+                                                        onClick={(e) => { e.stopPropagation(); onEditAppointment(appt); }}
+                                                    >
+                                                        <div className="font-semibold">{time}</div>
+                                                        <div className="truncate font-medium">{appt.customer.name}</div>
+                                                        <div className="truncate text-xs opacity-75">{appt.customer.service}</div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const renderDayView = () => {
+        if (!isDayOpen(currentDate)) {
+            return (
+                <div className="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-lg border border-gray-200">
+                    <Clock size={48} className="text-gray-300 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900">Salon is Closed</h3>
+                    <p className="text-gray-500">The salon is not open on {currentDate.toLocaleDateString('en-GB', { weekday: 'long' })}.</p>
+                </div>
+            );
+        }
+
+        const isTodayDate = isToday(currentDate);
+
+        return (
+            <div className="max-w-2xl mx-auto">
+                <div className={`text-center p-4 rounded-lg mb-4 ${isTodayDate ? 'bg-amber-100' : 'bg-gray-50'
+                    }`}>
+                    <div className="text-sm text-gray-600">{WEEK_DAYS[currentDate.getDay()]}</div>
+                    <div className={`text-2xl font-bold ${isTodayDate ? 'text-amber-900' : 'text-gray-900'}`}>
+                        {currentDate.getDate()}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                        {currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    {TIME_SLOTS.map(hour => {
+                        const slotAppts = getAppointmentsForTimeSlot(currentDate, hour);
+
+                        return (
+                            <div key={hour} className="flex gap-3">
+                                <div className="w-20 text-sm text-gray-600 font-medium pt-2 text-right">
+                                    {hour}:00
+                                </div>
+                                <div
+                                    className={`flex-1 min-h-[60px] border rounded-lg p-2 cursor-pointer transition-colors hover:bg-stone-50 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}
+                                    onClick={() => onSlotClick(currentDate, hour)}
+                                >
+                                    {slotAppts.map(appt => {
+                                        const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS.default;
+                                        const time = new Date(appt.startTime).toLocaleTimeString('en-GB', {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        });
+
+                                        return (
+                                            <div
+                                                key={appt.id}
+                                                className={`p-3 rounded-lg border cursor-pointer hover:shadow-md transition-all mb-2 ${colorClass}`}
+                                                onClick={(e) => { e.stopPropagation(); onEditAppointment(appt); }}
+                                            >
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="font-semibold text-sm">{time}</span>
+                                                    <span className="text-xs px-2 py-1 rounded bg-white bg-opacity-50">
+                                                        {appt.stylist}
+                                                    </span>
+                                                </div>
+                                                <div className="font-medium">{appt.customer.name}</div>
+                                                <div className="text-sm opacity-75">{appt.customer.service}</div>
+                                                {appt.customer.phone && (
+                                                    <div className="text-xs mt-1 opacity-75">{appt.customer.phone}</div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-6">
+            {/* Calendar Header */}
+            <div className="flex flex-col gap-3 mb-4 md:mb-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <h3 className="text-lg md:text-xl font-semibold text-gray-900">{formatDateHeader()}</h3>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={goToToday}
+                            className="px-3 py-2 text-xs md:text-sm text-stone-800 hover:bg-stone-100 rounded-lg transition-all"
+                        >
+                            Today
+                        </button>
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+                        >
+                            <ChevronLeft size={20} />
+                        </button>
+                        <button
+                            onClick={() => navigate(1)}
+                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+                        >
+                            <ChevronRight size={20} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* View Mode Selector */}
+                <div className="flex bg-gray-100 rounded-lg p-1 w-full sm:w-auto">
+                    <button
+                        onClick={() => setCalendarViewMode('day')}
+                        className={`flex-1 sm:flex-none px-3 py-2 rounded-md transition-all text-xs md:text-sm ${calendarViewMode === 'day'
+                            ? 'bg-white text-stone-800 shadow-sm font-medium'
+                            : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                    >
+                        Day
+                    </button>
+                    <button
+                        onClick={() => setCalendarViewMode('week')}
+                        className={`flex-1 sm:flex-none px-3 py-2 rounded-md transition-all text-xs md:text-sm ${calendarViewMode === 'week'
+                            ? 'bg-white text-stone-800 shadow-sm font-medium'
+                            : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                    >
+                        Week
+                    </button>
+                    <button
+                        onClick={() => setCalendarViewMode('month')}
+                        className={`flex-1 sm:flex-none px-3 py-2 rounded-md transition-all text-xs md:text-sm ${calendarViewMode === 'month'
+                            ? 'bg-white text-stone-800 shadow-sm font-medium'
+                            : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                    >
+                        Month
+                    </button>
+                </div>
+            </div>
+
+            {/* Calendar Content */}
+            {calendarViewMode === 'month' && renderMonthView()}
+            {calendarViewMode === 'week' && renderWeekView()}
+            {calendarViewMode === 'day' && renderDayView()}
+
+            {/* Legend */}
+            <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-4 md:mt-6 pt-3 md:pt-4 border-t border-gray-200">
+                <span className="text-xs md:text-sm text-gray-600">Stylists:</span>
+                {stylists?.map(stylist => {
+                    const name = stylist.stylist_name || stylist.name || stylist;
+                    const colorClass = STYLIST_COLORS[name] || STYLIST_COLORS.default;
+                    return (
+                        <div key={name} className="flex items-center gap-1 md:gap-2">
+                            <div className={`w-3 h-3 md:w-4 md:h-4 rounded border ${colorClass}`}></div>
+                            <span className="text-xs md:text-sm text-gray-700">{name}</span>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+const EditAppointmentModal = ({ appointment, onClose, onSave }) => {
+    const [formData, setFormData] = useState({
+        name: appointment.customer.name,
+        email: appointment.customer.email,
+        phone: appointment.customer.phone,
+        service: appointment.customer.service,
+        date: appointment.startTime.split('T')[0],
+        time: appointment.startTime.split('T')[1].substring(0, 5),
+    });
+
+    const handleSubmit = () => {
+        const startDateTime = new Date(`${formData.date}T${formData.time}:00`).toISOString();
+        const endDateTime = new Date(new Date(`${formData.date}T${formData.time}:00`).getTime() + 60 * 60 * 1000).toISOString();
+
+        onSave({
+            customer: {
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone
+            },
+            service: formData.service,
+            startTime: startDateTime,
+            endTime: endDateTime
+        });
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+            >
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-semibold text-gray-900">Edit Appointment</h3>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-all">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                        <input
+                            type="text"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                        <input
+                            type="tel"
+                            value={formData.phone}
+                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
+                        <input
+                            type="text"
+                            value={formData.service}
+                            onChange={(e) => setFormData({ ...formData, service: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input
+                                type="date"
+                                value={formData.date}
+                                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                            <input
+                                type="time"
+                                value={formData.time}
+                                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                    <button
+                        onClick={handleSubmit}
+                        className="flex-grow text-white py-2 rounded-lg transition-all"
+                        style={{ backgroundColor: "#3D2B1F" }}
+                    >
+                        Save Changes
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="px-6 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
+
+const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
+
+    const [template, setTemplate] = useState(settings.email_template || DEFAULT_EMAIL_TEMPLATE.trim());
+    const [subject, setSubject] = useState(settings.email_subject || 'Booking Confirmation - Studio 938');
+    const [isSaving, setIsSaving] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
+
+    useEffect(() => {
+        if (settings.email_template) {
+            setTemplate(settings.email_template);
+        } else {
+            setTemplate(DEFAULT_EMAIL_TEMPLATE.trim());
+        }
+        if (settings.email_subject) {
+            setSubject(settings.email_subject);
+        }
+    }, [settings.email_template, settings.email_subject]);
+
+    const handleSave = async (content = template) => {
+        setIsSaving(true);
+        try {
+            // Save template
+            const { error: templateError } = await supabase
+                .from('site_settings')
+                .upsert({ key: 'email_template', value: content });
+            if (templateError) throw templateError;
+
+            // Save subject
+            const { error: subjectError } = await supabase
+                .from('site_settings')
+                .upsert({ key: 'email_subject', value: subject });
+            if (subjectError) throw subjectError;
+
+            showMessage('success', 'Email settings updated!');
+            refresh();
+        } catch (err) {
+            showMessage('error', err.message);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const resetToDefault = async () => {
+        if (confirm('Reset to default template? This will overwrite your current changes and save to the database.')) {
+            const content = DEFAULT_EMAIL_TEMPLATE.trim();
+            const defaultSubject = 'Booking Confirmation - Studio 938';
+            setTemplate(content);
+            setSubject(defaultSubject);
+
+            // We need to save both
+            setIsSaving(true);
+            try {
+                await supabase.from('site_settings').upsert({ key: 'email_template', value: content });
+                await supabase.from('site_settings').upsert({ key: 'email_subject', value: defaultSubject });
+                showMessage('success', 'Reset to defaults!');
+                refresh();
+            } catch (err) {
+                showMessage('error', err.message);
+            } finally {
+                setIsSaving(false);
+            }
+        }
+    };
+
+    const previewHtml = template
+        .replace(/{{name}}/g, 'Jane Doe')
+        .replace(/{{service}}/g, 'Full Balayage')
+        .replace(/{{stylist}}/g, 'Jo')
+        .replace(/{{date}}/g, 'Friday, 30 January 2026')
+        .replace(/{{time}}/g, '14:30')
+        .replace(/{{salon_phone}}/g, settings.phone || '020 8445 1122')
+        .replace(/{{salon_location}}/g, settings.address || '938 High Road, London');
+
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Email Settings</h2>
+                    <p className="text-sm text-gray-500 mt-1">Customize the booking confirmation email sent to customers.</p>
+                </div>
+                <div className="flex gap-3">
+                    <button
+                        onClick={resetToDefault}
+                        className="px-4 py-2 text-stone-600 hover:text-stone-800 text-sm font-medium transition-colors"
+                    >
+                        Reset to Default
+                    </button>
+                    <button
+                        onClick={() => handleSave()}
+                        disabled={isSaving}
+                        className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-stone-900 flex items-center gap-2 transition-all disabled:opacity-50"
+                        style={{ backgroundColor: "#3D2B1F" }}
+                    >
+                        {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                        Save Settings
+                    </button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Editor Section */}
+                <div className="lg:col-span-2 space-y-6">
+                    {/* Subject Line Input */}
+                    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Email Subject Line</label>
+                        <input
+                            type="text"
+                            value={subject}
+                            onChange={(e) => setSubject(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] focus:border-transparent outline-none"
+                            placeholder="e.g. Your Appointment at Studio 938"
+                        />
+                    </div>
+
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <Mail size={16} className="text-gray-500" />
+                                <span className="text-sm font-medium text-gray-700">
+                                    {showPreview ? 'Live Preview' : 'HTML Editor'}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => setShowPreview(!showPreview)}
+                                className="text-xs font-semibold text-stone-800 bg-stone-100 hover:bg-stone-200 px-3 py-1 rounded-full transition-all"
+                            >
+                                {showPreview ? 'Edit HTML' : 'Show Preview'}
+                            </button>
+                        </div>
+
+                        {showPreview ? (
+                            <div className="h-[500px] overflow-y-auto p-8 bg-gray-50 flex items-start justify-center">
+                                <div
+                                    className="bg-white shadow-lg rounded-xl overflow-hidden w-full max-w-[600px]"
+                                    dangerouslySetInnerHTML={{ __html: previewHtml }}
+                                />
+                            </div>
+                        ) : (
+                            <textarea
+                                value={template}
+                                onChange={(e) => setTemplate(e.target.value)}
+                                placeholder="Paste your HTML template here..."
+                                className="w-full h-[500px] p-4 font-mono text-sm focus:ring-0 border-none outline-none resize-none"
+                                spellCheck="false"
+                            />
+                        )}
+                    </div>
+                </div>
+
+                {/* Sidebar Section */}
+                <div className="space-y-6">
+                    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                        <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <Info size={16} className="text-stone-800" />
+                            Available Variables
+                        </h3>
+                        <p className="text-xs text-gray-500 mb-4">
+                            Copy and paste these tags into your template. They will be automatically replaced with booking details.
+                        </p>
+                        <div className="space-y-3">
+                            {EMAIL_VARIABLES.map(v => (
+                                <div key={v.tag} className="flex flex-col gap-1">
+                                    <code className="text-[11px] bg-stone-100 text-stone-800 px-2 py-1 rounded inline-block w-fit font-bold">
+                                        {v.tag}
+                                    </code>
+                                    <span className="text-[10px] text-gray-500 ml-1">{v.desc}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="bg-amber-50 rounded-xl border border-amber-200 p-6">
+                        <h3 className="text-sm font-bold text-amber-900 mb-2">Pro Tip</h3>
+                        <p className="text-xs text-amber-800 leading-relaxed">
+                            You can use standard HTML tags like <code>&lt;b&gt;</code>, <code>&lt;hr&gt;</code>, or <code>&lt;img&gt;</code> to style your confirmation emails. Make sure all styles are inline for maximum compatibility across email clients!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
+
+
+// --- CLIENTS TAB COMPONENT ---
+const ClientsTab = ({ clients, setClients, showMessage, refreshClients }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingClient, setEditingClient] = useState(null);
+    const [formData, setFormData] = useState({ name: '', email: '', phone: '', notes: '' });
+
+    const filteredClients = clients.filter(c =>
+        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.phone && c.phone.includes(searchTerm))
+    );
+
+    const handleOpenModal = (client = null) => {
+        if (client) {
+            setEditingClient(client);
+            setFormData({ name: client.name, email: client.email, phone: client.phone || '', notes: client.notes || '' });
+        } else {
+            setEditingClient(null);
+            setFormData({ name: '', email: '', phone: '', notes: '' });
+        }
+        setIsModalOpen(true);
+    };
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+        try {
+            const { error } = await supabase
+                .from('clients')
+                .upsert({
+                    ...(editingClient && { id: editingClient.id }),
+                    ...formData
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            showMessage('success', editingClient ? 'Client updated' : 'Client created');
+            setIsModalOpen(false);
+            refreshClients();
+        } catch (err) {
+            showMessage('error', err.message);
+        }
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900">Client Management</h2>
+                <button
+                    onClick={() => handleOpenModal()}
+                    className="bg-[#3D2B1F] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-opacity-90"
+                    style={{ backgroundColor: "#3D2B1F" }}
+                >
+                    <Plus size={18} /> Add Client
+                </button>
+            </div>
+
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
+                    <Search size={18} className="text-gray-400" />
+                    <input
+                        type="text"
+                        placeholder="Search clients..."
+                        className="bg-transparent border-none outline-none text-sm w-full"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm text-gray-600">
+                        <thead className="bg-gray-50 text-gray-900 font-medium border-b border-gray-200">
+                            <tr>
+                                <th className="px-6 py-3">Name</th>
+                                <th className="px-6 py-3">Contact</th>
+                                <th className="px-6 py-3">Notes</th>
+                                <th className="px-6 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {filteredClients.map(client => (
+                                <tr key={client.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-6 py-4 font-medium text-gray-900">{client.name}</td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="flex items-center gap-1"><Mail size={12} /> {client.email}</span>
+                                            {client.phone && <span className="flex items-center gap-1"><Phone size={12} /> {client.phone}</span>}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 truncate max-w-xs">{client.notes || '-'}</td>
+                                    <td className="px-6 py-4 text-right">
+                                        <button
+                                            onClick={() => handleOpenModal(client)}
+                                            className="text-[#3D2B1F] hover:underline font-medium"
+                                        >
+                                            Edit
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            {filteredClients.length === 0 && (
+                                <tr>
+                                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                                        No clients found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <AnimatePresence>
+                {isModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#3D2B1F] text-[#EAE0D5]">
+                                <h3 className="text-lg font-semibold">{editingClient ? 'Edit Client' : 'Add New Client'}</h3>
+                                <button onClick={() => setIsModalOpen(false)}><X size={20} /></button>
+                            </div>
+                            <form onSubmit={handleSave} className="p-6 space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                    <input className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input type="email" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                    <input type="tel" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                                    <textarea className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]" rows="3" value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} />
+                                </div>
+                                <div className="flex gap-3 pt-4">
+                                    <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+                                    <button type="submit" className="flex-1 py-2 bg-[#3D2B1F] text-white rounded-lg hover:bg-opacity-90">Save Client</button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
+export default AdminDashboard;
