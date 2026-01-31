@@ -3574,7 +3574,8 @@ const TestimonialsTab = ({ testimonials, settings, setSettings, refresh, showMes
                         </div>
                         <button
                             onClick={() => handleSaveSetting('show_testimonials_section', settings.show_testimonials_section === 'true' ? 'false' : 'true')}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.show_testimonials_section === 'true' ? 'bg-green-600' : 'bg-gray-200'}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${settings.show_testimonials_section === 'true' ? 'border-[#3D2B1F]' : 'border-gray-200'}`}
+                            style={{ backgroundColor: settings.show_testimonials_section === 'true' ? '#3D2B1F' : '#E5E7EB' }}
                         >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.show_testimonials_section === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
                         </button>
