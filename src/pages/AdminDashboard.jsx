@@ -2155,6 +2155,7 @@ const EditAppointmentModal = ({ appointment, onClose, onSave }) => {
 const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
 
     const [template, setTemplate] = useState(settings.email_template || DEFAULT_EMAIL_TEMPLATE.trim());
+    const [subject, setSubject] = useState(settings.email_subject || 'Booking Confirmation - Studio 938');
     const [isSaving, setIsSaving] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
 
@@ -2164,16 +2165,27 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
         } else {
             setTemplate(DEFAULT_EMAIL_TEMPLATE.trim());
         }
-    }, [settings.email_template]);
+        if (settings.email_subject) {
+            setSubject(settings.email_subject);
+        }
+    }, [settings.email_template, settings.email_subject]);
 
     const handleSave = async (content = template) => {
         setIsSaving(true);
         try {
-            const { error } = await supabase
+            // Save template
+            const { error: templateError } = await supabase
                 .from('site_settings')
                 .upsert({ key: 'email_template', value: content });
-            if (error) throw error;
-            showMessage('success', 'Email template updated!');
+            if (templateError) throw templateError;
+
+            // Save subject
+            const { error: subjectError } = await supabase
+                .from('site_settings')
+                .upsert({ key: 'email_subject', value: subject });
+            if (subjectError) throw subjectError;
+
+            showMessage('success', 'Email settings updated!');
             refresh();
         } catch (err) {
             showMessage('error', err.message);
@@ -2185,8 +2197,22 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
     const resetToDefault = async () => {
         if (confirm('Reset to default template? This will overwrite your current changes and save to the database.')) {
             const content = DEFAULT_EMAIL_TEMPLATE.trim();
+            const defaultSubject = 'Booking Confirmation - Studio 938';
             setTemplate(content);
-            await handleSave(content);
+            setSubject(defaultSubject);
+
+            // We need to save both
+            setIsSaving(true);
+            try {
+                await supabase.from('site_settings').upsert({ key: 'email_template', value: content });
+                await supabase.from('site_settings').upsert({ key: 'email_subject', value: defaultSubject });
+                showMessage('success', 'Reset to defaults!');
+                refresh();
+            } catch (err) {
+                showMessage('error', err.message);
+            } finally {
+                setIsSaving(false);
+            }
         }
     };
 
@@ -2203,7 +2229,10 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold text-gray-900">Email Settings</h2>
+                <div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Email Settings</h2>
+                    <p className="text-sm text-gray-500 mt-1">Customize the booking confirmation email sent to customers.</p>
+                </div>
                 <div className="flex gap-3">
                     <button
                         onClick={resetToDefault}
@@ -2218,7 +2247,7 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
                         style={{ backgroundColor: "#3D2B1F" }}
                     >
                         {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                        Save Template
+                        Save Settings
                     </button>
                 </div>
             </div>
@@ -2226,6 +2255,18 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Editor Section */}
                 <div className="lg:col-span-2 space-y-6">
+                    {/* Subject Line Input */}
+                    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Email Subject Line</label>
+                        <input
+                            type="text"
+                            value={subject}
+                            onChange={(e) => setSubject(e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] focus:border-transparent outline-none"
+                            placeholder="e.g. Your Appointment at Studio 938"
+                        />
+                    </div>
+
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
                             <div className="flex items-center gap-2">
