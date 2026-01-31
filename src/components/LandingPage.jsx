@@ -454,13 +454,24 @@ const PriceList = ({ pricing = [], settings = {} }) => {
     );
 };
 
-const Contact = ({ settings = {} }) => {
-    const phone = settings.phone || "07376 168558";
-    const phoneLink = `tel:${phone.replace(/\s/g, '')}`;
-    const whatsapp = settings.whatsapp || "07376 168558";
-    const whatsappLink = `https://wa.me/44${whatsapp.replace(/\s|^0/g, '')}`;
+const Contact = ({ settings = {}, phoneNumbers = [] }) => {
     const email = settings.email || "hair.studio938@gmail.com";
     const address = settings.address || "938 High Road, London, N12 9RT";
+
+    // Filter phone numbers by type
+    const phoneOnlyNumbers = phoneNumbers.filter(p => p.type === 'phone' || p.type === 'both');
+    const whatsappOnlyNumbers = phoneNumbers.filter(p => p.type === 'whatsapp' || p.type === 'both');
+
+    // Use first available number for display, or fallback to old settings
+    const primaryPhone = phoneOnlyNumbers.length > 0
+        ? phoneOnlyNumbers[0].number
+        : (settings.phone || "07376 168558");
+    const primaryWhatsapp = whatsappOnlyNumbers.length > 0
+        ? whatsappOnlyNumbers[0].number
+        : (settings.whatsapp || "07376 168558");
+
+    const phoneLink = `tel:${primaryPhone.replace(/\s/g, '')}`;
+    const whatsappLink = `https://wa.me/44${primaryWhatsapp.replace(/\s|^0/g, '')}`;
 
     const activeCards = [
         { type: 'combined' },
@@ -495,7 +506,7 @@ const Contact = ({ settings = {} }) => {
                     <ContactCard
                         isCombined
                         label="Call or WhatsApp"
-                        value={phone}
+                        value={primaryPhone}
                         options={[
                             { icon: <Phone size={18} />, label: "Call Us", link: phoneLink },
                             { icon: <MessageCircle size={18} />, label: "WhatsApp", link: whatsappLink }
