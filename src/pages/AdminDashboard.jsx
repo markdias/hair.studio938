@@ -1714,7 +1714,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                         />
                                         {clientSearch && !newAppt.client_id && (
                                             <div className="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                                {filteredClientsSearch?.length > 0 ? (
+                                                {filteredClientsSearch && filteredClientsSearch.length > 0 && (
                                                     filteredClientsSearch.map(c => (
                                                         <div
                                                             key={c.id}
@@ -1728,7 +1728,8 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                             <div className="text-xs text-gray-500">{c.email}</div>
                                                         </div>
                                                     ))
-                                                ) : (
+                                                )}
+                                                {(!filteredClientsSearch || filteredClientsSearch.length === 0) && (
                                                     <div className="p-3 bg-white">
                                                         <button
                                                             type="button"
