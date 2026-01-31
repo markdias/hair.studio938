@@ -13,6 +13,7 @@ import { useTheme } from '../lib/ThemeContext';
 
 const TABS = [
     { id: 'general', label: 'General Settings', icon: <Settings size={18} /> },
+    { id: 'hours', label: 'Opening Hours', icon: <Clock size={18} /> },
     { id: 'theme', label: 'Theme', icon: <Palette size={18} /> },
     { id: 'services', label: 'Services', icon: <Scissors size={18} /> },
     { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
@@ -244,6 +245,7 @@ const AdminDashboard = () => {
 const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClients }) => {
     switch (activeTab) {
         case 'general': return <GeneralTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} />;
+        case 'hours': return <OpeningHoursTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} />;
         case 'theme': return <ThemeTab showMessage={showMessage} />;
         case 'services': return <ServicesTab services={data.services} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
         case 'pricing': return <PricingTab pricing={data.pricing} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
@@ -706,6 +708,33 @@ const OpeningHoursPicker = ({ initialValue, onSave, showMessage }) => {
     );
 };
 
+const OpeningHoursTab = ({ settings, setSettings, showMessage }) => {
+    const handleSaveOpeningHours = async (formattedHours) => {
+        try {
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({ key: 'opening_hours', value: formattedHours });
+            if (error) throw error;
+            showMessage('success', 'Opening hours updated!');
+            setSettings(prev => ({ ...prev, opening_hours: formattedHours }));
+        } catch (err) {
+            showMessage('error', err.message);
+        }
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Opening Hours</h2>
+
+            <OpeningHoursPicker
+                initialValue={settings.opening_hours || ''}
+                onSave={handleSaveOpeningHours}
+                showMessage={showMessage}
+            />
+        </motion.div>
+    );
+};
+
 const PhoneNumbersEditor = ({ showMessage }) => {
     const [phoneNumbers, setPhoneNumbers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -1136,14 +1165,18 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                 </div>
             </div>
 
-            {/* Branding & Hero Background Side-by-Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Branding Editor - Full Width */}
+            <div className="mb-6">
                 <BrandingEditor
                     settings={settings}
                     onSave={handleSave}
                     showMessage={showMessage}
                 />
+            </div>
 
+            {/* Hero Background & Intro Video Side-by-Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Hero Background */}
                 <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full flex flex-col">
                     <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                         <Image size={18} /> Hero Background
@@ -1173,49 +1206,48 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Intro Video Section - Full Width */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm mb-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Image size={18} /> Intro Video
-                </h3>
-                <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-4">
-                        <VideoUploader
-                            folder="videos"
-                            onUpload={(url) => handleSave('intro_video_url', url)}
-                            showMessage={showMessage}
-                        />
-                        {settings.intro_video_url && (
-                            <button
-                                onClick={() => handleSave('intro_video_url', '')}
-                                className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-all"
-                            >
-                                Remove Video
-                            </button>
-                        )}
-                    </div>
-                    <p className="text-xs text-gray-500">
-                        Upload a video to play when users first visit your website. If no video is set, visitors go straight to the main site.
-                    </p>
-                    <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-stone-50 shadow-sm">
-                        {settings.intro_video_url ? (
-                            <video
-                                src={settings.intro_video_url}
-                                controls
-                                className="w-full h-full object-cover"
-                                style={{ backgroundColor: 'var(--primary-brown)' }}
+                {/* Intro Video */}
+                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full flex flex-col">
+                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Image size={18} /> Intro Video
+                    </h3>
+                    <div className="flex flex-col gap-4 flex-grow">
+                        <div className="flex items-center gap-4">
+                            <VideoUploader
+                                folder="videos"
+                                onUpload={(url) => handleSave('intro_video_url', url)}
+                                showMessage={showMessage}
                             />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                                No video selected
-                            </div>
-                        )}
+                            {settings.intro_video_url && (
+                                <button
+                                    onClick={() => handleSave('intro_video_url', '')}
+                                    className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-all"
+                                >
+                                    Remove
+                                </button>
+                            )}
+                        </div>
+                        <p className="text-xs text-gray-500">
+                            Plays when users first visit your website.
+                        </p>
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-stone-50 shadow-sm">
+                            {settings.intro_video_url ? (
+                                <video
+                                    src={settings.intro_video_url}
+                                    controls
+                                    className="w-full h-full object-cover"
+                                    style={{ backgroundColor: 'var(--primary-brown)' }}
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                                    No video selected
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
-
 
             {/* Phone Numbers Editor - Full Width */}
             <div className="mb-6">
@@ -1245,15 +1277,6 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                         </div>
                     </div>
                 ))}
-            </div>
-
-            {/* Opening Hours Picker - Full Width */}
-            <div className="mb-6">
-                <OpeningHoursPicker
-                    initialValue={settings.opening_hours || ''}
-                    onSave={handleSaveOpeningHours}
-                    showMessage={showMessage}
-                />
             </div>
         </motion.div>
     );
