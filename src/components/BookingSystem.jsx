@@ -405,9 +405,9 @@ const BookingSystem = () => {
                                                                         style={{
                                                                             padding: '12px 0',
                                                                             borderRadius: '10px',
-                                                                            border: booking.time === t ? '2px solid var(--primary-brown)' : '1px solid var(--accent-cream)',
-                                                                            backgroundColor: booking.time === t ? 'var(--primary-brown)' : 'white',
-                                                                            color: booking.time === t ? '#FFF' : 'var(--primary-brown)',
+                                                                            border: booking.time === t ? '2px solid #3D2B1F' : '1px solid var(--accent-cream)',
+                                                                            backgroundColor: booking.time === t ? '#3D2B1F' : 'white',
+                                                                            color: booking.time === t ? '#FFFFFF' : '#3D2B1F',
                                                                             fontWeight: booking.time === t ? '700' : '400',
                                                                             fontSize: '0.9rem',
                                                                             transition: 'all 0.2s ease',
