@@ -1893,7 +1893,17 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                         </td>
                                     </tr>
                                 ))}
-                                {filteredAppointments.length === 0 && (
+                                {loading && filteredAppointments.length === 0 && (
+                                    <tr>
+                                        <td colSpan="5" className="px-6 py-12 text-center">
+                                            <div className="flex flex-col items-center gap-3">
+                                                <Loader2 size={32} className="animate-spin text-stone-600" />
+                                                <p className="text-gray-500 font-medium">Loading appointments...</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                                {!loading && filteredAppointments.length === 0 && (
                                     <tr>
                                         <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
                                             No appointments found matching your filters.
@@ -2050,6 +2060,13 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                 value={newAppt.date}
                                                 onChange={(date, dateString) => setNewAppt({ ...newAppt, date: dateString })}
                                                 className=""
+                                                disabledDate={(date) => {
+                                                    const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                                                    const dayName = WEEK_DAYS[date.getDay()];
+                                                    const parsedHours = parseOpeningHours(openingHours);
+                                                    const slots = parsedHours[dayName];
+                                                    return !slots || !slots.some(s => s);
+                                                }}
                                             />
 
 
@@ -2118,6 +2135,105 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                     </button>
                                 </form>
                             )}
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Edit Appointment Modal */}
+            <AnimatePresence>
+                {editingAppt && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#3D2B1F] text-[#EAE0D5]">
+                                <h3 className="text-lg font-semibold">Edit Appointment</h3>
+                                <button onClick={() => setEditingAppt(null)}><X size={20} /></button>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                                        <input
+                                            type="text"
+                                            value={editingAppt.customer?.name || ''}
+                                            disabled
+                                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                        <input
+                                            type="email"
+                                            value={editingAppt.customer?.email || ''}
+                                            disabled
+                                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
+                                        <input
+                                            type="text"
+                                            value={editingAppt.service || ''}
+                                            disabled
+                                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Stylist</label>
+                                        <input
+                                            type="text"
+                                            value={editingAppt.stylist || ''}
+                                            disabled
+                                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                                        <input
+                                            type="text"
+                                            value={editingAppt.startTime ? new Date(editingAppt.startTime).toLocaleString() : ''}
+                                            disabled
+                                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                                        <input
+                                            type="text"
+                                            value={editingAppt.endTime ? new Date(editingAppt.endTime).toLocaleString() : ''}
+                                            disabled
+                                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+                                    <p className="text-sm text-blue-800">
+                                        <strong>Note:</strong> To modify this appointment, please use Google Calendar directly. Changes made there will sync automatically with this system.
+                                    </p>
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <button
+                                        onClick={() => setEditingAppt(null)}
+                                        className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                                    >
+                                        Close
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(editingAppt)}
+                                        className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+                                    >
+                                        Delete Appointment
+                                    </button>
+                                </div>
+                            </div>
                         </motion.div>
                     </div>
                 )}

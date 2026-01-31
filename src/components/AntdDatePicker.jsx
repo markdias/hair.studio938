@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday } from 'date-fns';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 
-const AntdDatePicker = ({ value, onChange, className }) => {
+const AntdDatePicker = ({ value, onChange, className, disabledDate }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(value ? new Date(value) : new Date());
     const [dropdownStyle, setDropdownStyle] = useState({});
@@ -102,19 +102,23 @@ const AntdDatePicker = ({ value, onChange, className }) => {
                         {daysInMonth.map((date) => {
                             const isSelected = selectedDate && isSameDay(date, selectedDate);
                             const isCurrentMonth = isSameMonth(date, currentMonth);
+                            const isDisabled = disabledDate ? disabledDate(date) : false;
 
                             return (
                                 <button
                                     key={date.toString()}
                                     type="button"
                                     onClick={() => handleDateClick(date)}
+                                    disabled={isDisabled}
                                     className={`
-                                        h-10 w-full rounded-lg text-sm flex items-center justify-center transition-all
-                                        ${isSelected
-                                            ? 'bg-[#3D2B1F] text-white font-bold shadow-md'
-                                            : 'hover:bg-[#3D2B1F]/10 text-gray-700'}
-                                        ${isToday(date) && !isSelected ? 'border border-[#3D2B1F] text-[#3D2B1F]' : ''}
-                                    `}
+                                            h-10 w-full rounded-lg text-sm flex items-center justify-center transition-all
+                                            ${isDisabled
+                                            ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50'
+                                            : isSelected
+                                                ? 'bg-[#3D2B1F] text-white font-bold shadow-md'
+                                                : 'hover:bg-[#3D2B1F]/10 text-gray-700'}
+                                            ${isToday(date) && !isSelected && !isDisabled ? 'border border-[#3D2B1F] text-[#3D2B1F]' : ''}
+                                        `}
                                 >
                                     {format(date, 'd')}
                                 </button>
