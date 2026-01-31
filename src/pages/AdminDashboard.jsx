@@ -559,45 +559,15 @@ const OpeningHoursPicker = ({ initialValue, onSave, showMessage }) => {
 const BrandingEditor = ({ settings, onSave, showMessage }) => {
     const [logoUrl, setLogoUrl] = useState(settings.logo_url || '/logo.png');
     const [size, setSize] = useState(parseInt(settings.logo_size) || 85);
-    const [isResizing, setIsResizing] = useState(false);
-    const [showResizer, setShowResizer] = useState(false);
-    const [startX, setStartX] = useState(0);
-    const [startSize, setStartSize] = useState(0);
-
-    const handleResizeStart = (e) => {
-        setIsResizing(true);
-        setStartX(e.clientX);
-        setStartSize(size);
-        document.body.style.cursor = 'nwse-resize';
-    };
-
-    useEffect(() => {
-        const handleResizeMove = (e) => {
-            if (!isResizing) return;
-            const delta = e.clientX - startX;
-            const newSize = Math.max(40, Math.min(300, startSize + delta));
-            setSize(newSize);
-        };
-
-        const handleResizeEnd = () => {
-            setIsResizing(false);
-            document.body.style.cursor = 'default';
-        };
-
-        if (isResizing) {
-            window.addEventListener('mousemove', handleResizeMove);
-            window.addEventListener('mouseup', handleResizeEnd);
-        }
-
-        return () => {
-            window.removeEventListener('mousemove', handleResizeMove);
-            window.removeEventListener('mouseup', handleResizeEnd);
-        };
-    }, [isResizing, startX, startSize]);
 
     const handleLogoUpload = (url) => {
         setLogoUrl(url);
         onSave('logo_url', url);
+    };
+
+    const handleSizeChange = (e) => {
+        const newSize = parseInt(e.target.value) || 0;
+        setSize(newSize);
     };
 
     const saveSize = () => {
@@ -605,70 +575,43 @@ const BrandingEditor = ({ settings, onSave, showMessage }) => {
     };
 
     return (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                    <Maximize2 size={18} /> Logo Branding
-                </h3>
-                <button
-                    onClick={() => setShowResizer(!showResizer)}
-                    className="flex items-center gap-2 text-sm text-stone-600 hover:text-stone-900 font-medium transition-colors"
-                >
-                    {showResizer ? <X size={16} /> : <Edit size={16} />}
-                    {showResizer ? 'Hide Resizer' : 'Visual Resizer (Toggle)'}
-                </button>
-            </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                <Maximize2 size={18} /> Logo Branding
+            </h3>
 
-            <div className="flex flex-col md:flex-row gap-8 items-start">
-                <div className="flex-shrink-0">
-                    <p className="text-sm text-gray-500 mb-2">Upload Logo:</p>
-                    <ImageUploader folder="branding" onUpload={handleLogoUpload} showMessage={showMessage} />
+            <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                    <div className="flex-shrink-0">
+                        <ImageUploader folder="branding" onUpload={handleLogoUpload} showMessage={showMessage} />
+                    </div>
+                    <div className="flex flex-col gap-1 flex-grow">
+                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Logo Size (px)</label>
+                        <div className="flex gap-2">
+                            <input
+                                type="number"
+                                value={size}
+                                onChange={handleSizeChange}
+                                className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none text-sm"
+                            />
+                            <button
+                                onClick={saveSize}
+                                className="px-3 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all text-sm"
+                                style={{ backgroundColor: 'var(--primary-brown)' }}
+                            >
+                                <Save size={16} />
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex-grow w-full">
-                    <div className={`relative rounded-lg flex items-center justify-center transition-all ${showResizer ? 'min-h-[300px] p-8 border border-dashed border-gray-300 bg-stone-50' : 'min-h-[120px] p-4 bg-transparent'}`}>
-                        <div
-                            className="relative shadow-xl rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100"
-                            style={{ width: `${size}px`, height: `${size}px` }}
-                        >
-                            <img src={logoUrl} alt="Logo Preview" className="w-full h-full object-cover" />
-
-                            {showResizer && (
-                                <div
-                                    onMouseDown={handleResizeStart}
-                                    className="absolute bottom-0 right-0 w-4 h-4 bg-stone-800 cursor-nwse-resize flex items-center justify-center hover:scale-125 transition-transform"
-                                    style={{ backgroundColor: 'var(--primary-brown)' }}
-                                >
-                                    <div className="w-1 h-1 bg-white rounded-full"></div>
-                                </div>
-                            )}
-                        </div>
-
-                        {showResizer && (
-                            <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-xs font-mono border border-gray-200 text-gray-500">
-                                {size}px
-                            </div>
-                        )}
+                <div className="relative rounded-lg flex items-center justify-center p-4 bg-stone-50 border border-dashed border-gray-300 min-h-[140px]">
+                    <div
+                        className="relative shadow-md rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100"
+                        style={{ width: `${size}px`, height: `${size}px`, maxWidth: '100%', maxHeight: '120px' }}
+                    >
+                        <img src={logoUrl} alt="Logo Preview" className="w-full h-full object-cover" />
                     </div>
-
-                    <AnimatePresence>
-                        {showResizer && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="overflow-hidden"
-                            >
-                                <button
-                                    onClick={saveSize}
-                                    className="mt-4 px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium flex items-center gap-2"
-                                    style={{ backgroundColor: 'var(--primary-brown)' }}
-                                >
-                                    <Save size={16} /> Save Logo Size
-                                </button>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
                 </div>
             </div>
         </div>
@@ -847,31 +790,36 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">General Settings</h2>
 
-            {/* Branding Section */}
-            <BrandingEditor
-                settings={settings}
-                onSave={handleSave}
-                showMessage={showMessage}
-            />
+            {/* Branding & Hero Background Side-by-Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <BrandingEditor
+                    settings={settings}
+                    onSave={handleSave}
+                    showMessage={showMessage}
+                />
 
-            {/* Background Image Section */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Image size={18} /> Hero Background
-                </h3>
-                <div className="flex flex-col md:flex-row gap-8 items-center bg-stone-50 p-6 rounded-lg border border-dashed border-gray-300">
-                    <div className="flex-shrink-0">
-                        <ImageUploader
-                            folder="backgrounds"
-                            onUpload={(url) => handleSave('hero_bg_url', url)}
-                            showMessage={showMessage}
-                        />
-                    </div>
-                    {settings.hero_bg_url && (
-                        <div className="relative h-24 w-full md:w-48 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                            <img src={settings.hero_bg_url} alt="Hero BG Preview" className="w-full h-full object-cover" />
+                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full flex flex-col">
+                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Image size={18} /> Hero Background
+                    </h3>
+                    <div className="flex flex-col gap-4 flex-grow">
+                        <div className="flex items-center gap-4">
+                            <ImageUploader
+                                folder="backgrounds"
+                                onUpload={(url) => handleSave('hero_bg_url', url)}
+                                showMessage={showMessage}
+                            />
                         </div>
-                    )}
+                        <div className="relative flex-grow rounded-lg overflow-hidden border border-gray-200 bg-stone-50 min-h-[140px]">
+                            {settings.hero_bg_url ? (
+                                <img src={settings.hero_bg_url} alt="Hero BG Preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                                    No image selected
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
 
