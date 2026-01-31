@@ -1417,6 +1417,7 @@ const GalleryTab = ({ gallery, refresh, showMessage }) => {
 
 const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, setClients, services, stylists, pricing, openingHours }) => {
     const [loading, setLoading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false); // Loading state for saving appointments
     const [editingAppt, setEditingAppt] = useState(null);
     const [filterStylist, setFilterStylist] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
@@ -1444,6 +1445,16 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
 
     const [timeSlots, setTimeSlots] = useState([]);
     const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+
+    // Check if salon is closed on the selected date
+    const isSalonClosed = React.useMemo(() => {
+        if (!newAppt.date || !openingHours || openingHours === '') return false;
+        const selectedDate = new Date(newAppt.date);
+        const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][selectedDate.getDay()];
+        const parsedHours = parseOpeningHours(openingHours);
+        const slots = parsedHours[dayName];
+        return !slots || !slots.some(s => s); // Closed if no slots or all slots are null
+    }, [newAppt.date, openingHours]);
 
     useEffect(() => {
         if (newAppt.date) {
@@ -1600,6 +1611,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
         const startDateTime = new Date(`${newAppt.date}T${newAppt.time}:00`).toISOString();
         const endDateTime = new Date(new Date(`${newAppt.date}T${newAppt.time}:00`).getTime() + duration * 60 * 1000).toISOString();
 
+        setIsSaving(true); // Start loading
         try {
             if (isLocalDev) {
                 // Local: Save to Supabase
@@ -1652,6 +1664,8 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
         } catch (err) {
             console.error('Add appt error:', err);
             showMessage('error', err.message || 'API Error');
+        } finally {
+            setIsSaving(false); // Stop loading
         }
     };
 
@@ -2044,6 +2058,10 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                 <div className="flex items-center justify-center gap-2 text-sm text-gray-500 py-4">
                                                     <Loader2 size={18} className="animate-spin" /> checking...
                                                 </div>
+                                            ) : isSalonClosed ? (
+                                                <div className="col-span-full text-sm text-center text-red-600 py-4 font-medium bg-red-50 rounded-lg border border-red-200">
+                                                    Salon is closed on this day
+                                                </div>
                                             ) : (
                                                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-48 overflow-y-auto custom-scrollbar">
                                                     {timeSlots.length > 0 ? (
@@ -2083,8 +2101,20 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                             </div>
                                         )}
                                     </div>
-                                    <button type="submit" className="w-full py-3.5 bg-[#3D2B1F] text-white rounded-lg mt-6 font-bold text-lg shadow-md hover:shadow-lg hover:bg-opacity-95 transition-all transform active:scale-[0.99]" style={{ backgroundColor: '#3D2B1F' }}>
-                                        Confirm Booking
+                                    <button
+                                        type="submit"
+                                        disabled={isSaving}
+                                        className="w-full py-3.5 bg-[#3D2B1F] text-white rounded-lg mt-6 font-bold text-lg shadow-md hover:shadow-lg hover:bg-opacity-95 transition-all transform active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        style={{ backgroundColor: isSaving ? '#8B7355' : '#3D2B1F' }}
+                                    >
+                                        {isSaving ? (
+                                            <>
+                                                <Loader2 size={20} className="animate-spin" />
+                                                Saving...
+                                            </>
+                                        ) : (
+                                            'Confirm Booking'
+                                        )}
                                     </button>
                                 </form>
                             )}

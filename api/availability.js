@@ -15,6 +15,53 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Date is required' });
     }
 
+    // Check opening hours first
+    try {
+        const { data: settingsData, error: settingsError } = await supabase
+            .from('site_settings')
+            .select('opening_hours')
+            .single();
+
+        if (!settingsError && settingsData?.opening_hours) {
+            const selectedDate = parseISO(date);
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayName = dayNames[selectedDate.getDay()];
+
+            // Parse opening hours
+            const parseOpeningHours = (text) => {
+                const result = {};
+                dayNames.forEach(day => { result[day] = null; });
+
+                if (!text || text.trim() === '') return result;
+
+                const lines = text.split('\n').filter(l => l.trim());
+                lines.forEach(line => {
+                    const match = line.match(/^([A-Za-z]+):\s*(.+)$/);
+                    if (match) {
+                        const day = match[1];
+                        const hours = match[2].trim();
+                        if (hours.toLowerCase() === 'closed') {
+                            result[day] = null;
+                        } else {
+                            result[day] = hours;
+                        }
+                    }
+                });
+                return result;
+            };
+
+            const parsedHours = parseOpeningHours(settingsData.opening_hours);
+
+            // If salon is closed on this day, return empty slots
+            if (!parsedHours[dayName] || parsedHours[dayName] === null) {
+                return res.status(200).json({ slots: [], closed: true });
+            }
+        }
+    } catch (err) {
+        console.warn('Could not fetch opening hours:', err.message);
+        // Continue anyway if opening hours check fails
+    }
+
     // Check for credentials
     const privateKey = process.env.GOOGLE_PRIVATE_KEY;
     const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
