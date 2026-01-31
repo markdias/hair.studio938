@@ -9,7 +9,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { stylist, service, date, time, name, email, phone, duration_minutes } = req.body;
+    const { stylist, service, date, time, name, email, phone, duration_minutes, send_email = true } = req.body;
     const duration = parseInt(duration_minutes) || 60;
 
     if (!date || !time || !name || !email) {
@@ -118,8 +118,8 @@ export default async function handler(req, res) {
 
         console.log('Event created successfully:', calendarResponse.data.id);
 
-        // 2. Send Email Notification (if SMTP is configured)
-        if (smtpUser && smtpPass) {
+        // 2. Send Email Notification (if SMTP is configured and send_email is true)
+        if (smtpUser && smtpPass && send_email) {
             try {
                 const transporter = nodemailer.createTransport({
                     service: 'gmail',

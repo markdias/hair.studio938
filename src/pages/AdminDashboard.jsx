@@ -1271,7 +1271,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [clientSearch, setClientSearch] = useState(''); // Client search state
-    const [newAppt, setNewAppt] = useState({ client_id: '', stylist: '', service: '', date: '', time: '' });
+    const [newAppt, setNewAppt] = useState({ client_id: '', stylist: '', service: '', date: '', time: '', send_email: true });
 
     // Filter clients for search
     const filteredClientsSearch = clientSearch
@@ -1413,7 +1413,8 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                     name: client.name,
                     email: client.email,
                     phone: client.phone,
-                    duration_minutes: duration
+                    duration_minutes: duration,
+                    send_email: newAppt.send_email
                 })
             });
             const data = await res.json();
@@ -1421,7 +1422,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                 showMessage('success', 'Appointment created!');
                 setIsAddModalOpen(false);
                 fetchAppointments();
-                setNewAppt({ client_id: '', stylist: '', service: '', date: '', time: '' });
+                setNewAppt({ client_id: '', stylist: '', service: '', date: '', time: '', send_email: true });
                 setClientSearch(''); // Reset search
             } else {
                 showMessage('error', data.error || 'Failed to create');
@@ -1830,6 +1831,20 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                 </div>
                                             )}
                                         </div>
+                                        {clients.find(c => c.id === newAppt.client_id)?.email && (
+                                            <div className="flex items-center gap-2 px-1 pt-2">
+                                                <input
+                                                    type="checkbox"
+                                                    id="send_email"
+                                                    checked={newAppt.send_email}
+                                                    onChange={(e) => setNewAppt({ ...newAppt, send_email: e.target.checked })}
+                                                    className="w-4 h-4 accent-[#3D2B1F] border-gray-300 rounded cursor-pointer"
+                                                />
+                                                <label htmlFor="send_email" className="text-sm font-medium text-gray-700 cursor-pointer select-none">
+                                                    Send confirmation email to client
+                                                </label>
+                                            </div>
+                                        )}
                                     </div>
                                     <button type="submit" className="w-full py-3.5 bg-[#3D2B1F] text-white rounded-lg mt-6 font-bold text-lg shadow-md hover:shadow-lg hover:bg-opacity-95 transition-all transform active:scale-[0.99]" style={{ backgroundColor: '#3D2B1F' }}>
                                         Confirm Booking
