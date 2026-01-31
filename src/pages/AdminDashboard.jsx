@@ -1419,7 +1419,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false); // Loading state for saving appointments
     const [editingAppt, setEditingAppt] = useState(null);
-    const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', service: '', date: '', time: '' });
+    const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', service: '', date: '', time: '', stylist: '' });
     const [filterStylist, setFilterStylist] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
@@ -1434,6 +1434,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                 email: editingAppt.customer?.email || '',
                 phone: editingAppt.customer?.phone || '',
                 service: editingAppt.service || '',
+                stylist: editingAppt.stylist || '',
                 date: editingAppt.startTime ? new Date(editingAppt.startTime).toLocaleDateString('en-CA') : '',
                 time: editingAppt.startTime ? new Date(editingAppt.startTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''
             });
@@ -1472,7 +1473,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
 
     useEffect(() => {
         const dateToFetch = editingAppt ? editForm.date : newAppt.date;
-        const stylistToFetch = editingAppt ? editingAppt.stylist : newAppt.stylist;
+        const stylistToFetch = editingAppt ? editForm.stylist : newAppt.stylist;
 
         if (dateToFetch) {
             const fetchAvailability = async () => {
@@ -1747,6 +1748,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                     .from('appointments')
                     .update({
                         service: editForm.service,
+                        stylist: editForm.stylist,
                         start_time: startDateTime,
                         end_time: endDateTime
                     })
@@ -1772,35 +1774,69 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                 setEditingAppt(null);
                 fetchAppointments();
             } else {
-                const updatedData = {
-                    startTime: startDateTime,
-                    endTime: endDateTime,
-                    service: editForm.service,
-                    customer: {
-                        name: editForm.name,
-                        email: editForm.email,
-                        phone: editForm.phone
+                if (editForm.stylist !== editingAppt.stylist) {
+                    // Stylist changed -> Delete from old calendar and create in new one
+                    const delRes = await fetch('/api/appointments/delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ eventId: editingAppt.id, calendarId: editingAppt.calendarId })
+                    });
+
+                    if (!delRes.ok) throw new Error('Failed to remove old appointment when switching stylist');
+
+                    const res = await fetch('/api/book', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            stylist: editForm.stylist,
+                            service: editForm.service,
+                            date: editForm.date,
+                            time: editForm.time,
+                            name: editForm.name,
+                            email: editForm.email,
+                            phone: editForm.phone,
+                            duration_minutes: duration,
+                            send_email: false
+                        })
+                    });
+
+                    if (!res.ok) {
+                        const data = await res.json();
+                        throw new Error(data.error || 'Failed to create new appointment for the new stylist');
                     }
-                };
 
-                const response = await fetch('/api/appointments/update', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        eventId: editingAppt.id,
-                        calendarId: editingAppt.calendarId,
-                        updates: updatedData
-                    })
-                });
-
-                if (response.ok) {
-                    showMessage('success', 'Appointment updated');
-                    setEditingAppt(null);
-                    fetchAppointments();
+                    showMessage('success', 'Appointment moved to new stylist');
                 } else {
-                    const data = await response.json();
-                    throw new Error(data.error || 'Update failed');
+                    const updatedData = {
+                        startTime: startDateTime,
+                        endTime: endDateTime,
+                        service: editForm.service,
+                        customer: {
+                            name: editForm.name,
+                            email: editForm.email,
+                            phone: editForm.phone
+                        }
+                    };
+
+                    const response = await fetch('/api/appointments/update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            eventId: editingAppt.id,
+                            calendarId: editingAppt.calendarId,
+                            updates: updatedData
+                        })
+                    });
+
+                    if (response.ok) {
+                        showMessage('success', 'Appointment updated');
+                    } else {
+                        const data = await response.json();
+                        throw new Error(data.error || 'Update failed');
+                    }
                 }
+                setEditingAppt(null);
+                fetchAppointments();
             }
         } catch (err) {
             console.error('Update error:', err);
@@ -2288,46 +2324,59 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                 <h3 className="text-lg font-semibold">Edit Appointment</h3>
                                 <button onClick={() => setEditingAppt(null)}><X size={20} /></button>
                             </div>
-                            <form onSubmit={handleUpdate} className="p-6 space-y-4 overflow-y-auto flex-1">
+                            <form onSubmit={handleUpdate} className="p-6 space-y-5 overflow-y-auto flex-1">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div>
+                                    <div className="col-span-2 sm:col-span-1">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
                                         <input
                                             type="text"
                                             value={editForm.name}
                                             onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none"
+                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none text-base bg-white"
                                             required
                                         />
                                     </div>
-                                    <div>
+                                    <div className="col-span-2 sm:col-span-1">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                         <input
                                             type="email"
                                             value={editForm.email}
                                             onChange={e => setEditForm({ ...editForm, email: e.target.value })}
-                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none"
+                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none text-base bg-white"
                                             required
                                         />
                                     </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
+                                    <div className="col-span-2 sm:col-span-1">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                                         <input
                                             type="tel"
                                             value={editForm.phone}
                                             onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
-                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none"
+                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none text-base bg-white"
                                         />
                                     </div>
-                                    <div>
+                                    <div className="col-span-2 sm:col-span-1">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Stylist</label>
+                                        <select
+                                            value={editForm.stylist}
+                                            onChange={e => setEditForm({ ...editForm, stylist: e.target.value })}
+                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none text-base bg-white"
+                                            required
+                                        >
+                                            <option value="">-- Select Stylist --</option>
+                                            {stylists?.map(s => (
+                                                <option key={s.id || s} value={s.stylist_name || s.name || s}>
+                                                    {s.stylist_name || s.name || s}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
                                         <select
                                             value={editForm.service}
                                             onChange={e => setEditForm({ ...editForm, service: e.target.value })}
-                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none"
+                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none text-base bg-white"
                                             required
                                         >
                                             {pricing?.map(p => (
@@ -2338,6 +2387,8 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                         </select>
                                     </div>
                                 </div>
+
+
 
                                 <div className="pt-4 border-t border-gray-100">
                                     <label className="block text-sm font-bold text-gray-800 mb-3">Appointment Date & Time</label>
@@ -2397,7 +2448,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                     <button
                                         type="submit"
                                         disabled={isSaving || !editForm.time}
-                                        className="flex-1 py-3 bg-[#3D2B1F] text-white rounded-lg hover:bg-opacity-90 font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md"
+                                        className="flex-1 py-3 bg-[#3D2B1F] text-white rounded-lg hover:bg-opacity-90 font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md text-white"
                                         style={{ backgroundColor: "#3D2B1F" }}
                                     >
                                         {isSaving ? (
