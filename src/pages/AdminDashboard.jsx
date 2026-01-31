@@ -1488,11 +1488,11 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                             </thead>
                             <tbody className="divide-y divide-gray-200">
                                 {filteredAppointments.map(appt => (
-                                    <tr key={appt.id} className={`hover:bg-gray-50 transition-colors ${isPast(appt.start) ? 'opacity-60 bg-gray-50' : ''}`}>
+                                    <tr key={appt.id} className={`hover:bg-gray-50 transition-colors ${isPast(appt.startTime) ? 'opacity-60 bg-gray-50' : ''}`}>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <span className="font-medium text-gray-900">{formatDateTime(appt.start)}</span>
-                                                {isToday(appt.start) && <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded-full w-fit mt-1">Today</span>}
+                                                <span className="font-medium text-gray-900">{formatDateTime(appt.startTime)}</span>
+                                                {isToday(appt.startTime) && <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded-full w-fit mt-1">Today</span>}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -1546,10 +1546,11 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                     </div>
                 </div>
             ) : (
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 h-[600px] flex items-center justify-center text-gray-500">
-                    <p>Calendar view implementation...</p>
-                    {/* Placeholder for full calendar view */}
-                </div>
+                <CalendarView
+                    appointments={filteredAppointments}
+                    onEditAppointment={setEditingAppt}
+                    onDeleteAppointment={handleDelete}
+                />
             )}
 
             {/* Add Appointment Modal */}
@@ -2298,7 +2299,7 @@ const ClientsTab = ({ clients, setClients, showMessage, refreshClients }) => {
                 <h2 className="text-2xl font-semibold text-gray-900">Client Management</h2>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="bg-[#3D2B1F] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-opacity-90 transition-colors"
+                    className="bg-[#3D2B1F] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-opacity-90"
                 >
                     <Plus size={18} /> Add Client
                 </button>
