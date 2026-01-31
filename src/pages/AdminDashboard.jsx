@@ -1663,7 +1663,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                         <input type="time" className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.time} onChange={e => setNewAppt({ ...newAppt, time: e.target.value })} />
                                     </div>
                                 </div>
-                                <button type="submit" className="w-full py-3 bg-[#3D2B1F] text-white rounded-lg mt-4 font-medium hover:bg-opacity-90">
+                                <button type="submit" className="w-full py-3 bg-[#3D2B1F] text-white rounded-lg mt-4 font-medium hover:bg-opacity-90 transition-colors" style={{ backgroundColor: '#3D2B1F' }}>
                                     Confirm Booking
                                 </button>
                             </form>
@@ -1796,12 +1796,12 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
                         <div
                             key={index}
                             className={`min-h-[80px] sm:min-h-[100px] md:min-h-[120px] border rounded-md md:rounded-lg p-1 md:p-2 ${!date
-                                    ? 'bg-gray-50'
-                                    : !isDateOpen
-                                        ? 'bg-gray-50 border-gray-100 opacity-60'
-                                        : isTodayDate
-                                            ? 'bg-amber-50 border-amber-300'
-                                            : 'bg-white border-gray-200'
+                                ? 'bg-gray-50'
+                                : !isDateOpen
+                                    ? 'bg-gray-50 border-gray-100 opacity-60'
+                                    : isTodayDate
+                                        ? 'bg-amber-50 border-amber-300'
+                                        : 'bg-white border-gray-200'
                                 }`}
                         >
                             {date && (
