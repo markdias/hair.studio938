@@ -24,36 +24,82 @@ export default async function handler(req, res) {
 
         if (!settingsError && settingsData?.opening_hours) {
             const selectedDate = parseISO(date);
-            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             const dayName = dayNames[selectedDate.getDay()];
 
-            // Parse opening hours
+            // Parse opening hours matching the AdminDashboard format
             const parseOpeningHours = (text) => {
-                const result = {};
-                dayNames.forEach(day => { result[day] = null; });
+                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                const hours = Array.from({ length: 13 }, (_, i) => i + 8);
+                const selectedSlots = {};
 
-                if (!text || text.trim() === '') return result;
-
-                const lines = text.split('\n').filter(l => l.trim());
-                lines.forEach(line => {
-                    const match = line.match(/^([A-Za-z]+):\s*(.+)$/);
-                    if (match) {
-                        const day = match[1];
-                        const hours = match[2].trim();
-                        if (hours.toLowerCase() === 'closed') {
-                            result[day] = null;
-                        } else {
-                            result[day] = hours;
-                        }
-                    }
+                // Initialize all days as closed
+                days.forEach(day => {
+                    selectedSlots[day] = new Array(13).fill(false);
                 });
-                return result;
+
+                if (!text || text.toLowerCase() === 'closed') return selectedSlots;
+
+                // Parse text - Expected format: "Mon-Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM"
+                const parts = text.split(',').map(p => p.trim());
+
+                parts.forEach(part => {
+                    const match = part.match(/([A-Za-z\-]+):\s*(.+)/);
+                    if (!match) return;
+
+                    const [, dayPart, timePart] = match;
+                    const timeRanges = timePart.split(',').map(t => t.trim());
+
+                    // Parse day range
+                    let targetDays = [];
+                    if (dayPart.includes('-')) {
+                        const [start, end] = dayPart.split('-').map(d => d.trim());
+                        const startIdx = days.indexOf(start);
+                        const endIdx = days.indexOf(end);
+                        if (startIdx !== -1 && endIdx !== -1) {
+                            for (let i = startIdx; i <= endIdx; i++) {
+                                targetDays.push(days[i]);
+                            }
+                        }
+                    } else {
+                        const day = days.find(d => dayPart.includes(d));
+                        if (day) targetDays.push(day);
+                    }
+
+                    // Parse time ranges
+                    timeRanges.forEach(timeRange => {
+                        const timeMatch = timeRange.match(/(\d+)\s*(AM|PM)\s*-\s*(\d+)\s*(AM|PM)/i);
+                        if (!timeMatch) return;
+
+                        let [, startHour, startPeriod, endHour, endPeriod] = timeMatch;
+                        startHour = parseInt(startHour);
+                        endHour = parseInt(endHour);
+
+                        // Convert to 24-hour
+                        if (startPeriod.toUpperCase() === 'PM' && startHour !== 12) startHour += 12;
+                        if (startPeriod.toUpperCase() === 'AM' && startHour === 12) startHour = 0;
+                        if (endPeriod.toUpperCase() === 'PM' && endHour !== 12) endHour += 12;
+                        if (endPeriod.toUpperCase() === 'AM' && endHour === 12) endHour = 0;
+
+                        // Mark slots as selected
+                        targetDays.forEach(day => {
+                            hours.forEach((hour, idx) => {
+                                if (hour >= startHour && hour < endHour) {
+                                    selectedSlots[day][idx] = true;
+                                }
+                            });
+                        });
+                    });
+                });
+
+                return selectedSlots;
             };
 
             const parsedHours = parseOpeningHours(settingsData.opening_hours);
+            const slots = parsedHours[dayName];
 
-            // If salon is closed on this day, return empty slots
-            if (!parsedHours[dayName] || parsedHours[dayName] === null) {
+            // If salon is closed on this day (no slots or all slots are false), return empty slots
+            if (!slots || !slots.some(s => s)) {
                 return res.status(200).json({ slots: [], closed: true });
             }
         }

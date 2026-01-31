@@ -1450,7 +1450,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
     const isSalonClosed = React.useMemo(() => {
         if (!newAppt.date || !openingHours || openingHours === '') return false;
         const selectedDate = new Date(newAppt.date);
-        const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][selectedDate.getDay()];
+        const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][selectedDate.getDay()];
         const parsedHours = parseOpeningHours(openingHours);
         const slots = parsedHours[dayName];
         return !slots || !slots.some(s => s); // Closed if no slots or all slots are null
