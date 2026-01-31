@@ -2133,6 +2133,64 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                             'Confirm Booking'
                                         )}
                                     </button>
+
+                                    {/* Existing Appointments for Selected Date */}
+                                    {newAppt.date && (() => {
+                                        const selectedDateAppointments = appointments.filter(appt => {
+                                            const apptDate = new Date(appt.startTime);
+                                            const selectedDate = new Date(newAppt.date);
+                                            return apptDate.toDateString() === selectedDate.toDateString();
+                                        }).sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+
+                                        if (selectedDateAppointments.length === 0) return null;
+
+                                        return (
+                                            <div className="mt-6 border-t border-gray-200 pt-6">
+                                                <h4 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                                    <Calendar size={16} />
+                                                    Appointments on {new Date(newAppt.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                                </h4>
+                                                <div className="overflow-x-auto rounded-lg border border-gray-200">
+                                                    <table className="w-full text-sm">
+                                                        <thead className="bg-gray-50 border-b border-gray-200">
+                                                            <tr>
+                                                                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Time</th>
+                                                                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Customer</th>
+                                                                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Service</th>
+                                                                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Stylist</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-100">
+                                                            {selectedDateAppointments.map(appt => {
+                                                                const startTime = new Date(appt.startTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                                                                const endTime = new Date(appt.endTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                                                                const colorClass = STYLIST_COLORS[appt.stylist] || STYLIST_COLORS['default'];
+
+                                                                return (
+                                                                    <tr key={appt.id} className="hover:bg-gray-50">
+                                                                        <td className="px-3 py-2 text-gray-900 font-medium whitespace-nowrap">
+                                                                            {startTime} - {endTime}
+                                                                        </td>
+                                                                        <td className="px-3 py-2 text-gray-700">
+                                                                            {appt.customer.name}
+                                                                        </td>
+                                                                        <td className="px-3 py-2 text-gray-700">
+                                                                            {appt.service}
+                                                                        </td>
+                                                                        <td className="px-3 py-2">
+                                                                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${colorClass}`}>
+                                                                                {appt.stylist}
+                                                                            </span>
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            })}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </form>
                             )}
                         </motion.div>
