@@ -1419,12 +1419,26 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false); // Loading state for saving appointments
     const [editingAppt, setEditingAppt] = useState(null);
+    const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', service: '', date: '', time: '' });
     const [filterStylist, setFilterStylist] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [clientSearch, setClientSearch] = useState(''); // Client search state
     const [newAppt, setNewAppt] = useState({ client_id: '', stylist: '', service: '', date: '', time: '', send_email: true });
+
+    useEffect(() => {
+        if (editingAppt) {
+            setEditForm({
+                name: editingAppt.customer?.name || '',
+                email: editingAppt.customer?.email || '',
+                phone: editingAppt.customer?.phone || '',
+                service: editingAppt.service || '',
+                date: editingAppt.startTime ? new Date(editingAppt.startTime).toLocaleDateString('en-CA') : '',
+                time: editingAppt.startTime ? new Date(editingAppt.startTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : ''
+            });
+        }
+    }, [editingAppt]);
 
     // Filter clients for search
     const filteredClientsSearch = clientSearch
@@ -1457,15 +1471,27 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
     }, [newAppt.date, openingHours]);
 
     useEffect(() => {
-        if (newAppt.date) {
+        const dateToFetch = editingAppt ? editForm.date : newAppt.date;
+        const stylistToFetch = editingAppt ? editingAppt.stylist : newAppt.stylist;
+
+        if (dateToFetch) {
             const fetchAvailability = async () => {
                 setIsLoadingSlots(true);
                 try {
-                    const stylistParam = newAppt.stylist ? `&stylist=${encodeURIComponent(newAppt.stylist)}` : '';
-                    const res = await fetch(`/api/availability?date=${newAppt.date}${stylistParam}`);
+                    const stylistParam = stylistToFetch ? `&stylist=${encodeURIComponent(stylistToFetch)}` : '';
+                    const res = await fetch(`/api/availability?date=${dateToFetch}${stylistParam}`);
                     if (res.ok) {
                         const data = await res.json();
-                        setTimeSlots(data.slots || []);
+                        // If editing, include the current appointment's time slot as available
+                        let slots = data.slots || [];
+                        if (editingAppt && editForm.date === new Date(editingAppt.startTime).toLocaleDateString('en-CA')) {
+                            const currentSlot = new Date(editingAppt.startTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                            if (!slots.includes(currentSlot)) {
+                                slots.push(currentSlot);
+                                slots.sort();
+                            }
+                        }
+                        setTimeSlots(slots);
                     } else {
                         setTimeSlots([]);
                     }
@@ -1480,7 +1506,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
         } else {
             setTimeSlots([]);
         }
-    }, [newAppt.date, newAppt.stylist]);
+    }, [newAppt.date, newAppt.stylist, editForm.date, editingAppt]);
 
     useEffect(() => {
         fetchAppointments();
@@ -1705,27 +1731,82 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
     };
 
     // ... existing handleUpdate ...
-    const handleUpdate = async (updatedData) => {
+    const handleUpdate = async (e) => {
+        if (e) e.preventDefault();
+        setIsSaving(true);
         try {
-            const response = await fetch('/api/appointments/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    eventId: editingAppt.id,
-                    calendarId: editingAppt.calendarId,
-                    updates: updatedData
-                })
-            });
+            // Calculate start and end times
+            const selectedPriceItem = pricing?.find(p => p.item_name === editForm.service);
+            const duration = selectedPriceItem?.duration_minutes || 60;
+            const startDateTime = new Date(`${editForm.date}T${editForm.time}:00`).toISOString();
+            const endDateTime = new Date(new Date(`${editForm.date}T${editForm.time}:00`).getTime() + duration * 60 * 1000).toISOString();
 
-            if (response.ok) {
+            if (isLocalDev) {
+                // Update local Supabase
+                const { error: apptError } = await supabase
+                    .from('appointments')
+                    .update({
+                        service: editForm.service,
+                        start_time: startDateTime,
+                        end_time: endDateTime
+                    })
+                    .eq('id', editingAppt.id);
+
+                if (apptError) throw apptError;
+
+                // Update client info if available
+                if (editingAppt.client_id) {
+                    const { error: clientError } = await supabase
+                        .from('clients')
+                        .update({
+                            name: editForm.name,
+                            email: editForm.email,
+                            phone: editForm.phone
+                        })
+                        .eq('id', editingAppt.client_id);
+
+                    if (clientError) throw clientError;
+                }
+
                 showMessage('success', 'Appointment updated');
                 setEditingAppt(null);
                 fetchAppointments();
             } else {
-                throw new Error('Update failed');
+                const updatedData = {
+                    startTime: startDateTime,
+                    endTime: endDateTime,
+                    service: editForm.service,
+                    customer: {
+                        name: editForm.name,
+                        email: editForm.email,
+                        phone: editForm.phone
+                    }
+                };
+
+                const response = await fetch('/api/appointments/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        eventId: editingAppt.id,
+                        calendarId: editingAppt.calendarId,
+                        updates: updatedData
+                    })
+                });
+
+                if (response.ok) {
+                    showMessage('success', 'Appointment updated');
+                    setEditingAppt(null);
+                    fetchAppointments();
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Update failed');
+                }
             }
         } catch (err) {
-            showMessage('error', 'Failed to update appointment');
+            console.error('Update error:', err);
+            showMessage('error', err.message || 'Failed to update appointment');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -2202,96 +2283,142 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
             <AnimatePresence>
                 {editingAppt && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#3D2B1F] text-[#EAE0D5]">
                                 <h3 className="text-lg font-semibold">Edit Appointment</h3>
                                 <button onClick={() => setEditingAppt(null)}><X size={20} /></button>
                             </div>
-                            <div className="p-6 space-y-4">
+                            <form onSubmit={handleUpdate} className="p-6 space-y-4 overflow-y-auto flex-1">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
                                         <input
                                             type="text"
-                                            value={editingAppt.customer?.name || ''}
-                                            disabled
-                                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                                            value={editForm.name}
+                                            onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none"
+                                            required
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                         <input
                                             type="email"
-                                            value={editingAppt.customer?.email || ''}
-                                            disabled
-                                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                                            value={editForm.email}
+                                            onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none"
+                                            required
                                         />
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                        <input
+                                            type="tel"
+                                            value={editForm.phone}
+                                            onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none"
+                                        />
+                                    </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
-                                        <input
-                                            type="text"
-                                            value={editingAppt.service || ''}
-                                            disabled
-                                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Stylist</label>
-                                        <input
-                                            type="text"
-                                            value={editingAppt.stylist || ''}
-                                            disabled
-                                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
-                                        />
+                                        <select
+                                            value={editForm.service}
+                                            onChange={e => setEditForm({ ...editForm, service: e.target.value })}
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none"
+                                            required
+                                        >
+                                            {pricing?.map(p => (
+                                                <option key={p.id} value={p.item_name}>
+                                                    {p.item_name} ({p.duration_minutes || 60}m) - {p.price}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
-                                        <input
-                                            type="text"
-                                            value={editingAppt.startTime ? new Date(editingAppt.startTime).toLocaleString() : ''}
-                                            disabled
-                                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                                <div className="pt-4 border-t border-gray-100">
+                                    <label className="block text-sm font-bold text-gray-800 mb-3">Appointment Date & Time</label>
+                                    <div className="space-y-4">
+                                        <AntdDatePicker
+                                            value={editForm.date}
+                                            onChange={(date, dateString) => setEditForm({ ...editForm, date: dateString, time: '' })}
+                                            className="w-full"
+                                            disabledDate={(date) => {
+                                                const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                                                const dayName = WEEK_DAYS[date.getDay()];
+                                                const parsedHours = parseOpeningHours(openingHours);
+                                                const slots = parsedHours[dayName];
+                                                return !slots || !slots.some(s => s);
+                                            }}
                                         />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-                                        <input
-                                            type="text"
-                                            value={editingAppt.endTime ? new Date(editingAppt.endTime).toLocaleString() : ''}
-                                            disabled
-                                            className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
-                                        />
+
+                                        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Available Slots</label>
+                                        {isLoadingSlots ? (
+                                            <div className="flex items-center justify-center gap-2 text-sm text-gray-500 py-4">
+                                                <Loader2 size={18} className="animate-spin" /> checking availability...
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-40 overflow-y-auto custom-scrollbar p-1">
+                                                {timeSlots.length > 0 ? (
+                                                    timeSlots.map(t => (
+                                                        <button
+                                                            key={t}
+                                                            type="button"
+                                                            onClick={() => setEditForm({ ...editForm, time: t })}
+                                                            className={`px-1 py-2 text-xs rounded-md border transition-all shadow-sm ${editForm.time === t
+                                                                ? 'bg-[#3D2B1F] text-white border-[#3D2B1F] font-semibold ring-2 ring-offset-1 ring-[#3D2B1F]'
+                                                                : 'bg-white text-gray-700 border-gray-200 hover:border-[#3D2B1F] hover:text-[#3D2B1F]'
+                                                                }`}
+                                                        >
+                                                            {t}
+                                                        </button>
+                                                    ))
+                                                ) : (
+                                                    <div className="col-span-full text-sm text-center text-gray-400 py-4 italic">
+                                                        No slots available for this date
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
-                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-                                    <p className="text-sm text-blue-800">
-                                        <strong>Note:</strong> To modify this appointment, please use Google Calendar directly. Changes made there will sync automatically with this system.
-                                    </p>
-                                </div>
-
-                                <div className="flex gap-3 pt-4">
+                                <div className="flex gap-3 pt-6 border-t border-gray-100">
                                     <button
+                                        type="button"
                                         onClick={() => setEditingAppt(null)}
-                                        className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                                        className="flex-1 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors"
                                     >
-                                        Close
+                                        Cancel
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(editingAppt)}
-                                        className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+                                        type="submit"
+                                        disabled={isSaving || !editForm.time}
+                                        className="flex-1 py-3 bg-[#3D2B1F] text-white rounded-lg hover:bg-opacity-90 font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md"
+                                        style={{ backgroundColor: "#3D2B1F" }}
                                     >
-                                        Delete Appointment
+                                        {isSaving ? (
+                                            <>
+                                                <Loader2 size={18} className="animate-spin" />
+                                                Saving...
+                                            </>
+                                        ) : 'Save Changes'}
                                     </button>
                                 </div>
-                            </div>
+
+                                <div className="pt-4 flex justify-center">
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.preventDefault(); handleDelete(editingAppt); }}
+                                        className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-1 transition-colors"
+                                    >
+                                        <Trash2 size={14} /> Delete Appointment
+                                    </button>
+                                </div>
+                            </form>
                         </motion.div>
                     </div>
                 )}
