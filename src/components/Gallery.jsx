@@ -11,7 +11,8 @@ const images = [
     '/instagram/img6.jpg',
 ];
 
-const Gallery = ({ images = [] }) => {
+const Gallery = ({ images = [], settings = {} }) => {
+    if (settings.show_gallery_section === 'false') return null;
     const defaultImages = [
         '/instagram/img7.jpg',
         '/instagram/img2.jpg',
@@ -86,7 +87,7 @@ const Gallery = ({ images = [] }) => {
                         fontSize: 'clamp(2.5rem, 8vw, 4rem)',
                         color: 'var(--accent-cream)',
                         marginBottom: '15px'
-                    }}>Gallery</h2>
+                    }}>{settings.gallery_section_name || 'Gallery'}</h2>
                     <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--accent-cream)', margin: '0 auto 20px' }}></div>
                     <a
                         href="https://www.instagram.com/hair.studio938/"

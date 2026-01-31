@@ -60,11 +60,21 @@ const Navbar = ({ settings }) => {
             {/* Desktop Menu */}
             <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px', fontWeight: '500' }}>
                 <a href="#home">Home</a>
-                <a href="#services">Services</a>
-                <a href="#team">Team</a>
-                <a href="#pricing">Pricing</a>
-                <a href="#gallery">Gallery</a>
-                {settings.show_testimonials_section === 'true' && <a href="#testimonials">{settings.testimonials_section_name || 'Testimonials'}</a>}
+                {settings.show_services_section !== 'false' && (
+                    <a href="#services">{settings.services_section_name || 'Services'}</a>
+                )}
+                {settings.show_team_section !== 'false' && (
+                    <a href="#team">{settings.team_section_name || 'Team'}</a>
+                )}
+                {settings.show_pricing_section !== 'false' && (
+                    <a href="#pricing">{settings.pricing_section_name || 'Pricing'}</a>
+                )}
+                {settings.show_gallery_section !== 'false' && (
+                    <a href="#gallery">{settings.gallery_section_name || 'Gallery'}</a>
+                )}
+                {settings.show_testimonials_section === 'true' && (
+                    <a href="#testimonials">{settings.testimonials_section_name || 'Testimonials'}</a>
+                )}
                 <a href="#contact">Contact</a>
                 <a href="#booking" className="btn-primary" style={{
                     padding: '10px 24px',
@@ -84,11 +94,21 @@ const Navbar = ({ settings }) => {
             {/* Mobile Menu Overlay */}
             <div className="nav-links-mobile">
                 <a href="#home" onClick={toggleMenu}>Home</a>
-                <a href="#services" onClick={toggleMenu}>Services</a>
-                <a href="#team" onClick={toggleMenu}>Team</a>
-                <a href="#pricing" onClick={toggleMenu}>Pricing</a>
-                <a href="#gallery" onClick={toggleMenu}>Gallery</a>
-                {settings.show_testimonials_section === 'true' && <a href="#testimonials" onClick={toggleMenu}>{settings.testimonials_section_name || 'Testimonials'}</a>}
+                {settings.show_services_section !== 'false' && (
+                    <a href="#services" onClick={toggleMenu}>{settings.services_section_name || 'Services'}</a>
+                )}
+                {settings.show_team_section !== 'false' && (
+                    <a href="#team" onClick={toggleMenu}>{settings.team_section_name || 'Team'}</a>
+                )}
+                {settings.show_pricing_section !== 'false' && (
+                    <a href="#pricing" onClick={toggleMenu}>{settings.pricing_section_name || 'Pricing'}</a>
+                )}
+                {settings.show_gallery_section !== 'false' && (
+                    <a href="#gallery" onClick={toggleMenu}>{settings.gallery_section_name || 'Gallery'}</a>
+                )}
+                {settings.show_testimonials_section === 'true' && (
+                    <a href="#testimonials" onClick={toggleMenu}>{settings.testimonials_section_name || 'Testimonials'}</a>
+                )}
                 <a href="#contact" onClick={toggleMenu}>Contact</a>
                 <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
             </div>
@@ -187,7 +207,8 @@ const Hero = ({ settings = {} }) => {
     );
 };
 
-const Services = ({ services = [] }) => {
+const Services = ({ services = [], settings = {} }) => {
+    if (settings.show_services_section === 'false') return null;
     const iconMap = {
         Calendar: <Calendar style={{ color: 'var(--primary-brown)' }} />,
         MapPin: <MapPin style={{ color: 'var(--primary-brown)' }} />,
@@ -203,7 +224,9 @@ const Services = ({ services = [] }) => {
     return (
         <section id="services" style={{ padding: '120px 50px', backgroundColor: '#FFFFFF' }}>
             <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-                <h2 style={{ fontSize: '3rem', color: 'var(--primary-brown)', marginBottom: '15px' }}>Our Services</h2>
+                <h2 style={{ fontSize: '3rem', color: 'var(--primary-brown)', marginBottom: '15px' }}>
+                    {settings.services_section_name || 'Our Services'}
+                </h2>
                 <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--primary-brown)', margin: '0 auto' }}></div>
             </div>
 
@@ -238,7 +261,8 @@ const Services = ({ services = [] }) => {
     );
 };
 
-const TeamSection = ({ team = [] }) => {
+const TeamSection = ({ team = [], settings = {} }) => {
+    if (settings.show_team_section === 'false') return null;
     const defaultTeam = [
         { name: "Jo", role: "Owner & Creative Director", description: "Expert in bespoke coloring and luxury extensions.", image_url: "/jo.png" },
         { name: "Viktor", role: "Master Stylist", description: "Specializing in precision cuts and seamless balayage.", image_url: "/viktor.png" },
@@ -250,7 +274,9 @@ const TeamSection = ({ team = [] }) => {
     return (
         <section id="team" style={{ padding: '120px 50px', backgroundColor: 'var(--soft-cream)' }}>
             <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-                <h2 style={{ fontSize: '3rem', color: 'var(--primary-brown)', marginBottom: '15px' }}>Meet the Dream Team</h2>
+                <h2 style={{ fontSize: '3rem', color: 'var(--primary-brown)', marginBottom: '15px' }}>
+                    {settings.team_section_name || 'Meet the Dream Team'}
+                </h2>
                 <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--primary-brown)', margin: '0 auto' }}></div>
             </div>
 
@@ -293,7 +319,8 @@ const TeamSection = ({ team = [] }) => {
     );
 };
 
-const PriceList = ({ pricing = [] }) => {
+const PriceList = ({ pricing = [], settings = {} }) => {
+    if (settings.show_pricing_section === 'false') return null;
     // Transform flat pricing list into categories
     const categoriesMap = pricing.reduce((acc, item) => {
         if (!acc[item.category]) acc[item.category] = [];
@@ -383,7 +410,7 @@ const PriceList = ({ pricing = [] }) => {
                     fontWeight: '400',
                     lineHeight: '1'
                 }}>
-                    Price list
+                    {settings.pricing_section_name || 'Price list'}
                 </h2>
 
                 <div className="pricing-info" style={{

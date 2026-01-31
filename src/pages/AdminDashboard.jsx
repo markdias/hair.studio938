@@ -247,10 +247,10 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
     switch (activeTab) {
         case 'general': return <GeneralTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} />;
         case 'theme': return <ThemeTab showMessage={showMessage} />;
-        case 'services': return <ServicesTab services={data.services} refresh={refresh} showMessage={showMessage} />;
-        case 'pricing': return <PricingTab pricing={data.pricing} setPricing={setData.setPricing} showMessage={showMessage} />;
-        case 'team': return <TeamTab stylists={data.stylists} refresh={refresh} showMessage={showMessage} />;
-        case 'gallery': return <GalleryTab gallery={data.gallery} setGallery={setData.setGallery} showMessage={showMessage} />;
+        case 'services': return <ServicesTab services={data.services} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
+        case 'pricing': return <PricingTab pricing={data.pricing} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
+        case 'team': return <TeamTab stylists={data.stylists} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
+        case 'gallery': return <GalleryTab gallery={data.gallery} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
         case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} setClients={setData.setClients} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} />;
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
         case 'testimonials': return <TestimonialsTab testimonials={data.testimonials} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
@@ -306,6 +306,61 @@ const ImageUploader = ({ onUpload, folder = 'general', showMessage }) => {
                 {uploading ? <Loader2 size={16} className="animate-spin" /> : <Image size={16} />}
                 {uploading ? 'Uploading...' : 'Upload Image'}
             </button>
+        </div>
+    );
+};
+
+const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultName, description }) => {
+    const showKey = `show_${sectionId}_section`;
+    const nameKey = `${sectionId}_section_name`;
+    const isVisible = settings?.[showKey] !== 'false'; // Default to true if not set
+    const sectionName = settings?.[nameKey] || defaultName;
+
+    const handleSaveSetting = async (key, value) => {
+        try {
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({ key, value });
+
+            if (error) throw error;
+            setSettings(prev => ({ ...prev, [key]: value }));
+            showMessage('success', `${sectionId.charAt(0).toUpperCase() + sectionId.slice(1)} setting updated!`);
+        } catch (err) {
+            console.error('Error saving setting:', err);
+            showMessage('error', err.message);
+        }
+    };
+
+    return (
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-4 mb-8">
+            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">Section Configuration</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-center justify-between p-4 bg-stone-50 rounded-lg border border-stone-100">
+                    <div>
+                        <p className="font-medium text-gray-900">Show Section</p>
+                        <p className="text-xs text-gray-500">{description || `Enable or disable ${sectionId} on the website`}</p>
+                    </div>
+                    <button
+                        onClick={() => handleSaveSetting(showKey, isVisible ? 'false' : 'true')}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${isVisible ? 'border-[#3D2B1F]' : 'border-gray-200'}`}
+                        style={{ backgroundColor: isVisible ? '#3D2B1F' : '#E5E7EB' }}
+                    >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isVisible ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                </div>
+                <div className="space-y-2">
+                    <label className="text-xs font-medium text-gray-500 uppercase">Section Name</label>
+                    <div className="flex gap-2">
+                        <input
+                            value={sectionName}
+                            onChange={(e) => setSettings(prev => ({ ...prev, [nameKey]: e.target.value }))}
+                            onBlur={(e) => handleSaveSetting(nameKey, e.target.value)}
+                            placeholder={`e.g. ${defaultName}`}
+                            className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
@@ -896,7 +951,7 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
     );
 };
 
-const ServicesTab = ({ services, refresh, showMessage }) => {
+const ServicesTab = ({ services, refresh, showMessage, settings, setSettings }) => {
     const [localServices, setLocalServices] = useState(services);
     const [showAddForm, setShowAddForm] = useState(false);
     const [newService, setNewService] = useState({ title: '', description: '' });
@@ -945,6 +1000,14 @@ const ServicesTab = ({ services, refresh, showMessage }) => {
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <SectionConfig
+                sectionId="services"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultName="Services"
+                description="Enable or disable the services section and customize its heading."
+            />
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold text-gray-900">Service Highlights</h2>
                 <button
@@ -1020,7 +1083,7 @@ const ServicesTab = ({ services, refresh, showMessage }) => {
     );
 };
 
-const PricingTab = ({ pricing, refresh, showMessage }) => {
+const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) => {
     const [localPricing, setLocalPricing] = useState(pricing);
     const [newItem, setNewItem] = useState({ category: 'CUT & STYLING', item_name: '', price: '', duration_minutes: 60 });
 
@@ -1074,6 +1137,14 @@ const PricingTab = ({ pricing, refresh, showMessage }) => {
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <SectionConfig
+                sectionId="pricing"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultName="Pricing"
+                description="Enable or disable the pricing list section and customize its heading."
+            />
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Price List</h2>
 
             <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm">
@@ -1182,7 +1253,7 @@ const PricingTab = ({ pricing, refresh, showMessage }) => {
     );
 };
 
-const TeamTab = ({ stylists, refresh, showMessage }) => {
+const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
     const [localStylists, setLocalStylists] = useState(stylists);
     const [showHelp, setShowHelp] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
@@ -1229,6 +1300,14 @@ const TeamTab = ({ stylists, refresh, showMessage }) => {
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <SectionConfig
+                sectionId="team"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultName="Meet the Team"
+                description="Enable or disable the team section and customize its heading."
+            />
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                     <h2 className="text-2xl font-semibold text-gray-900">Team Members</h2>
@@ -1354,7 +1433,7 @@ const TeamTab = ({ stylists, refresh, showMessage }) => {
     );
 };
 
-const GalleryTab = ({ gallery, refresh, showMessage }) => {
+const GalleryTab = ({ gallery, refresh, showMessage, settings, setSettings }) => {
     const handleDelete = async (id) => {
         if (!confirm('Remove this image?')) return;
         try {
@@ -1375,6 +1454,14 @@ const GalleryTab = ({ gallery, refresh, showMessage }) => {
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <SectionConfig
+                sectionId="gallery"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultName="Gallery"
+                description="Enable or disable the gallery section and customize its heading."
+            />
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold text-gray-900">Gallery</h2>
                 <ImageUploader folder="gallery" onUpload={handleAdd} showMessage={showMessage} />
@@ -3563,36 +3650,14 @@ const TestimonialsTab = ({ testimonials, settings, setSettings, refresh, showMes
                 </button>
             </div>
 
-            {/* General Settings */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm space-y-4">
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">Section Configuration</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex items-center justify-between p-4 bg-stone-50 rounded-lg border border-stone-100">
-                        <div>
-                            <p className="font-medium text-gray-900">Show Section</p>
-                            <p className="text-xs text-gray-500">Enable or disable testimonials on the website</p>
-                        </div>
-                        <button
-                            onClick={() => handleSaveSetting('show_testimonials_section', settings.show_testimonials_section === 'true' ? 'false' : 'true')}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${settings.show_testimonials_section === 'true' ? 'border-[#3D2B1F]' : 'border-gray-200'}`}
-                            style={{ backgroundColor: settings.show_testimonials_section === 'true' ? '#3D2B1F' : '#E5E7EB' }}
-                        >
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.show_testimonials_section === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
-                        </button>
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-xs font-medium text-gray-500 uppercase">Section Name</label>
-                        <div className="flex gap-2">
-                            <input
-                                value={settings.testimonials_section_name || 'Customer Testimonials'}
-                                onChange={(e) => setSettings(prev => ({ ...prev, testimonials_section_name: e.target.value }))}
-                                onBlur={(e) => handleSaveSetting('testimonials_section_name', e.target.value)}
-                                className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <SectionConfig
+                sectionId="testimonials"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultName="Customer Testimonials"
+                description="Enable or disable testimonials on the website and customize its heading."
+            />
 
             {/* Testimonials List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

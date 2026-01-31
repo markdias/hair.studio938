@@ -99,12 +99,12 @@ const MainSite = () => {
         <main className="main-content">
           <Navbar settings={siteData.settings} />
           <Hero settings={siteData.settings} />
-          <Services services={siteData.services} />
-          <TeamSection team={siteData.team} />
-          <PriceList pricing={siteData.pricing} />
+          <Services services={siteData.services} settings={siteData.settings} />
+          <TeamSection team={siteData.team} settings={siteData.settings} />
+          <PriceList pricing={siteData.pricing} settings={siteData.settings} />
           <Testimonials testimonials={siteData.testimonials} settings={siteData.settings} />
           <BookingSystem />
-          <Gallery images={siteData.gallery} />
+          <Gallery images={siteData.gallery} settings={siteData.settings} />
           <Contact settings={siteData.settings} />
           <Footer settings={siteData.settings} />
           <Analytics />
