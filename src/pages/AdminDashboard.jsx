@@ -2315,6 +2315,63 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
         return slots ? slots.some(s => s) : true;
     };
 
+    // Calculate time slots based on opening hours for the current view
+    const getTimeSlots = () => {
+        if (!openingHours || openingHours === '') {
+            // Default to 8 AM - 8 PM if no opening hours set
+            return Array.from({ length: 13 }, (_, i) => i + 8);
+        }
+
+        let minHour = 24;
+        let maxHour = 0;
+
+        // Determine which days to check based on view mode
+        let daysToCheck = [];
+        if (calendarViewMode === 'day') {
+            daysToCheck = [currentDate];
+        } else if (calendarViewMode === 'week') {
+            daysToCheck = getWeekDays(currentDate).filter(d => isDayOpen(d));
+        } else {
+            // For month view, check all days in the current month
+            const daysInMonth = getDaysInMonth(currentDate);
+            daysToCheck = daysInMonth.filter(d => d && isDayOpen(d));
+        }
+
+        // Find min and max hours across all relevant days
+        daysToCheck.forEach(date => {
+            if (!date) return;
+            const dayName = WEEK_DAYS[date.getDay()];
+            const slots = parsedOpeningHours[dayName];
+
+            if (slots && slots.some(s => s)) {
+                // Find first true slot (opening time)
+                const firstSlot = slots.findIndex(s => s);
+                if (firstSlot !== -1) {
+                    const hour = firstSlot + 8; // slots array starts at 8 AM
+                    minHour = Math.min(minHour, hour);
+                }
+
+                // Find last true slot (closing time)
+                const lastSlot = slots.length - 1 - [...slots].reverse().findIndex(s => s);
+                if (lastSlot !== -1) {
+                    const hour = lastSlot + 8 + 1; // +1 to include the closing hour
+                    maxHour = Math.max(maxHour, hour);
+                }
+            }
+        });
+
+        // If no valid hours found, use defaults
+        if (minHour === 24 || maxHour === 0) {
+            return Array.from({ length: 13 }, (_, i) => i + 8);
+        }
+
+        // Generate time slots array from min to max hour
+        const length = maxHour - minHour;
+        return Array.from({ length }, (_, i) => i + minHour);
+    };
+
+    const TIME_SLOTS = React.useMemo(() => getTimeSlots(), [openingHours, calendarViewMode, currentDate, parsedOpeningHours]);
+
     // Helper functions
     const getWeekDays = (date) => {
         const day = date.getDay();
