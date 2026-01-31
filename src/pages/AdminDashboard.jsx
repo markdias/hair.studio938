@@ -1475,13 +1475,57 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
         fetchAppointments();
     }, []);
 
+    // Hybrid appointments: Use Supabase locally, API in production
+    const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
     const fetchAppointments = async () => {
         setLoading(true);
         try {
-            const response = await fetch('/api/appointments/list');
-            const data = await response.json();
-            if (data.appointments) {
-                setAppointments(data.appointments);
+            if (isLocalDev) {
+                // Local: Fetch from Supabase
+                const { data, error } = await supabase
+                    .from('appointments')
+                    .select(`
+                        id,
+                        start_time,
+                        end_time,
+                        stylist,
+                        service,
+                        status,
+                        notes,
+                        clients (
+                            id,
+                            name,
+                            email,
+                            phone
+                        )
+                    `);
+
+                if (error) throw error;
+
+                const mappedAppointments = data.map(appt => ({
+                    id: appt.id,
+                    stylist: appt.stylist,
+                    startTime: appt.start_time,
+                    endTime: appt.end_time,
+                    service: appt.service,
+                    client_id: appt.clients?.id,
+                    customer: {
+                        name: appt.clients?.name || 'Unknown',
+                        email: appt.clients?.email || '',
+                        phone: appt.clients?.phone || '',
+                        service: appt.service
+                    }
+                }));
+
+                setAppointments(mappedAppointments);
+            } else {
+                // Production: Fetch from Google Calendar API
+                const response = await fetch('/api/appointments/list');
+                const data = await response.json();
+                if (data.appointments) {
+                    setAppointments(data.appointments);
+                }
             }
         } catch (err) {
             console.error('Fetch error:', err);
@@ -1553,34 +1597,61 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
         const selectedPriceItem = pricing?.find(p => p.item_name === newAppt.service);
         const duration = selectedPriceItem?.duration_minutes || 60;
 
+        const startDateTime = new Date(`${newAppt.date}T${newAppt.time}:00`).toISOString();
+        const endDateTime = new Date(new Date(`${newAppt.date}T${newAppt.time}:00`).getTime() + duration * 60 * 1000).toISOString();
+
         try {
-            const res = await fetch('/api/book', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    stylist: newAppt.stylist,
-                    service: newAppt.service,
-                    date: newAppt.date,
-                    time: newAppt.time,
-                    name: client.name,
-                    email: client.email,
-                    phone: client.phone,
-                    duration_minutes: duration,
-                    send_email: newAppt.send_email
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
+            if (isLocalDev) {
+                // Local: Save to Supabase
+                const { error } = await supabase
+                    .from('appointments')
+                    .insert({
+                        client_id: client.id,
+                        stylist: newAppt.stylist,
+                        service: newAppt.service,
+                        start_time: startDateTime,
+                        end_time: endDateTime,
+                        status: 'confirmed'
+                    });
+
+                if (error) throw error;
+
                 showMessage('success', 'Appointment created!');
                 setIsAddModalOpen(false);
                 fetchAppointments();
                 setNewAppt({ client_id: '', stylist: '', service: '', date: '', time: '', send_email: true });
-                setClientSearch(''); // Reset search
+                setClientSearch('');
             } else {
-                showMessage('error', data.error || 'Failed to create');
+                // Production: Use Google Calendar API
+                const res = await fetch('/api/book', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        stylist: newAppt.stylist,
+                        service: newAppt.service,
+                        date: newAppt.date,
+                        time: newAppt.time,
+                        name: client.name,
+                        email: client.email,
+                        phone: client.phone,
+                        duration_minutes: duration,
+                        send_email: newAppt.send_email
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showMessage('success', 'Appointment created!');
+                    setIsAddModalOpen(false);
+                    fetchAppointments();
+                    setNewAppt({ client_id: '', stylist: '', service: '', date: '', time: '', send_email: true });
+                    setClientSearch('');
+                } else {
+                    showMessage('error', data.error || 'Failed to create');
+                }
             }
         } catch (err) {
-            showMessage('error', 'API Error');
+            console.error('Add appt error:', err);
+            showMessage('error', err.message || 'API Error');
         }
     };
 
@@ -1588,17 +1659,31 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
         if (!confirm(`Delete appointment for ${appt.customer.name}?`)) return;
 
         try {
-            const response = await fetch('/api/appointments/delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ eventId: appt.id, calendarId: appt.calendarId })
-            });
+            if (isLocalDev) {
+                // Local: Delete from Supabase
+                const { error } = await supabase
+                    .from('appointments')
+                    .delete()
+                    .eq('id', appt.id);
 
-            if (response.ok) {
+                if (error) throw error;
+
                 showMessage('success', 'Appointment deleted');
                 fetchAppointments();
             } else {
-                throw new Error('Delete failed');
+                // Production: Delete from Google Calendar
+                const response = await fetch('/api/appointments/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ eventId: appt.id, calendarId: appt.calendarId })
+                });
+
+                if (response.ok) {
+                    showMessage('success', 'Appointment deleted');
+                    fetchAppointments();
+                } else {
+                    throw new Error('Delete failed');
+                }
             }
         } catch (err) {
             showMessage('error', 'Failed to delete appointment');
