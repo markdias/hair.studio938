@@ -2207,7 +2207,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                                 type="button"
                                                                 onClick={() => setNewAppt({ ...newAppt, time: t })}
                                                                 className={`px-1 py-2 text-sm rounded-md border transition-all shadow-sm ${newAppt.time === t
-                                                                    ? 'bg-white text-[#3D2B1F] border-[#3D2B1F] font-bold ring-2 ring-[#3D2B1F] ring-offset-1'
+                                                                    ? 'bg-[#3D2B1F] text-white border-[#3D2B1F] font-bold shadow-md'
                                                                     : 'bg-white text-gray-700 border-gray-200 hover:border-[#3D2B1F] hover:text-[#3D2B1F]'
                                                                     }`}
                                                             >
@@ -2420,7 +2420,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                             type="button"
                                                             onClick={() => setEditForm({ ...editForm, time: t })}
                                                             className={`px-1 py-2 text-xs rounded-md border transition-all shadow-sm ${editForm.time === t
-                                                                ? 'bg-white text-[#3D2B1F] border-[#3D2B1F] font-bold ring-2 ring-[#3D2B1F] ring-offset-1'
+                                                                ? 'bg-[#3D2B1F] text-white border-[#3D2B1F] font-bold shadow-md'
                                                                 : 'bg-white text-gray-700 border-gray-200 hover:border-[#3D2B1F] hover:text-[#3D2B1F]'
                                                                 }`}
                                                         >
