@@ -1750,46 +1750,55 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                             </select>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                                            <input type="date" className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.date} onChange={e => setNewAppt({ ...newAppt, date: e.target.value })} />
-                                        </div>
-                                        <div className="relative">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-                                            {isLoadingSlots ? (
-                                                <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
-                                                    <Loader2 size={16} className="animate-spin" /> Checking availability...
-                                                </div>
-                                            ) : (
-                                                <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto custom-scrollbar border border-gray-200 rounded-lg p-2">
-                                                    {timeSlots.length > 0 ? (
-                                                        timeSlots.map(t => (
-                                                            <button
-                                                                key={t}
-                                                                type="button"
-                                                                onClick={() => setNewAppt({ ...newAppt, time: t })}
-                                                                className={`px-2 py-1.5 text-xs rounded border transition-all ${newAppt.time === t
-                                                                    ? 'bg-[#3D2B1F] text-white border-[#3D2B1F] font-medium'
-                                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                                                    }`}
-                                                            >
-                                                                {t}
-                                                            </button>
-                                                        ))
-                                                    ) : (
-                                                        <div className="col-span-4 text-xs text-center text-gray-500 py-2 border border-dashed border-gray-300 rounded-lg">
-                                                            {newAppt.date ? 'No slots available' : 'Select a date first'}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
+
+                                    <div className="md:col-span-2 space-y-3 pt-2 border-t border-gray-100">
+                                        <label className="block text-sm font-bold text-gray-800">Date & Time</label>
+                                        <div className="space-y-4">
+                                            <input
+                                                type="date"
+                                                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#3D2B1F] text-base"
+                                                required
+                                                value={newAppt.date}
+                                                onChange={e => setNewAppt({ ...newAppt, date: e.target.value })}
+                                            />
+
+                                            <div className="relative bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Available Slots</label>
+                                                {isLoadingSlots ? (
+                                                    <div className="flex items-center justify-center gap-2 text-sm text-gray-500 py-4">
+                                                        <Loader2 size={18} className="animate-spin" /> checking...
+                                                    </div>
+                                                ) : (
+                                                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-48 overflow-y-auto custom-scrollbar">
+                                                        {timeSlots.length > 0 ? (
+                                                            timeSlots.map(t => (
+                                                                <button
+                                                                    key={t}
+                                                                    type="button"
+                                                                    onClick={() => setNewAppt({ ...newAppt, time: t })}
+                                                                    className={`px-1 py-2 text-sm rounded-md border transition-all shadow-sm ${newAppt.time === t
+                                                                            ? 'bg-[#3D2B1F] text-white border-[#3D2B1F] font-semibold ring-2 ring-offset-1 ring-[#3D2B1F]'
+                                                                            : 'bg-white text-gray-700 border-gray-200 hover:bg-white hover:border-[#3D2B1F] hover:text-[#3D2B1F]'
+                                                                        }`}
+                                                                >
+                                                                    {t}
+                                                                </button>
+                                                            ))
+                                                        ) : (
+                                                            <div className="col-span-full text-sm text-center text-gray-400 py-4 italic">
+                                                                {newAppt.date ? 'No slots available for this date' : 'Select a date to view slots'}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                    <button type="submit" className="w-full py-3 bg-[#3D2B1F] text-white rounded-lg mt-4 font-medium hover:bg-opacity-90 transition-colors" style={{ backgroundColor: '#3D2B1F' }}>
+                                    <button type="submit" className="w-full py-3.5 bg-[#3D2B1F] text-white rounded-lg mt-6 font-bold text-lg shadow-md hover:shadow-lg hover:bg-opacity-95 transition-all transform active:scale-[0.99]" style={{ backgroundColor: '#3D2B1F' }}>
                                         Confirm Booking
                                     </button>
                                 </form>
+                            )}
                         </motion.div>
                     </div>
                 )}
