@@ -94,11 +94,11 @@ const MainSite = () => {
 
   return (
     <>
-      {!showMainSite && (
-        <IntroVideo onComplete={handleIntroComplete} />
+      {!showMainSite && siteData.settings.intro_video_url && (
+        <IntroVideo onComplete={handleIntroComplete} videoUrl={siteData.settings.intro_video_url} />
       )}
 
-      {showMainSite && (
+      {(showMainSite || !siteData.settings.intro_video_url) && (
         <main className="main-content">
           <Navbar settings={siteData.settings} />
           <Hero settings={siteData.settings} />

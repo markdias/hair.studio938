@@ -13,6 +13,7 @@ import { useTheme } from '../lib/ThemeContext';
 
 const TABS = [
     { id: 'general', label: 'General Settings', icon: <Settings size={18} /> },
+    { id: 'hours', label: 'Opening Hours', icon: <Clock size={18} /> },
     { id: 'theme', label: 'Theme', icon: <Palette size={18} /> },
     { id: 'services', label: 'Services', icon: <Scissors size={18} /> },
     { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
@@ -244,6 +245,7 @@ const AdminDashboard = () => {
 const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClients }) => {
     switch (activeTab) {
         case 'general': return <GeneralTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} />;
+        case 'hours': return <OpeningHoursTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} />;
         case 'theme': return <ThemeTab showMessage={showMessage} />;
         case 'services': return <ServicesTab services={data.services} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
         case 'pricing': return <PricingTab pricing={data.pricing} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
@@ -303,6 +305,64 @@ const ImageUploader = ({ onUpload, folder = 'general', showMessage }) => {
             >
                 {uploading ? <Loader2 size={16} className="animate-spin" /> : <Image size={16} />}
                 {uploading ? 'Uploading...' : 'Upload Image'}
+            </button>
+        </div>
+    );
+};
+
+const VideoUploader = ({ onUpload, folder = 'videos', showMessage }) => {
+    const [uploading, setUploading] = useState(false);
+
+    const handleUpload = async (e) => {
+        try {
+            setUploading(true);
+            if (!e.target.files || e.target.files.length === 0) return;
+            const file = e.target.files[0];
+
+            // Validate file type
+            if (!file.type.startsWith('video/')) {
+                showMessage('error', 'Please select a valid video file');
+                return;
+            }
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `${folder}/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('salon-assets')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from('salon-assets')
+                .getPublicUrl(filePath);
+
+            onUpload(data.publicUrl);
+            showMessage('success', 'Video uploaded successfully!');
+        } catch (error) {
+            showMessage('error', 'Error uploading video: ' + error.message);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    return (
+        <div className="relative inline-block">
+            <input
+                type="file"
+                accept="video/*"
+                onChange={handleUpload}
+                disabled={uploading}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            />
+            <button
+                disabled={uploading}
+                className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-all" style={{ backgroundColor: "#3D2B1F" }}
+            >
+                {uploading ? <Loader2 size={16} className="animate-spin" /> : <Image size={16} />}
+                {uploading ? 'Uploading...' : 'Upload Video'}
             </button>
         </div>
     );
@@ -645,6 +705,33 @@ const OpeningHoursPicker = ({ initialValue, onSave, showMessage }) => {
                 Set Opening Hours
             </button>
         </div>
+    );
+};
+
+const OpeningHoursTab = ({ settings, setSettings, showMessage }) => {
+    const handleSaveOpeningHours = async (formattedHours) => {
+        try {
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({ key: 'opening_hours', value: formattedHours });
+            if (error) throw error;
+            showMessage('success', 'Opening hours updated!');
+            setSettings(prev => ({ ...prev, opening_hours: formattedHours }));
+        } catch (err) {
+            showMessage('error', err.message);
+        }
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Opening Hours</h2>
+
+            <OpeningHoursPicker
+                initialValue={settings.opening_hours || ''}
+                onSave={handleSaveOpeningHours}
+                showMessage={showMessage}
+            />
+        </motion.div>
     );
 };
 
@@ -1078,14 +1165,18 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                 </div>
             </div>
 
-            {/* Branding & Hero Background Side-by-Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Branding Editor - Full Width */}
+            <div className="mb-6">
                 <BrandingEditor
                     settings={settings}
                     onSave={handleSave}
                     showMessage={showMessage}
                 />
+            </div>
 
+            {/* Hero Background & Intro Video Side-by-Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Hero Background */}
                 <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full flex flex-col">
                     <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                         <Image size={18} /> Hero Background
@@ -1097,7 +1188,33 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                                 onUpload={(url) => handleSave('hero_bg_url', url)}
                                 showMessage={showMessage}
                             />
+                            {settings.hero_bg_url && (
+                                <button
+                                    onClick={() => handleSave('hero_bg_url', '')}
+                                    className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-all"
+                                >
+                                    Remove
+                                </button>
+                            )}
                         </div>
+                        <div className="flex gap-3">
+                            <input
+                                type="text"
+                                placeholder="Or paste image URL (e.g., direct image link)"
+                                value={settings.hero_bg_url || ''}
+                                onChange={(e) => setSettings({ ...settings, hero_bg_url: e.target.value })}
+                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-sm"
+                            />
+                            <button
+                                onClick={() => handleSave('hero_bg_url', settings.hero_bg_url)}
+                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary-brown)" }}
+                            >
+                                <Save size={18} />
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                            Background image for your website's hero section.
+                        </p>
                         <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-stone-50 shadow-sm">
                             {settings.hero_bg_url ? (
                                 <>
@@ -1110,6 +1227,62 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
                                     No image selected
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Intro Video */}
+                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full flex flex-col">
+                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Image size={18} /> Intro Video
+                    </h3>
+                    <div className="flex flex-col gap-4 flex-grow">
+                        <div className="flex items-center gap-4">
+                            <VideoUploader
+                                folder="videos"
+                                onUpload={(url) => handleSave('intro_video_url', url)}
+                                showMessage={showMessage}
+                            />
+                            {settings.intro_video_url && (
+                                <button
+                                    onClick={() => handleSave('intro_video_url', '')}
+                                    className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-all"
+                                >
+                                    Remove
+                                </button>
+                            )}
+                        </div>
+                        <div className="flex gap-3">
+                            <input
+                                type="text"
+                                placeholder="Or paste video URL (e.g., Instagram, direct MP4 link)"
+                                value={settings.intro_video_url || ''}
+                                onChange={(e) => setSettings({ ...settings, intro_video_url: e.target.value })}
+                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-sm"
+                            />
+                            <button
+                                onClick={() => handleSave('intro_video_url', settings.intro_video_url)}
+                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary-brown)" }}
+                            >
+                                <Save size={18} />
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                            Plays when users first visit your website.
+                        </p>
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-stone-50 shadow-sm">
+                            {settings.intro_video_url ? (
+                                <video
+                                    src={settings.intro_video_url}
+                                    controls
+                                    className="w-full h-full object-cover"
+                                    style={{ backgroundColor: 'var(--primary-brown)' }}
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                                    No video selected
                                 </div>
                             )}
                         </div>
@@ -1145,15 +1318,6 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                         </div>
                     </div>
                 ))}
-            </div>
-
-            {/* Opening Hours Picker - Full Width */}
-            <div className="mb-6">
-                <OpeningHoursPicker
-                    initialValue={settings.opening_hours || ''}
-                    onSave={handleSaveOpeningHours}
-                    showMessage={showMessage}
-                />
             </div>
         </motion.div>
     );
