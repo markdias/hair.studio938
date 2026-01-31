@@ -41,7 +41,7 @@ const MainSite = () => {
 
   // CMS Data States
   const [siteData, setSiteData] = useState({
-    settings: {}, services: [], pricing: [], team: [], gallery: [], testimonials: [], loading: true
+    settings: {}, services: [], pricing: [], team: [], gallery: [], testimonials: [], phoneNumbers: [], loading: true
   });
 
   useEffect(() => {
@@ -56,14 +56,16 @@ const MainSite = () => {
         { data: prices },
         { data: stls },
         { data: gly },
-        { data: tests }
+        { data: tests },
+        { data: phones }
       ] = await Promise.all([
         supabase.from('site_settings').select('*'),
         supabase.from('services_overview').select('*'),
         supabase.from('price_list').select('*').order('sort_order'),
         supabase.from('stylist_calendars').select('*'),
         supabase.from('gallery_images').select('*').order('sort_order'),
-        supabase.from('testimonials').select('*').order('sort_order')
+        supabase.from('testimonials').select('*').order('sort_order'),
+        supabase.from('phone_numbers').select('*').order('display_order')
       ]);
 
       const settingsObj = {};
@@ -76,6 +78,7 @@ const MainSite = () => {
         team: stls || [],
         gallery: gly || [],
         testimonials: tests || [],
+        phoneNumbers: phones || [],
         loading: false
       });
     } catch (err) {
@@ -105,7 +108,7 @@ const MainSite = () => {
           <Testimonials testimonials={siteData.testimonials} settings={siteData.settings} />
           <BookingSystem />
           <Gallery images={siteData.gallery} settings={siteData.settings} />
-          <Contact settings={siteData.settings} />
+          <Contact settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />
           <Footer settings={siteData.settings} />
           <Analytics />
         </main>

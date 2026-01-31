@@ -454,24 +454,113 @@ const PriceList = ({ pricing = [], settings = {} }) => {
     );
 };
 
-const Contact = ({ settings = {} }) => {
-    const phone = settings.phone || "07376 168558";
-    const phoneLink = `tel:${phone.replace(/\s/g, '')}`;
-    const whatsapp = settings.whatsapp || "07376 168558";
-    const whatsappLink = `https://wa.me/44${whatsapp.replace(/\s|^0/g, '')}`;
+const Contact = ({ settings = {}, phoneNumbers = [] }) => {
     const email = settings.email || "hair.studio938@gmail.com";
     const address = settings.address || "938 High Road, London, N12 9RT";
 
-    const activeCards = [
-        { type: 'combined' },
-        { type: 'email' },
-        { type: 'address' },
-        settings.instagram_url && { type: 'instagram' },
-        settings.facebook_url && { type: 'facebook' },
-        settings.tiktok_url && { type: 'tiktok' }
-    ].filter(Boolean);
+    // Build contact cards array
+    const contactCards = [];
 
-    const cardCount = activeCards.length;
+    // Add phone number cards - one card per phone number
+    phoneNumbers.forEach((phoneItem, index) => {
+        const number = phoneItem.number;
+        const phoneLink = `tel:${number.replace(/\s/g, '')}`;
+        const whatsappLink = `https://wa.me/44${number.replace(/\s|^0/g, '')}`;
+
+        if (phoneItem.type === 'both') {
+            // Show dropdown with both options
+            contactCards.push({
+                key: `phone-both-${index}`,
+                isCombined: true,
+                label: "Call or WhatsApp",
+                value: number,
+                options: [
+                    { icon: <Phone size={18} />, label: "Call Us", link: phoneLink },
+                    { icon: <MessageCircle size={18} />, label: "WhatsApp", link: whatsappLink }
+                ]
+            });
+        } else if (phoneItem.type === 'phone') {
+            // Direct call link
+            contactCards.push({
+                key: `phone-${index}`,
+                icon: <Phone size={24} />,
+                label: "Phone",
+                value: number,
+                link: phoneLink
+            });
+        } else if (phoneItem.type === 'whatsapp') {
+            // Direct WhatsApp link
+            contactCards.push({
+                key: `whatsapp-${index}`,
+                icon: <MessageCircle size={24} />,
+                label: "WhatsApp",
+                value: number,
+                link: whatsappLink
+            });
+        }
+    });
+
+    // Add email card
+    contactCards.push({
+        key: 'email',
+        icon: <Mail size={24} />,
+        label: "Email",
+        value: email,
+        link: `mailto:${email}`
+    });
+
+    // Add address card
+    contactCards.push({
+        key: 'address',
+        icon: <MapPin size={24} />,
+        label: "Location",
+        value: address,
+        link: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+    });
+
+    // Add social media cards
+    if (settings.instagram_url) {
+        contactCards.push({
+            key: 'instagram',
+            icon: <Instagram size={24} />,
+            label: "Instagram",
+            value: "Follow Us",
+            link: settings.instagram_url
+        });
+    }
+
+    if (settings.facebook_url) {
+        contactCards.push({
+            key: 'facebook',
+            icon: <Facebook size={24} />,
+            label: "Facebook",
+            value: "Join Us",
+            link: settings.facebook_url
+        });
+    }
+
+    if (settings.tiktok_url) {
+        contactCards.push({
+            key: 'tiktok',
+            icon: <Music2 size={24} />,
+            label: "TikTok",
+            value: "Watch Us",
+            link: settings.tiktok_url
+        });
+    }
+
+    // Calculate optimal number of columns for balanced rows
+    const totalCards = contactCards.length;
+    let columns;
+    if (totalCards <= 3) {
+        columns = totalCards; // 1-3 items: all in one row
+    } else if (totalCards === 4) {
+        columns = 2; // 4 items: 2x2 grid
+    } else if (totalCards <= 6) {
+        columns = 3; // 5-6 items: 3 columns
+    } else {
+        columns = 4; // 7+ items: 4 columns
+    }
 
     return (
         <section id="contact" style={{
@@ -486,57 +575,13 @@ const Contact = ({ settings = {} }) => {
 
                 <div className="contact-grid" style={{
                     display: 'grid',
-                    gridTemplateColumns: cardCount === 4
-                        ? 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))'
-                        : 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gridTemplateColumns: `repeat(${columns}, 1fr)`,
                     gap: '30px',
                     marginTop: '60px'
                 }}>
-                    <ContactCard
-                        isCombined
-                        label="Call or WhatsApp"
-                        value={phone}
-                        options={[
-                            { icon: <Phone size={18} />, label: "Call Us", link: phoneLink },
-                            { icon: <MessageCircle size={18} />, label: "WhatsApp", link: whatsappLink }
-                        ]}
-                    />
-                    <ContactCard
-                        icon={<Mail size={24} />}
-                        label="Email"
-                        value={email}
-                        link={`mailto:${email}`}
-                    />
-                    <ContactCard
-                        icon={<MapPin size={24} />}
-                        label="Location"
-                        value={address}
-                        link={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
-                    />
-                    {settings.instagram_url && (
-                        <ContactCard
-                            icon={<Instagram size={24} />}
-                            label="Instagram"
-                            value="Follow Us"
-                            link={settings.instagram_url}
-                        />
-                    )}
-                    {settings.facebook_url && (
-                        <ContactCard
-                            icon={<Facebook size={24} />}
-                            label="Facebook"
-                            value="Join Us"
-                            link={settings.facebook_url}
-                        />
-                    )}
-                    {settings.tiktok_url && (
-                        <ContactCard
-                            icon={<Music2 size={24} />}
-                            label="TikTok"
-                            value="Watch Us"
-                            link={settings.tiktok_url}
-                        />
-                    )}
+                    {contactCards.map(card => (
+                        <ContactCard key={card.key} {...card} />
+                    ))}
                 </div>
             </div>
         </section>

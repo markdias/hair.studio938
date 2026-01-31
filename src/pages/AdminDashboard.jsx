@@ -36,8 +36,6 @@ const TIME_SLOTS = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
 const GENERAL_FIELDS = [
     { key: 'hero_title', label: 'Hero Title', icon: <Info size={16} /> },
     { key: 'hero_subtitle', label: 'Hero Subtitle', icon: <Info size={16} /> },
-    { key: 'phone', label: 'Phone Number', icon: <Phone size={16} /> },
-    { key: 'whatsapp', label: 'WhatsApp Number', icon: <Phone size={16} /> },
     { key: 'email', label: 'Email Address', icon: <Mail size={16} /> },
     { key: 'address', label: 'Salon Address', icon: <MapPin size={16} /> },
     { key: 'instagram_url', label: 'Instagram URL', icon: <Instagram size={16} /> },
@@ -650,6 +648,177 @@ const OpeningHoursPicker = ({ initialValue, onSave, showMessage }) => {
     );
 };
 
+const PhoneNumbersEditor = ({ showMessage }) => {
+    const [phoneNumbers, setPhoneNumbers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchPhoneNumbers();
+    }, []);
+
+    const fetchPhoneNumbers = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('phone_numbers')
+                .select('*')
+                .order('display_order');
+
+            if (error) throw error;
+            setPhoneNumbers(data || []);
+        } catch (err) {
+            console.error('Error fetching phone numbers:', err);
+            showMessage('error', 'Error loading phone numbers');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAdd = async () => {
+        try {
+            const maxOrder = phoneNumbers.length > 0
+                ? Math.max(...phoneNumbers.map(p => p.display_order))
+                : 0;
+
+            const { data, error } = await supabase
+                .from('phone_numbers')
+                .insert([{ number: '', type: 'phone', display_order: maxOrder + 1 }])
+                .select()
+                .single();
+
+            if (error) throw error;
+            setPhoneNumbers([...phoneNumbers, data]);
+            showMessage('success', 'Phone number added');
+        } catch (err) {
+            console.error('Error adding phone number:', err);
+            showMessage('error', 'Error adding phone number');
+        }
+    };
+
+    const handleUpdate = async (id, field, value) => {
+        try {
+            const { error } = await supabase
+                .from('phone_numbers')
+                .update({ [field]: value })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            setPhoneNumbers(phoneNumbers.map(p =>
+                p.id === id ? { ...p, [field]: value } : p
+            ));
+            showMessage('success', 'Phone number updated');
+        } catch (err) {
+            console.error('Error updating phone number:', err);
+            showMessage('error', 'Error updating phone number');
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Delete this phone number?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('phone_numbers')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            setPhoneNumbers(phoneNumbers.filter(p => p.id !== id));
+            showMessage('success', 'Phone number deleted');
+        } catch (err) {
+            console.error('Error deleting phone number:', err);
+            showMessage('error', 'Error deleting phone number');
+        }
+    };
+
+    const getTypeButtonClass = (currentType, buttonType) => {
+        const isActive = currentType === buttonType;
+        return `px-3 py-1 text-xs font-medium rounded transition-all ${isActive
+            ? 'text-white border-2'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-2 border-transparent'
+            }`;
+    };
+
+    if (loading) {
+        return (
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                <Loader2 size={24} className="animate-spin text-stone-800 mx-auto" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                    <Phone size={16} />
+                    Phone Numbers
+                </label>
+                <button
+                    onClick={handleAdd}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-stone-800 text-white rounded-lg text-xs font-medium hover:bg-opacity-90 transition-all"
+                    style={{ backgroundColor: 'var(--primary-brown)' }}
+                >
+                    <Plus size={14} />
+                    Add Number
+                </button>
+            </div>
+
+            {phoneNumbers.length === 0 ? (
+                <div className="text-sm text-gray-500 text-center py-8">
+                    No phone numbers added yet. Click "Add Number" to get started.
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {phoneNumbers.map((phone) => (
+                        <div key={phone.id} className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg border border-stone-100">
+                            <input
+                                type="text"
+                                value={phone.number}
+                                onChange={(e) => handleUpdate(phone.id, 'number', e.target.value)}
+                                placeholder="Enter phone number"
+                                className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
+                            />
+
+                            <div className="flex gap-1">
+                                <button
+                                    onClick={() => handleUpdate(phone.id, 'type', 'phone')}
+                                    className={getTypeButtonClass(phone.type, 'phone')}
+                                    style={phone.type === 'phone' ? { backgroundColor: 'var(--primary-brown)', borderColor: 'var(--primary-brown)' } : {}}
+                                >
+                                    Phone
+                                </button>
+                                <button
+                                    onClick={() => handleUpdate(phone.id, 'type', 'whatsapp')}
+                                    className={getTypeButtonClass(phone.type, 'whatsapp')}
+                                    style={phone.type === 'whatsapp' ? { backgroundColor: '#25D366', borderColor: '#25D366' } : {}}
+                                >
+                                    WhatsApp
+                                </button>
+                                <button
+                                    onClick={() => handleUpdate(phone.id, 'type', 'both')}
+                                    className={getTypeButtonClass(phone.type, 'both')}
+                                    style={phone.type === 'both' ? { backgroundColor: 'var(--primary-brown)', borderColor: 'var(--primary-brown)' } : {}}
+                                >
+                                    Both
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={() => handleDelete(phone.id)}
+                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const BrandingEditor = ({ settings, onSave, showMessage }) => {
     const [logoUrl, setLogoUrl] = useState(settings.logo_url || '/logo.png');
     const [size, setSize] = useState(parseInt(settings.logo_size) || 85);
@@ -946,6 +1115,11 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Phone Numbers Editor - Full Width */}
+            <div className="mb-6">
+                <PhoneNumbersEditor showMessage={showMessage} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
