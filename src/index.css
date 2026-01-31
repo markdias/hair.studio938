@@ -13,6 +13,7 @@
   /* Default values, overridden by ThemeContext */
   --primary-brown: #3D2B1F;
   --primary-brown-hover: #4D3B2F;
+  --primary-brown-rgb: 61, 43, 31;
   --accent-cream: #EAE0D5;
   --soft-cream: #F5F1ED;
   --text-dark: #2A1D15;

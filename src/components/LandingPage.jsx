@@ -27,10 +27,10 @@ const Navbar = ({ settings }) => {
             justifyContent: 'space-between',
             alignItems: 'center',
             zIndex: 1000,
-            backgroundColor: (isScrolled || isMenuOpen) ? 'rgba(var(--primary-brown-rgb), 0.98)' : 'transparent',
-            backdropFilter: (isScrolled || isMenuOpen) ? 'blur(10px)' : 'none',
+            backgroundColor: (isScrolled || isMenuOpen) ? 'rgba(var(--primary-brown-rgb), 0.98)' : 'rgba(var(--primary-brown-rgb), 0.8)',
+            backdropFilter: 'blur(10px)',
             transition: 'all 0.4s ease',
-            color: (isScrolled || isMenuOpen) ? 'var(--accent-cream)' : 'var(--text-light)',
+            color: 'var(--accent-cream)',
             boxSizing: 'border-box'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -58,8 +58,8 @@ const Navbar = ({ settings }) => {
                 <a href="#contact">Contact</a>
                 <a href="#booking" className="btn-primary" style={{
                     padding: '10px 24px',
-                    backgroundColor: isScrolled ? 'var(--accent-cream)' : 'var(--primary-brown)',
-                    color: isScrolled ? 'var(--primary-brown)' : 'var(--accent-cream)',
+                    backgroundColor: 'var(--accent-cream)',
+                    color: 'var(--primary-brown)',
                     textDecoration: 'none'
                 }}>
                     Book Now
