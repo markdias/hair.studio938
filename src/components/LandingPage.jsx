@@ -46,6 +46,15 @@ const Navbar = ({ settings }) => {
                         transition: 'all 0.4s ease'
                     }}
                 />
+                <span style={{
+                    fontSize: isScrolled ? '1.2rem' : '1.5rem',
+                    fontWeight: '700',
+                    letterSpacing: '1px',
+                    transition: 'all 0.4s ease',
+                    fontFamily: 'var(--font-heading)'
+                }}>
+                    {settings.business_name || 'STUDIO 938'}
+                </span>
             </div>
 
             {/* Desktop Menu */}
@@ -122,6 +131,17 @@ const Hero = ({ settings = {} }) => {
                     boxSizing: 'border-box'
                 }}
             >
+                <div style={{
+                    fontSize: '0.9rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '4px',
+                    marginBottom: '1rem',
+                    opacity: 0.8,
+                    fontWeight: '600',
+                    color: 'var(--accent-cream)'
+                }}>
+                    {settings.business_name || 'STUDIO 938'}
+                </div>
                 <h1 className="responsive-title" style={{
                     fontSize: 'clamp(3.5rem, 8vw, 5.5rem)',
                     marginBottom: '1.5rem',

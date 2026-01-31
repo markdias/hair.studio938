@@ -11,6 +11,27 @@ const AdminLogin = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+    const [businessName, setBusinessName] = useState('938 Salon Management');
+
+    useEffect(() => {
+        const fetchBusinessName = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('site_settings')
+                    .select('value')
+                    .eq('key', 'business_name')
+                    .single();
+
+                if (data && !error) {
+                    setBusinessName(data.value);
+                }
+            } catch (err) {
+                console.error('Error fetching business name:', err);
+            }
+        };
+        fetchBusinessName();
+    }, []);
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -40,8 +61,8 @@ const AdminLogin = () => {
                 className="w-full max-w-md bg-[#1a1a1a] border border-white/10 rounded-2xl p-8 shadow-2xl"
             >
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-light text-white mb-2 tracking-widest">ADMIN PORTAL</h1>
-                    <p className="text-white/40 font-light italic">938 Salon Management</p>
+                    <h1 className="text-3xl font-light text-white mb-2 tracking-widest uppercase">ADMIN PORTAL</h1>
+                    <p className="text-white/40 font-light italic">{businessName}</p>
                 </div>
 
                 {error && (
