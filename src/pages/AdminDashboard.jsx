@@ -1712,8 +1712,8 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                                 type="button"
                                                                 onClick={() => setNewAppt({ ...newAppt, time: t })}
                                                                 className={`px-2 py-1.5 text-xs rounded border transition-all ${newAppt.time === t
-                                                                        ? 'bg-[#3D2B1F] text-white border-[#3D2B1F] font-medium'
-                                                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                                                    ? 'bg-[#3D2B1F] text-white border-[#3D2B1F] font-medium'
+                                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                                                                     }`}
                                                             >
                                                                 {t}
@@ -2459,7 +2459,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
         );
     };
 
-    export default AdminDashboard;
+
 
     // --- CLIENTS TAB COMPONENT ---
     const ClientsTab = ({ clients, setClients, showMessage, refreshClients }) => {
@@ -2612,3 +2612,4 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
             </motion.div>
         );
     };
+    export default AdminDashboard;
