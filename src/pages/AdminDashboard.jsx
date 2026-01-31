@@ -244,7 +244,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'pricing': return <PricingTab pricing={data.pricing} setPricing={setData.setPricing} showMessage={showMessage} />;
         case 'team': return <TeamTab stylists={data.stylists} refresh={refresh} showMessage={showMessage} />;
         case 'gallery': return <GalleryTab gallery={data.gallery} setGallery={setData.setGallery} showMessage={showMessage} />;
-        case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} />;
+        case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} setClients={setData.setClients} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} />;
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} />;
         default: return null;
@@ -1263,7 +1263,7 @@ const GalleryTab = ({ gallery, refresh, showMessage }) => {
     );
 };
 
-const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, services, stylists, pricing, openingHours }) => {
+const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, setClients, services, stylists, pricing, openingHours }) => {
     const [loading, setLoading] = useState(false);
     const [editingAppt, setEditingAppt] = useState(null);
     const [filterStylist, setFilterStylist] = useState('all');
