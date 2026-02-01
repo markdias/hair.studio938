@@ -86,6 +86,7 @@ const AdminDashboard = () => {
     const [siteSettings, setSiteSettings] = useState({});
     const [services, setServices] = useState([]);
     const [pricing, setPricing] = useState([]);
+    const [priceCategories, setPriceCategories] = useState([]);
     const [stylists, setStylists] = useState([]);
     const [gallery, setGallery] = useState([]);
     const [appointments, setAppointments] = useState([]);
@@ -108,7 +109,8 @@ const AdminDashboard = () => {
                 { data: gly },
                 { data: clts },
                 { data: tests },
-                { data: customSects }
+                { data: customSects },
+                { data: cats }
             ] = await Promise.all([
                 supabase.from('site_settings').select('*'),
                 supabase.from('services_overview').select('*'),
@@ -117,7 +119,8 @@ const AdminDashboard = () => {
                 supabase.from('gallery_images').select('*').order('sort_order'),
                 supabase.from('clients').select('*').order('created_at', { ascending: false }),
                 supabase.from('testimonials').select('*').order('sort_order'),
-                supabase.from('custom_sections').select('*, custom_section_elements(*)').order('sort_order')
+                supabase.from('custom_sections').select('*, custom_section_elements(*)').order('sort_order'),
+                supabase.from('price_categories').select('*').order('sort_order')
             ]);
             if (settings) {
                 const settingsObj = {};
@@ -127,6 +130,7 @@ const AdminDashboard = () => {
 
             if (srvs) setServices(srvs);
             if (prices) setPricing(prices);
+            if (cats) setPriceCategories(cats);
             if (stls) setStylists(stls);
             if (gly) setGallery(gly);
             if (clts) setClients(clts);
@@ -231,8 +235,8 @@ const AdminDashboard = () => {
 
                     <TabContent
                         activeTab={activeTab}
-                        data={{ siteSettings, services, pricing, stylists, gallery, appointments, clients, testimonials, customSections }}
-                        setData={{ setSiteSettings, setServices, setPricing, setStylists, setGallery, setAppointments, setClients, setTestimonials, setCustomSections }}
+                        data={{ siteSettings, services, pricing, priceCategories, stylists, gallery, appointments, clients, testimonials, customSections }}
+                        setData={{ setSiteSettings, setServices, setPricing, setPriceCategories, setStylists, setGallery, setAppointments, setClients, setTestimonials, setCustomSections }}
                         refresh={fetchAllData}
                         showMessage={showMessage}
                         fetchClients={fetchClients}
@@ -249,7 +253,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'hours': return <OpeningHoursTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} />;
         case 'theme': return <ThemeTab showMessage={showMessage} />;
         case 'services': return <ServicesTab services={data.services} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
-        case 'pricing': return <PricingTab pricing={data.pricing} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
+        case 'pricing': return <PricingTab pricing={data.pricing} categories={data.priceCategories} refresh={refresh} showMessage={showMessage} settings={data.siteSettings} setSettings={setData.setSiteSettings} />;
         case 'team': return <TeamTab stylists={data.stylists} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
         case 'gallery': return <GalleryTab gallery={data.gallery} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
         case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} setClients={setData.setClients} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} />;
@@ -1652,11 +1656,15 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings }) 
     );
 };
 
-const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) => {
+const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSettings }) => {
     const [localPricing, setLocalPricing] = useState(pricing);
-    const [newItem, setNewItem] = useState({ category: 'CUT & STYLING', item_name: '', price: '', duration_minutes: 60 });
+    const [localCategories, setLocalCategories] = useState(categories);
+    const [newItem, setNewItem] = useState({ category: categories[0]?.name || '', item_name: '', price: '', duration_minutes: 60 });
+    const [isManagingCategories, setIsManagingCategories] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
 
     useEffect(() => { setLocalPricing(pricing); }, [pricing]);
+    useEffect(() => { setLocalCategories(categories); if (categories.length > 0 && !newItem.category) setNewItem(prev => ({ ...prev, category: categories[0].name })); }, [categories]);
 
     const handleFieldChange = (idx, field, value) => {
         const updated = [...localPricing];
@@ -1674,8 +1682,8 @@ const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) =>
     };
 
     const handleAdd = async () => {
-        if (!newItem.item_name || !newItem.price) {
-            showMessage('error', 'Please fill in all fields');
+        if (!newItem.item_name || !newItem.price || !newItem.category) {
+            showMessage('error', 'Please fill in all fields (including category)');
             return;
         }
         try {
@@ -1696,12 +1704,34 @@ const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) =>
         } catch (err) { showMessage('error', err.message); }
     };
 
-    const formatDuration = (minutes) => {
-        if (!minutes) return 'Not set';
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        if (mins === 0) return `${hours}h`;
-        return `${hours}h ${mins}m`;
+    const handleAddCategory = async () => {
+        if (!newCategoryName) return;
+        try {
+            const { error } = await supabase.from('price_categories').insert([{ name: newCategoryName, sort_order: localCategories.length * 10 }]);
+            if (error) throw error;
+            setNewCategoryName('');
+            refresh();
+            showMessage('success', 'Category added');
+        } catch (err) { showMessage('error', err.message); }
+    };
+
+    const handleDeleteCategory = async (cat) => {
+        if (!confirm(`Are you sure? This will NOT delete services in this category, but they will point to a missing category. Delete "${cat.name}"?`)) return;
+        try {
+            const { error } = await supabase.from('price_categories').delete().eq('id', cat.id);
+            if (error) throw error;
+            refresh();
+            showMessage('success', 'Category removed');
+        } catch (err) { showMessage('error', err.message); }
+    };
+
+    const handleUpdateCategory = async (cat, newName) => {
+        try {
+            const { error } = await supabase.from('price_categories').update({ name: newName }).eq('id', cat.id);
+            if (error) throw error;
+            refresh();
+            showMessage('success', 'Category updated');
+        } catch (err) { showMessage('error', err.message); }
     };
 
     return (
@@ -1715,7 +1745,61 @@ const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) =>
                 defaultHeadingName="Price list"
                 description="Enable or disable the pricing list section and customize its heading."
             />
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Price List</h2>
+
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900">Price List</h2>
+                <button
+                    onClick={() => setIsManagingCategories(!isManagingCategories)}
+                    className="text-sm font-medium text-stone-800 hover:underline flex items-center gap-1"
+                >
+                    {isManagingCategories ? 'Close Category Manager' : 'Manage Service Categories'}
+                </button>
+            </div>
+
+            {isManagingCategories && (
+                <div className="bg-stone-50 rounded-xl border border-stone-200 p-6 mb-8">
+                    <h3 className="text-lg font-semibold text-stone-900 mb-4">Manage Service Categories</h3>
+
+                    <div className="flex gap-4 mb-6">
+                        <input
+                            placeholder="New Category Name (e.g. NAILS)"
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                            className="flex-grow px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                        <button
+                            onClick={handleAddCategory}
+                            className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all flex items-center gap-2"
+                            style={{ backgroundColor: "#3D2B1F" }}
+                        >
+                            <Plus size={18} /> Add Category
+                        </button>
+                    </div>
+
+                    <div className="space-y-3">
+                        {localCategories.map((cat, idx) => (
+                            <div key={cat.id || idx} className="flex items-center justify-between p-3 bg-white border border-stone-200 rounded-lg">
+                                <input
+                                    value={cat.name}
+                                    onChange={(e) => {
+                                        const updated = [...localCategories];
+                                        updated[idx].name = e.target.value;
+                                        setLocalCategories(updated);
+                                    }}
+                                    onBlur={(e) => handleUpdateCategory(cat, e.target.value)}
+                                    className="font-medium text-stone-800 border-none p-0 focus:ring-0 outline-none flex-grow"
+                                />
+                                <button
+                                    onClick={() => handleDeleteCategory(cat)}
+                                    className="text-red-500 hover:text-red-700 p-1"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm">
                 <h3 className="text-sm font-medium text-gray-700 mb-4">Add New Service</h3>
@@ -1725,11 +1809,9 @@ const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) =>
                         onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
                         className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     >
-                        <option>CUT & STYLING</option>
-                        <option>COLOURING</option>
-                        <option>HAIR TREATMENTS</option>
-                        <option>HAIR EXTENSIONS</option>
-                        <option>MAKE UP</option>
+                        {localCategories.map(cat => (
+                            <option key={cat.id} value={cat.name}>{cat.name}</option>
+                        ))}
                     </select>
                     <input
                         placeholder="Service Name"
@@ -1771,7 +1853,15 @@ const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) =>
                     <div key={item.id || idx} className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col md:flex-row md:items-center justify-between shadow-sm hover:shadow-md transition-shadow gap-4">
                         <div className="flex-grow flex flex-col md:flex-row md:items-center gap-4">
                             <div className="min-w-[120px]">
-                                <span className="text-[10px] text-gray-500 uppercase tracking-wider block mb-1">{item.category}</span>
+                                <select
+                                    value={item.category}
+                                    onChange={(e) => handleFieldChange(idx, 'category', e.target.value)}
+                                    className="text-[10px] text-gray-500 uppercase tracking-wider block mb-1 border-none bg-transparent p-0 focus:ring-0 outline-none cursor-pointer"
+                                >
+                                    {localCategories.map(cat => (
+                                        <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                    ))}
+                                </select>
                                 <input
                                     value={item.item_name}
                                     onChange={(e) => handleFieldChange(idx, 'item_name', e.target.value)}
