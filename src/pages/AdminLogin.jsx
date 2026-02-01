@@ -54,22 +54,23 @@ const AdminLogin = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
+        <div className="min-h-screen bg-[var(--soft-cream)] flex items-center justify-center p-4 transition-colors duration-500">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md bg-[#1a1a1a] border border-white/10 rounded-2xl p-8 shadow-2xl"
+                className="w-full max-w-md bg-white border border-[var(--primary-brown)]/10 rounded-2xl p-8 shadow-2xl"
             >
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-light text-white mb-2 tracking-widest uppercase">ADMIN PORTAL</h1>
-                    <p className="text-white/40 font-light italic">{businessName}</p>
+                    <h1 className="text-3xl font-light text-[var(--text-dark)] mb-2 tracking-widest uppercase" style={{ fontFamily: 'var(--font-heading)' }}>ADMIN PORTAL</h1>
+                    <p className="text-[var(--text-dark)]/40 font-light italic">{businessName}</p>
+                    <div className="w-12 h-0.5 bg-[var(--primary-brown)]/20 mx-auto mt-4"></div>
                 </div>
 
                 {error && (
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3 text-red-400 text-sm"
+                        className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3 text-red-600 text-sm"
                     >
                         <AlertCircle size={18} />
                         {error}
@@ -78,14 +79,14 @@ const AdminLogin = () => {
 
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-widest text-white/60 ml-1">Email</label>
+                        <label className="text-xs uppercase tracking-widest text-[var(--text-dark)]/60 ml-1 font-semibold">Email</label>
                         <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={18} />
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--primary-brown)]/30" size={18} />
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-10 text-white focus:outline-none focus:border-white/30 transition-colors"
+                                className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-10 text-[var(--text-dark)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-brown)]/20 focus:border-[var(--primary-brown)]/30 transition-all"
                                 placeholder="admin@studio938.com"
                                 required
                             />
@@ -93,14 +94,14 @@ const AdminLogin = () => {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-widest text-white/60 ml-1">Password</label>
+                        <label className="text-xs uppercase tracking-widest text-[var(--text-dark)]/60 ml-1 font-semibold">Password</label>
                         <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={18} />
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--primary-brown)]/30" size={18} />
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-10 text-white focus:outline-none focus:border-white/30 transition-colors"
+                                className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-10 text-[var(--text-dark)] focus:outline-none focus:ring-2 focus:ring-[var(--primary-brown)]/20 focus:border-[var(--primary-brown)]/30 transition-all"
                                 placeholder="••••••••"
                                 required
                             />
@@ -110,7 +111,11 @@ const AdminLogin = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-white text-black font-medium py-3 rounded-xl hover:bg-white/90 transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+                        className="w-full py-4 rounded-xl font-bold tracking-widest text-sm uppercase transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-[0.98] disabled:opacity-50"
+                        style={{
+                            backgroundColor: 'var(--primary-brown)',
+                            color: 'var(--accent-cream)'
+                        }}
                     >
                         {loading ? (
                             <motion.div
@@ -128,9 +133,9 @@ const AdminLogin = () => {
                 <div className="mt-8 text-center">
                     <button
                         onClick={() => navigate('/')}
-                        className="text-white/40 text-xs hover:text-white transition-colors"
+                        className="text-[var(--text-dark)]/40 text-xs font-medium hover:text-[var(--primary-brown)] transition-colors flex items-center justify-center gap-2 mx-auto"
                     >
-                        Back to Website
+                        <span>&larr;</span> Back to Website
                     </button>
                 </div>
             </motion.div>
