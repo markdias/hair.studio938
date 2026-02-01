@@ -298,7 +298,7 @@ const BookingSystem = () => {
                     overflow: 'hidden',
                     display: 'grid',
                     gridTemplateColumns: 'minmax(300px, 1fr) 2fr',
-                    height: '600px'
+                    height: '750px'
                 }} className="booking-card">
 
                     <div style={{
@@ -326,7 +326,7 @@ const BookingSystem = () => {
                         </div>
                     </div>
 
-                    <div style={{ padding: '60px', position: 'relative', overflowY: 'auto' }}>
+                    <div style={{ padding: '60px', position: 'relative' }}>
                         <AnimatePresence mode="wait">
                             {isSuccess ? (
                                 <motion.div key="success" variants={containerVariants} initial="hidden" animate="visible" style={{ textAlign: 'center', paddingTop: '10px' }}>
