@@ -419,6 +419,29 @@ const BookingSystem = () => {
                                                     </button>
                                                 ))}
                                             </div>
+                                            <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                                                <button
+                                                    onClick={nextStep}
+                                                    style={{
+                                                        padding: '12px 24px',
+                                                        backgroundColor: 'transparent',
+                                                        color: 'var(--primary-brown)',
+                                                        border: '1px solid var(--primary-brown)',
+                                                        borderRadius: '8px',
+                                                        fontSize: '0.9rem',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.target.style.backgroundColor = 'var(--soft-cream)';
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.target.style.backgroundColor = 'transparent';
+                                                    }}
+                                                >
+                                                    Skip - I'll take any available stylist
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
 
