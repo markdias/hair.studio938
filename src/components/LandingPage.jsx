@@ -627,14 +627,105 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
         backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
         margin: '0 auto 40px'
     };
-    // ... rest of logic
+
+    // Build contact cards array
     const contactCards = [];
-    // ... rest of logic (keeping same to avoid huge chunk)
-    // Actually I must include the logic between or use multiple chunks properly.
-    // I'll use another chunk for the return.
-    // But I'll need to pass textColor to ContactCard.
-    // I will redefine ContactCard to accept textColor.
-    // ...
+
+    // Add phone number cards - one card per phone number
+    phoneNumbers.forEach((phoneItem, index) => {
+        const number = phoneItem.number;
+        const phoneLink = `tel:${number.replace(/\s/g, '')}`;
+        const whatsappLink = `https://wa.me/44${number.replace(/\s|^0/g, '')}`;
+
+        if (phoneItem.type === 'both') {
+            contactCards.push({
+                key: `phone-both-${index}`,
+                isCombined: true,
+                label: "Call or WhatsApp",
+                value: number,
+                options: [
+                    { icon: <Phone size={18} />, label: "Call Us", link: phoneLink },
+                    { icon: <MessageCircle size={18} />, label: "WhatsApp", link: whatsappLink }
+                ]
+            });
+        } else if (phoneItem.type === 'phone') {
+            contactCards.push({
+                key: `phone-${index}`,
+                icon: <Phone size={24} />,
+                label: "Phone",
+                value: number,
+                link: phoneLink
+            });
+        } else if (phoneItem.type === 'whatsapp') {
+            contactCards.push({
+                key: `whatsapp-${index}`,
+                icon: <MessageCircle size={24} />,
+                label: "WhatsApp",
+                value: number,
+                link: whatsappLink
+            });
+        }
+    });
+
+    contactCards.push({
+        key: 'email',
+        icon: <Mail size={24} />,
+        label: "Email",
+        value: email,
+        link: `mailto:${email}`
+    });
+
+    contactCards.push({
+        key: 'address',
+        icon: <MapPin size={24} />,
+        label: "Location",
+        value: address,
+        link: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+    });
+
+    if (settings.instagram_url) {
+        contactCards.push({
+            key: 'instagram',
+            icon: <Instagram size={24} />,
+            label: "Instagram",
+            value: "Follow Us",
+            link: settings.instagram_url
+        });
+    }
+
+    if (settings.facebook_url) {
+        contactCards.push({
+            key: 'facebook',
+            icon: <Facebook size={24} />,
+            label: "Facebook",
+            value: "Join Us",
+            link: settings.facebook_url
+        });
+    }
+
+    if (settings.tiktok_url) {
+        contactCards.push({
+            key: 'tiktok',
+            icon: <Music2 size={24} />,
+            label: "TikTok",
+            value: "Watch Us",
+            link: settings.tiktok_url
+        });
+    }
+
+    // Calculate optimal number of columns for balanced rows
+    const totalCards = contactCards.length;
+    let columns;
+    if (totalCards <= 3) {
+        columns = totalCards;
+    } else if (totalCards === 4) {
+        columns = 2; // 2x2 grid
+    } else if (totalCards === 5 || totalCards === 6) {
+        columns = 3; // 3+2 or 3+3
+    } else {
+        columns = 4;
+    }
+
     return (
         <section id="contact" style={sectionStyle}>
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
