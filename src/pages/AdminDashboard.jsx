@@ -256,7 +256,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'pricing': return <PricingTab pricing={data.pricing} categories={data.priceCategories} refresh={refresh} showMessage={showMessage} settings={data.siteSettings} setSettings={setData.setSiteSettings} />;
         case 'team': return <TeamTab stylists={data.stylists} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
         case 'gallery': return <GalleryTab gallery={data.gallery} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
-        case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} setClients={setData.setClients} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} />;
+        case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} setClients={setData.setClients} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} defaultView={data.siteSettings?.default_appointment_view} />;
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
         case 'testimonials': return <TestimonialsTab testimonials={data.testimonials} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
         case 'custom_sections': return <CustomSectionsTab customSections={data.customSections} setCustomSections={setData.setCustomSections} siteSettings={data.site_settings} refresh={refresh} showMessage={showMessage} />;
@@ -1341,27 +1341,48 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
             </div>
 
             {/* Dedicated Business Name Editor */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
-                <label className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">
-                    <Scissors size={18} />
-                    Business Name
-                </label>
-                <div className="flex gap-3">
-                    <input
-                        type="text"
-                        placeholder="e.g. Studio 938"
-                        value={settings.business_name || ''}
-                        onChange={(e) => setSettings({ ...settings, business_name: e.target.value })}
-                        className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-lg font-medium"
-                    />
-                    <button
-                        onClick={() => handleSave('business_name', settings.business_name)}
-                        className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center gap-2"
-                        style={{ backgroundColor: "var(--primary-brown)" }}
-                    >
-                        <Save size={18} />
-                        Update Name
-                    </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+                        <Scissors size={18} />
+                        Business Name
+                    </label>
+                    <div className="flex gap-3">
+                        <input
+                            type="text"
+                            placeholder="e.g. Studio 938"
+                            value={settings.business_name || ''}
+                            onChange={(e) => setSettings({ ...settings, business_name: e.target.value })}
+                            className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-lg font-medium"
+                        />
+                        <button
+                            onClick={() => handleSave('business_name', settings.business_name)}
+                            className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center gap-2"
+                            style={{ backgroundColor: "var(--primary-brown)" }}
+                        >
+                            <Save size={18} />
+                            Save
+                        </button>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+                        <Calendar size={18} />
+                        Default Appointment View
+                    </label>
+                    <div className="flex gap-3">
+                        <select
+                            value={settings.default_appointment_view || 'list'}
+                            onChange={(e) => handleSave('default_appointment_view', e.target.value)}
+                            className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none h-[44px]"
+                        >
+                            <option value="list">List View</option>
+                            <option value="day">Day View</option>
+                            <option value="week">Week View</option>
+                            <option value="month">Month View</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -2148,14 +2169,19 @@ const GalleryTab = ({ gallery, refresh, showMessage, settings, setSettings }) =>
     );
 };
 
-const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, setClients, services, stylists, pricing, openingHours }) => {
+const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, setClients, services, stylists, pricing, openingHours, defaultView = 'list' }) => {
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false); // Loading state for saving appointments
     const [editingAppt, setEditingAppt] = useState(null);
     const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', service: '', date: '', time: '', stylist: '' });
     const [filterStylist, setFilterStylist] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
-    const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
+
+    // Initialize view modes based on defaultView prop
+    const initialViewMode = defaultView === 'list' ? 'list' : 'calendar';
+    const initialCalendarViewMode = ['day', 'week', 'month'].includes(defaultView) ? defaultView : 'week';
+
+    const [viewMode, setViewMode] = useState(initialViewMode); // 'list' or 'calendar'
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [clientSearch, setClientSearch] = useState(''); // Client search state
     const [newAppt, setNewAppt] = useState({ client_id: '', stylist: '', service: '', date: '', time: '', send_email: true });
@@ -2774,6 +2800,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                     stylists={stylists}
                     openingHours={openingHours}
                     onSlotClick={handleSlotClick}
+                    defaultMode={initialCalendarViewMode}
                 />
             )}
 
@@ -3215,9 +3242,9 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
 
 
 
-const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, stylists, openingHours, onSlotClick = () => { } }) => {
+const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, stylists, openingHours, onSlotClick = () => { }, defaultMode = 'week' }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [calendarViewMode, setCalendarViewMode] = useState('week'); // 'month', 'week', 'day'
+    const [calendarViewMode, setCalendarViewMode] = useState(defaultMode); // 'month', 'week', 'day'
 
     const parsedOpeningHours = React.useMemo(() => parseOpeningHours(openingHours), [openingHours]);
 
