@@ -657,11 +657,11 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
     return (
         <section id="contact" style={{
             padding: '120px 20px',
-            backgroundColor: 'var(--primary-brown)',
+            backgroundColor: 'var(--text-dark)',
             color: 'var(--accent-cream)',
             textAlign: 'center'
         }}>
-            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <h2 style={{ fontSize: 'clamp(2.5rem, 8vw, 4rem)', color: '#FFF', marginBottom: '15px' }}>Contact Us</h2>
                 <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--accent-cream)', margin: '0 auto 40px' }}></div>
 
@@ -674,6 +674,28 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
                     {contactCards.map(card => (
                         <ContactCard key={card.key} {...card} />
                     ))}
+                </div>
+
+                {/* Full Width Google Map */}
+                <div style={{
+                    width: '100%',
+                    height: '450px',
+                    marginTop: '80px',
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)',
+                    border: '1px solid rgba(234, 224, 213, 0.1)'
+                }}>
+                    <iframe
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title="Hair Studio 938 Location"
+                        src={`https://www.google.com/maps?q=${encodeURIComponent(address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    ></iframe>
                 </div>
             </div>
         </section>
