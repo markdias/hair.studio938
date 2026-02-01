@@ -20,7 +20,7 @@ const TABS = [
     { id: 'custom_sections', label: 'Custom Sections', icon: <List size={18} /> },
     { id: 'privacy', label: 'Privacy Policy', icon: <Shield size={18} /> },
     { id: 'messages', label: 'Messages', icon: <Mail size={18} /> },
-    { id: 'database', label: 'Database Settings', icon: <Database size={18} /> },
+    { id: 'page_flow', label: 'Page Flow', icon: <Database size={18} /> },
 ];
 
 const STYLIST_COLORS = {
@@ -258,7 +258,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'custom_sections': return <CustomSectionsTab customSections={data.customSections} setCustomSections={setData.setCustomSections} siteSettings={data.site_settings} refresh={refresh} showMessage={showMessage} />;
         case 'privacy': return <PrivacyPolicyEditor showMessage={showMessage} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} />;
-        case 'database': return <DatabaseSettingsTab customSections={data.customSections} showMessage={showMessage} />;
+        case 'page_flow': return <PageFlowTab customSections={data.customSections} showMessage={showMessage} />;
         default: return null;
     }
 };
@@ -4324,6 +4324,16 @@ const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, re
                 .single();
 
             if (error) throw error;
+
+            // Immediately add to page flow table for visibility
+            await supabase.from('site_page_sections').upsert({
+                id: data.id,
+                label: data.title,
+                is_custom: true,
+                sort_order: (maxOrder + 1) * 10,
+                enabled: true
+            });
+
             setCustomSections([...customSections, data]);
             setEditingSection(data);
             showMessage('success', 'Section created! Add elements to get started.');
@@ -4343,7 +4353,12 @@ const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, re
                 .eq('id', sectionId);
 
             if (error) throw error;
-            setCustomSections(customSections.filter(s => s.id !== sectionId));
+
+            // Also remove from page flow table
+            await supabase.from('site_page_sections').delete().eq('id', sectionId);
+
+            const updatedSections = customSections.filter(s => s.id !== sectionId);
+            setCustomSections(updatedSections);
             if (editingSection?.id === sectionId) setEditingSection(null);
             showMessage('success', 'Section deleted');
         } catch (err) {
@@ -4466,10 +4481,10 @@ const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, re
 };
 
 // ============================================================
-// DATABASE SETTINGS TAB - Global Page Order Management
+// PAGE FLOW TAB - Global Page Order Management
 // ============================================================
 
-const DatabaseSettingsTab = ({ customSections, showMessage }) => {
+const PageFlowTab = ({ customSections, showMessage }) => {
     const [pageSections, setPageSections] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -4591,7 +4606,7 @@ const DatabaseSettingsTab = ({ customSections, showMessage }) => {
                 <div>
                     <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
                         <Database size={24} />
-                        Database Settings: Page Flow
+                        Page Flow
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">
                         Control the global vertical order and visibility of all website sections.
@@ -4661,7 +4676,7 @@ const DatabaseSettingsTab = ({ customSections, showMessage }) => {
                     <Info size={20} />
                 </div>
                 <div>
-                    <h4 className="font-bold text-blue-900">About Database Settings</h4>
+                    <h4 className="font-bold text-blue-900">About Page Flow</h4>
                     <p className="text-sm text-blue-800/80 mt-1 leading-relaxed">
                         This table directly controls the <code>site_page_sections</code> database table.
                         Moving items here will immediately change their position on the live website.
@@ -4707,6 +4722,12 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                 .eq('id', localSection.id);
 
             if (error) throw error;
+
+            // Update label in page flow table if it changed
+            await supabase.from('site_page_sections')
+                .update({ label: localSection.title })
+                .eq('id', localSection.id);
+
             showMessage('success', 'Section settings saved');
         } catch (err) {
             console.error('Error saving section:', err);

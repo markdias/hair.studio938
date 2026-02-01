@@ -61,9 +61,41 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
             {/* Desktop Menu */}
             <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px', fontWeight: '500' }}>
                 <a href="#home">Home</a>
-                {pageSections.length > 0 ? (
-                    pageSections.map(section => {
+                {(() => {
+                    const DEFAULT_ORDER = [
+                        { id: 'services', label: 'Services', sort_order: 10 },
+                        { id: 'team', label: 'Team', sort_order: 20 },
+                        { id: 'pricing', label: 'Pricing', sort_order: 30 },
+                        { id: 'gallery', label: 'Gallery', sort_order: 60 },
+                        { id: 'testimonials', label: 'Testimonials', sort_order: 40 },
+                        { id: 'contact', label: 'Contact', sort_order: 70 }
+                    ];
+
+                    let sectionsToRender = pageSections.length > 0
+                        ? [...pageSections]
+                        : DEFAULT_ORDER.map(s => ({ ...s, enabled: true }));
+
+                    DEFAULT_ORDER.forEach(def => {
+                        if (!sectionsToRender.find(s => s.id === def.id)) {
+                            sectionsToRender.push({ ...def, enabled: true });
+                        }
+                    });
+
+                    customSections.forEach(cs => {
+                        if (!sectionsToRender.find(ps => ps.id === cs.id)) {
+                            sectionsToRender.push({
+                                id: cs.id,
+                                is_custom: true,
+                                enabled: true,
+                                sort_order: 999
+                            });
+                        }
+                    });
+
+                    return sectionsToRender.sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999)).map(section => {
                         const id = section.id;
+                        if (section.enabled === false) return null;
+
                         if (id === 'services' && settings.show_services_section !== 'false')
                             return <a key="services" href="#services">{settings.services_menu_name || 'Services'}</a>;
                         if (id === 'team' && settings.show_team_section !== 'false')
@@ -83,17 +115,8 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                             return <a key={custom.id} href={`#custom-section-${custom.id}`}>{custom.menu_name}</a>;
                         }
                         return null;
-                    })
-                ) : (
-                    // Fallback
-                    <>
-                        <a href="#services">Services</a>
-                        <a href="#team">Team</a>
-                        <a href="#pricing">Pricing</a>
-                        <a href="#gallery">Gallery</a>
-                        <a href="#contact">Contact</a>
-                    </>
-                )}
+                    });
+                })()}
                 <a href="#booking" className="btn-primary" style={{
                     padding: '10px 24px',
                     backgroundColor: 'var(--accent-cream)',
@@ -112,9 +135,42 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
             {/* Mobile Menu Overlay */}
             <div className="nav-links-mobile">
                 <a href="#home" onClick={toggleMenu}>Home</a>
-                {pageSections.length > 0 ? (
-                    pageSections.map(section => {
+                {(() => {
+                    const DEFAULT_ORDER = [
+                        { id: 'services', label: 'Services', sort_order: 10 },
+                        { id: 'team', label: 'Team', sort_order: 20 },
+                        { id: 'pricing', label: 'Pricing', sort_order: 30 },
+                        { id: 'gallery', label: 'Gallery', sort_order: 60 },
+                        { id: 'testimonials', label: 'Testimonials', sort_order: 40 },
+                        { id: 'contact', label: 'Contact', sort_order: 70 }
+                    ];
+
+                    let sectionsToRender = pageSections.length >
+                        0
+                        ? [...pageSections]
+                        : DEFAULT_ORDER.map(s => ({ ...s, enabled: true }));
+
+                    DEFAULT_ORDER.forEach(def => {
+                        if (!sectionsToRender.find(s => s.id === def.id)) {
+                            sectionsToRender.push({ ...def, enabled: true });
+                        }
+                    });
+
+                    customSections.forEach(cs => {
+                        if (!sectionsToRender.find(ps => ps.id === cs.id)) {
+                            sectionsToRender.push({
+                                id: cs.id,
+                                is_custom: true,
+                                enabled: true,
+                                sort_order: 999
+                            });
+                        }
+                    });
+
+                    return sectionsToRender.sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999)).map(section => {
                         const id = section.id;
+                        if (section.enabled === false) return null;
+
                         if (id === 'services' && settings.show_services_section !== 'false')
                             return <a key="services" href="#services" onClick={toggleMenu}>{settings.services_menu_name || 'Services'}</a>;
                         if (id === 'team' && settings.show_team_section !== 'false')
@@ -133,16 +189,8 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                             return <a key={custom.id} href={`#custom-section-${custom.id}`} onClick={toggleMenu}>{custom.menu_name}</a>;
                         }
                         return null;
-                    })
-                ) : (
-                    <>
-                        <a href="#services" onClick={toggleMenu}>Services</a>
-                        <a href="#team" onClick={toggleMenu}>Team</a>
-                        <a href="#pricing" onClick={toggleMenu}>Pricing</a>
-                        <a href="#gallery" onClick={toggleMenu}>Gallery</a>
-                        <a href="#contact" onClick={toggleMenu}>Contact</a>
-                    </>
-                )}
+                    });
+                })()}
                 <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
             </div>
         </nav>

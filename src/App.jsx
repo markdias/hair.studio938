@@ -116,9 +116,46 @@ const MainSite = () => {
               <Navbar settings={siteData.settings} customSections={siteData.customSections} pageSections={siteData.pageSections} />
               <Hero settings={siteData.settings} />
 
-              {siteData.pageSections.length > 0 ? (
-                siteData.pageSections.map(section => {
+              {(() => {
+                const DEFAULT_ORDER = [
+                  { id: 'services', label: 'Services', sort_order: 10 },
+                  { id: 'team', label: 'Team', sort_order: 20 },
+                  { id: 'pricing', label: 'Pricing', sort_order: 30 },
+                  { id: 'testimonials', label: 'Testimonials', sort_order: 40 },
+                  { id: 'booking', label: 'Booking', sort_order: 50 },
+                  { id: 'gallery', label: 'Gallery', sort_order: 60 },
+                  { id: 'contact', label: 'Contact', sort_order: 70 }
+                ];
+
+                // Start with table data, fall back to default order if empty
+                let sectionsToRender = siteData.pageSections.length > 0
+                  ? [...siteData.pageSections]
+                  : DEFAULT_ORDER.map(s => ({ ...s, enabled: true }));
+
+                // Ensure ALL default sections exist in the list
+                DEFAULT_ORDER.forEach(def => {
+                  if (!sectionsToRender.find(s => s.id === def.id)) {
+                    sectionsToRender.push({ ...def, enabled: true });
+                  }
+                });
+
+                // Add any custom sections that aren't in the list yet
+                siteData.customSections.forEach(cs => {
+                  if (!sectionsToRender.find(ps => ps.id === cs.id)) {
+                    sectionsToRender.push({
+                      id: cs.id,
+                      is_custom: true,
+                      enabled: true,
+                      sort_order: 999 // Put at end by default
+                    });
+                  }
+                });
+
+                return sectionsToRender.sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999)).map(section => {
                   const id = section.id;
+                  // If explicit enabled field exists and is false, skip (unless it's custom and we handled it)
+                  if (section.enabled === false) return null;
+
                   // Fixed Sections
                   if (id === 'services') return <Services key="services" services={siteData.services} settings={siteData.settings} />;
                   if (id === 'team') return <TeamSection key="team" team={siteData.team} settings={siteData.settings} />;
@@ -134,22 +171,8 @@ const MainSite = () => {
                     return <CustomSection key={customSection.id} data={customSection} />;
                   }
                   return null;
-                })
-              ) : (
-                // Fallback to default order if pageSections is empty
-                <>
-                  <Services services={siteData.services} settings={siteData.settings} />
-                  <TeamSection team={siteData.team} settings={siteData.settings} />
-                  <PriceList pricing={siteData.pricing} settings={siteData.settings} />
-                  <Testimonials testimonials={siteData.testimonials} settings={siteData.settings} />
-                  <BookingSystem />
-                  {siteData.customSections.map((section) => (
-                    <CustomSection key={section.id} data={section} />
-                  ))}
-                  <Gallery images={siteData.gallery} settings={siteData.settings} />
-                  <Contact settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />
-                </>
-              )}
+                });
+              })()}
 
               <Footer settings={siteData.settings} />
               <Analytics />
