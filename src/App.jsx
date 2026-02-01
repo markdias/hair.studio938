@@ -87,7 +87,7 @@ const MainSite = () => {
         testimonials: tests || [],
         phoneNumbers: phones || [],
         customSections: customSects || [],
-        pageSections: (sections || []).filter(s => s.enabled !== false),
+        pageSections: sections || [],
         loading: false
       });
     } catch (err) {

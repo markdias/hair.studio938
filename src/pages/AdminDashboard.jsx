@@ -4548,14 +4548,25 @@ const PageFlowTab = ({ customSections, showMessage }) => {
 
     const handleToggleEnabled = async (id, currentStatus) => {
         try {
+            const newStatus = !currentStatus;
             const { error } = await supabase
                 .from('site_page_sections')
-                .update({ enabled: !currentStatus })
+                .update({ enabled: newStatus })
                 .eq('id', id);
 
             if (error) throw error;
-            setPageSections(prev => prev.map(s => s.id === id ? { ...s, enabled: !currentStatus } : s));
-            showMessage('success', 'Section visibility updated');
+
+            // Also update custom_sections if this is a custom section to keep in sync
+            const section = pageSections.find(s => s.id === id);
+            if (section && section.is_custom) {
+                await supabase
+                    .from('custom_sections')
+                    .update({ enabled: newStatus })
+                    .eq('id', id);
+            }
+
+            setPageSections(prev => prev.map(s => s.id === id ? { ...s, enabled: newStatus } : s));
+            showMessage('success', 'Visibility updated');
         } catch (err) {
             showMessage('error', 'Error updating visibility');
         }
@@ -4658,11 +4669,11 @@ const PageFlowTab = ({ customSections, showMessage }) => {
                             <div className="col-span-2 flex justify-center">
                                 <button
                                     onClick={() => handleToggleEnabled(section.id, section.enabled)}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${section.enabled ? 'bg-stone-800' : 'bg-gray-200'}`}
-                                    style={section.enabled ? { backgroundColor: 'var(--primary-brown)' } : {}}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-stone-500 focus:outline-none ${section.enabled ? 'bg-stone-800' : 'bg-gray-400'}`}
+                                    style={section.enabled ? { backgroundColor: 'var(--primary-brown)' } : { backgroundColor: '#9ca3af' }}
                                 >
                                     <span
-                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${section.enabled ? 'translate-x-6' : 'translate-x-1'}`}
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${section.enabled ? 'translate-x-6' : 'translate-x-1'}`}
                                     />
                                 </button>
                             </div>
@@ -4723,9 +4734,12 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
 
             if (error) throw error;
 
-            // Update label in page flow table if it changed
+            // Update label and visibility in page flow table
             await supabase.from('site_page_sections')
-                .update({ label: localSection.title })
+                .update({
+                    label: localSection.title,
+                    enabled: localSection.enabled
+                })
                 .eq('id', localSection.id);
 
             showMessage('success', 'Section settings saved');
@@ -4904,10 +4918,10 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                         <label className="text-sm font-medium text-gray-700 mr-4">Show Section</label>
                         <button
                             onClick={() => setLocalSection({ ...localSection, enabled: !localSection.enabled })}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${localSection.enabled ? 'border-[#3D2B1F]' : 'border-gray-200'}`}
-                            style={{ backgroundColor: localSection.enabled ? '#3D2B1F' : '#E5E7EB' }}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${localSection.enabled ? 'bg-stone-800' : 'bg-gray-400'}`}
+                            style={localSection.enabled ? { backgroundColor: 'var(--primary-brown)' } : { backgroundColor: '#9ca3af' }}
                         >
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${localSection.enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${localSection.enabled ? 'translate-x-6' : 'translate-x-1'}`} />
                         </button>
                     </div>
                 </div>
