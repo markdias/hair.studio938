@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database } from 'lucide-react';
+import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
 
