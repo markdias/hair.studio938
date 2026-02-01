@@ -329,7 +329,7 @@ const BookingSystem = () => {
                     <div style={{ padding: '60px', position: 'relative', overflowY: 'auto' }}>
                         <AnimatePresence mode="wait">
                             {isSuccess ? (
-                                <motion.div key="success" variants={containerVariants} initial="hidden" animate="visible" style={{ textAlign: 'center', paddingTop: '20px' }}>
+                                <motion.div key="success" variants={containerVariants} initial="hidden" animate="visible" style={{ textAlign: 'center', paddingTop: '10px' }}>
                                     <div style={{ width: '60px', height: '60px', backgroundColor: 'var(--primary-brown)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                                         <Check color="var(--accent-cream)" size={30} />
                                     </div>
