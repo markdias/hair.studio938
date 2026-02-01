@@ -4,11 +4,8 @@ import { Calendar as CalendarIcon, Clock, User, Scissors, Check, ChevronRight, C
 import { supabase } from '../lib/supabase';
 import AntdDatePicker from './AntdDatePicker';
 
-const categories = [
-    { title: "CUT & STYLING", items: ["Wash cut & blowdry", "Wash & cut", "Wash & blowdry", "Styling", "Hair Up"] },
-    { title: "COLOURING", items: ["T-section highlights", "Half head highlights", "Full head highlights", "Balyage", "Full head tint"] },
-    { title: "TREATMENTS", items: ["Keratin blowdry", "Hair Botox", "Olaplex"] },
-];
+// categories will be fetched from the database
+
 
 // Helper function to parse opening hours string
 const parseOpeningHours = (text) => {
@@ -83,6 +80,7 @@ const BookingSystem = () => {
     const [stylists, setStylists] = useState([]);
     const [isLoadingStylists, setIsLoadingStylists] = useState(true);
     const [openingHours, setOpeningHours] = useState(null);
+    const [categories, setCategories] = useState([]);
     const [serviceDurations, setServiceDurations] = useState({});
     const [step, setStep] = useState(1);
     const [booking, setBooking] = useState({
@@ -125,22 +123,38 @@ const BookingSystem = () => {
             }
         };
 
-        const fetchServiceDurations = async () => {
-            const { data, error } = await supabase
-                .from('price_list')
-                .select('item_name, duration_minutes');
-            if (!error && data) {
-                const durations = {};
-                data.forEach(s => {
-                    durations[s.item_name] = s.duration_minutes || 60;
-                });
-                setServiceDurations(durations);
+        const fetchServicesData = async () => {
+            try {
+                const [catsRes, priceListRes] = await Promise.all([
+                    supabase.from('price_categories').select('*').order('sort_order'),
+                    supabase.from('price_list').select('*').order('sort_order')
+                ]);
+
+                if (catsRes.data && priceListRes.data) {
+                    const durations = {};
+                    priceListRes.data.forEach(s => {
+                        durations[s.item_name] = s.duration_minutes || 60;
+                    });
+                    setServiceDurations(durations);
+
+                    // Group price_list by categories
+                    const grouped = catsRes.data.map(cat => ({
+                        title: cat.name,
+                        items: priceListRes.data
+                            .filter(item => item.category === cat.name)
+                            .map(item => item.item_name)
+                    })).filter(cat => cat.items.length > 0);
+
+                    setCategories(grouped);
+                }
+            } catch (err) {
+                console.error('Error fetching services:', err);
             }
         };
 
         fetchStylists();
         fetchOpeningHours();
-        fetchServiceDurations();
+        fetchServicesData();
     }, []);
 
     const [timeSlots, setTimeSlots] = useState([]);
