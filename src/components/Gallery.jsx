@@ -74,21 +74,36 @@ const Gallery = ({ images = [], settings = {} }) => {
 
     if (displayImages.length === 0) return null;
 
+    const bgColor = settings.gallery_bg_color;
+    const textColor = settings.gallery_text_color;
+
+    const sectionStyle = {
+        padding: '120px 0',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'inherit',
+        overflow: 'hidden',
+        position: 'relative'
+    };
+
+    const headingStyle = {
+        fontSize: 'clamp(2.5rem, 8vw, 4rem)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+        marginBottom: '15px'
+    };
+
+    const lineStyle = {
+        width: '60px',
+        height: '2px',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+        margin: '0 auto 20px'
+    };
+
     return (
-        <section id="gallery" style={{
-            padding: '120px 0',
-            backgroundColor: 'var(--primary-brown)',
-            overflow: 'hidden',
-            position: 'relative'
-        }}>
+        <section id="gallery" style={sectionStyle}>
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px', position: 'relative' }}>
                 <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-                    <h2 style={{
-                        fontSize: 'clamp(2.5rem, 8vw, 4rem)',
-                        color: 'var(--accent-cream)',
-                        marginBottom: '15px'
-                    }}>{settings.gallery_heading_name || 'Gallery'}</h2>
-                    <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--accent-cream)', margin: '0 auto 20px' }}></div>
+                    <h2 style={headingStyle}>{settings.gallery_heading_name || 'Gallery'}</h2>
+                    <div style={lineStyle}></div>
                     <a
                         href="https://www.instagram.com/hair.studio938/"
                         target="_blank"
@@ -97,7 +112,7 @@ const Gallery = ({ images = [], settings = {} }) => {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '8px',
-                            color: 'var(--accent-cream)',
+                            color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
                             opacity: 0.8,
                             fontSize: '1rem',
                             letterSpacing: '1px'

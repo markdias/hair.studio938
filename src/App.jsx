@@ -162,7 +162,7 @@ const MainSite = () => {
                   if (id === 'team') return <TeamSection key="team" team={siteData.team} settings={siteData.settings} />;
                   if (id === 'pricing') return <PriceList key="pricing" pricing={siteData.pricing} settings={siteData.settings} />;
                   if (id === 'testimonials') return <Testimonials key="testimonials" testimonials={siteData.testimonials} settings={siteData.settings} />;
-                  if (id === 'booking') return <BookingSystem key="booking" />;
+                  if (id === 'booking') return <BookingSystem key="booking" settings={siteData.settings} />;
                   if (id === 'gallery') return <Gallery key="gallery" images={siteData.gallery} settings={siteData.settings} />;
                   if (id === 'contact') return <Contact key="contact" settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />;
 
