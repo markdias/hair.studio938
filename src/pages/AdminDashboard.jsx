@@ -43,7 +43,6 @@ const GENERAL_FIELDS = [
     { key: 'instagram_url', label: 'Instagram URL', icon: <Instagram size={16} /> },
     { key: 'facebook_url', label: 'Facebook URL', icon: <Facebook size={16} /> },
     { key: 'tiktok_url', label: 'TikTok URL', icon: <Music2 size={16} /> },
-    { key: 'hero_bg_url', label: 'Hero Background Image URL', icon: <Image size={16} /> },
 ];
 
 const EMAIL_VARIABLES = [
