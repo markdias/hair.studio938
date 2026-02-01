@@ -11,6 +11,7 @@ const TABS = [
     { id: 'theme', label: 'Themes', icon: <Palette size={18} /> },
     { id: 'messages', label: 'Messages', icon: <Mail size={18} /> },
     { id: 'privacy', label: 'Privacy Policy', icon: <Shield size={18} /> },
+    { id: 'terms', label: 'Terms & Conditions', icon: <Shield size={18} /> },
     { id: 'page_flow', label: 'Page Flow', icon: <ArrowRightLeft size={18} /> },
     { id: 'appointments', label: 'Appointments', icon: <Calendar size={18} /> },
     { id: 'hours', label: 'Opening Hours', icon: <Clock size={18} /> },
@@ -21,7 +22,6 @@ const TABS = [
     { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
     { id: 'services', label: 'Services', icon: <Scissors size={18} /> },
     { id: 'custom_sections', label: 'Custom Section', icon: <List size={18} /> },
-    { id: 'terms', label: 'Terms & Conditions', icon: <Shield size={18} /> },
 ];
 
 const STYLIST_COLORS = {
