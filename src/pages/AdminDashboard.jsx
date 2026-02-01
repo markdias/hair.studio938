@@ -2,28 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Save, LogOut, Check, Info, Loader2,
-    Settings, Scissors, Tag, Image, Plus, Trash2,
-    MapPin, Phone, Mail, Clock, User, Calendar, Edit, X,
-    List, ChevronLeft, ChevronRight, ChevronDown, Instagram, Facebook, Music2, Maximize2, Search, Palette, MessageCircle, Shield, AlertTriangle
-} from 'lucide-react';
+import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
 
 const TABS = [
     { id: 'general', label: 'General Settings', icon: <Settings size={18} /> },
-    { id: 'hours', label: 'Opening Hours', icon: <Clock size={18} /> },
-    { id: 'theme', label: 'Theme', icon: <Palette size={18} /> },
-    { id: 'services', label: 'Services', icon: <Scissors size={18} /> },
-    { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
-    { id: 'team', label: 'Team', icon: <User size={18} /> },
-    { id: 'gallery', label: 'Gallery', icon: <Image size={18} /> },
-    { id: 'appointments', label: 'Appointments', icon: <Calendar size={18} /> },
-    { id: 'clients', label: 'Clients', icon: <User size={18} /> }, // Added Clients tab
-    { id: 'testimonials', label: 'Testimonials', icon: <MessageCircle size={18} /> },
-    { id: 'privacy', label: 'Privacy Policy', icon: <Shield size={18} /> },
+    { id: 'theme', label: 'Themes', icon: <Palette size={18} /> },
     { id: 'messages', label: 'Messages', icon: <Mail size={18} /> },
+    { id: 'privacy', label: 'Privacy Policy', icon: <Shield size={18} /> },
+    { id: 'page_flow', label: 'Page Flow', icon: <ArrowRightLeft size={18} /> },
+    { id: 'appointments', label: 'Appointments', icon: <Calendar size={18} /> },
+    { id: 'hours', label: 'Opening Hours', icon: <Clock size={18} /> },
+    { id: 'clients', label: 'Clients', icon: <User size={18} /> },
+    { id: 'team', label: 'Team', icon: <User size={18} /> },
+    { id: 'testimonials', label: 'Testimonials', icon: <MessageCircle size={18} /> },
+    { id: 'gallery', label: 'Gallery', icon: <Image size={18} /> },
+    { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
+    { id: 'services', label: 'Services', icon: <Scissors size={18} /> },
+    { id: 'custom_sections', label: 'Custom Section', icon: <List size={18} /> },
 ];
 
 const STYLIST_COLORS = {
@@ -89,11 +86,13 @@ const AdminDashboard = () => {
     const [siteSettings, setSiteSettings] = useState({});
     const [services, setServices] = useState([]);
     const [pricing, setPricing] = useState([]);
+    const [priceCategories, setPriceCategories] = useState([]);
     const [stylists, setStylists] = useState([]);
     const [gallery, setGallery] = useState([]);
     const [appointments, setAppointments] = useState([]);
     const [clients, setClients] = useState([]); // Added clients state
     const [testimonials, setTestimonials] = useState([]);
+    const [customSections, setCustomSections] = useState([]);
 
     useEffect(() => {
         fetchAllData();
@@ -109,7 +108,9 @@ const AdminDashboard = () => {
                 { data: stls },
                 { data: gly },
                 { data: clts },
-                { data: tests }
+                { data: tests },
+                { data: customSects },
+                { data: cats }
             ] = await Promise.all([
                 supabase.from('site_settings').select('*'),
                 supabase.from('services_overview').select('*'),
@@ -117,7 +118,9 @@ const AdminDashboard = () => {
                 supabase.from('stylist_calendars').select('*'),
                 supabase.from('gallery_images').select('*').order('sort_order'),
                 supabase.from('clients').select('*').order('created_at', { ascending: false }),
-                supabase.from('testimonials').select('*').order('sort_order')
+                supabase.from('testimonials').select('*').order('sort_order'),
+                supabase.from('custom_sections').select('*, custom_section_elements(*)').order('sort_order'),
+                supabase.from('price_categories').select('*').order('sort_order')
             ]);
             if (settings) {
                 const settingsObj = {};
@@ -127,10 +130,12 @@ const AdminDashboard = () => {
 
             if (srvs) setServices(srvs);
             if (prices) setPricing(prices);
+            if (cats) setPriceCategories(cats);
             if (stls) setStylists(stls);
             if (gly) setGallery(gly);
             if (clts) setClients(clts);
             if (tests) setTestimonials(tests);
+            if (customSects) setCustomSections(customSects);
 
         } catch (err) {
             console.error('Error fetching data:', err.message);
@@ -230,11 +235,11 @@ const AdminDashboard = () => {
 
                     <TabContent
                         activeTab={activeTab}
-                        data={{ siteSettings, services, pricing, stylists, gallery, appointments, clients, testimonials }} // Pass clients data
-                        setData={{ setSiteSettings, setServices, setPricing, setStylists, setGallery, setAppointments, setClients, setTestimonials }} // Pass setClients
+                        data={{ siteSettings, services, pricing, priceCategories, stylists, gallery, appointments, clients, testimonials, customSections }}
+                        setData={{ setSiteSettings, setServices, setPricing, setPriceCategories, setStylists, setGallery, setAppointments, setClients, setTestimonials, setCustomSections }}
                         refresh={fetchAllData}
                         showMessage={showMessage}
-                        fetchClients={fetchClients} // Pass fetchClients
+                        fetchClients={fetchClients}
                     />
                 </div>
             </main>
@@ -248,14 +253,16 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'hours': return <OpeningHoursTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} />;
         case 'theme': return <ThemeTab showMessage={showMessage} />;
         case 'services': return <ServicesTab services={data.services} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
-        case 'pricing': return <PricingTab pricing={data.pricing} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
+        case 'pricing': return <PricingTab pricing={data.pricing} categories={data.priceCategories} refresh={refresh} showMessage={showMessage} settings={data.siteSettings} setSettings={setData.setSiteSettings} />;
         case 'team': return <TeamTab stylists={data.stylists} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
         case 'gallery': return <GalleryTab gallery={data.gallery} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
         case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} setClients={setData.setClients} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} />;
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
         case 'testimonials': return <TestimonialsTab testimonials={data.testimonials} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
+        case 'custom_sections': return <CustomSectionsTab customSections={data.customSections} setCustomSections={setData.setCustomSections} siteSettings={data.site_settings} refresh={refresh} showMessage={showMessage} />;
         case 'privacy': return <PrivacyPolicyEditor showMessage={showMessage} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} />;
+        case 'page_flow': return <PageFlowTab customSections={data.customSections} showMessage={showMessage} />;
         default: return null;
     }
 };
@@ -723,9 +730,42 @@ const OpeningHoursTab = ({ settings, setSettings, showMessage }) => {
         }
     };
 
+    const handleToggleVisibility = async (enabled) => {
+        try {
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({ key: 'show_opening_hours', value: String(enabled) });
+            if (error) throw error;
+            setSettings(prev => ({ ...prev, show_opening_hours: String(enabled) }));
+            showMessage('success', `Opening hours ${enabled ? 'enabled' : 'disabled'} on site`);
+        } catch (err) {
+            showMessage('error', err.message);
+        }
+    };
+
+    const isVisible = settings.show_opening_hours !== 'false';
+
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Opening Hours</h2>
+
+            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-medium text-gray-900">Show on Website</h3>
+                        <p className="text-sm text-gray-500 text-pretty max-w-md mt-1">
+                            Toggle whether the opening hours are displayed in the hero section of the home page.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => handleToggleVisibility(!isVisible)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isVisible ? 'bg-stone-800' : 'bg-gray-400'}`}
+                        style={isVisible ? { backgroundColor: 'var(--primary-brown)' } : { backgroundColor: '#9ca3af' }}
+                    >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${isVisible ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                </div>
+            </div>
 
             <OpeningHoursPicker
                 initialValue={settings.opening_hours || ''}
@@ -1173,6 +1213,15 @@ const ThemeTab = ({ showMessage }) => {
                                 <option value="'Lato', sans-serif">Lato (Sans-serif)</option>
                                 <option value="'Great Vibes', cursive">Great Vibes (Script)</option>
                             </select>
+                            <div
+                                className="mt-2 p-3 bg-white border border-gray-200 rounded text-center shadow-sm flex items-center justify-center"
+                                style={{
+                                    fontFamily: localTheme['--font-heading'] || "'Playfair Display', serif",
+                                    minHeight: '100px'
+                                }}
+                            >
+                                <p className="text-xl">The Art of Hair Styling</p>
+                            </div>
                         </div>
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-medium text-gray-700">Body Font</label>
@@ -1188,6 +1237,15 @@ const ThemeTab = ({ showMessage }) => {
                                 <option value="'Montserrat', sans-serif">Montserrat (Sans-serif)</option>
                                 <option value="'Playfair Display', serif">Playfair Display (Serif)</option>
                             </select>
+                            <div
+                                className="mt-2 p-3 bg-white border border-gray-200 rounded shadow-sm flex items-center justify-center text-center"
+                                style={{
+                                    fontFamily: localTheme['--font-body'] || "'Inter', sans-serif",
+                                    minHeight: '100px'
+                                }}
+                            >
+                                <p className="text-sm leading-relaxed">Luxury hair styling and bespoke treatments at 938 High Road. We provide professional hair services tailored to your unique style.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1225,8 +1283,8 @@ const ThemeTab = ({ showMessage }) => {
                         </button>
                     </div>
                 </div>
-            </div>
-        </motion.div>
+            </div >
+        </motion.div >
     );
 };
 
@@ -1598,11 +1656,15 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings }) 
     );
 };
 
-const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) => {
+const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSettings }) => {
     const [localPricing, setLocalPricing] = useState(pricing);
-    const [newItem, setNewItem] = useState({ category: 'CUT & STYLING', item_name: '', price: '', duration_minutes: 60 });
+    const [localCategories, setLocalCategories] = useState(categories);
+    const [newItem, setNewItem] = useState({ category: categories[0]?.name || '', item_name: '', price: '', duration_minutes: 60 });
+    const [isManagingCategories, setIsManagingCategories] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
 
     useEffect(() => { setLocalPricing(pricing); }, [pricing]);
+    useEffect(() => { setLocalCategories(categories); if (categories.length > 0 && !newItem.category) setNewItem(prev => ({ ...prev, category: categories[0].name })); }, [categories]);
 
     const handleFieldChange = (idx, field, value) => {
         const updated = [...localPricing];
@@ -1620,8 +1682,8 @@ const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) =>
     };
 
     const handleAdd = async () => {
-        if (!newItem.item_name || !newItem.price) {
-            showMessage('error', 'Please fill in all fields');
+        if (!newItem.item_name || !newItem.price || !newItem.category) {
+            showMessage('error', 'Please fill in all fields (including category)');
             return;
         }
         try {
@@ -1642,12 +1704,34 @@ const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) =>
         } catch (err) { showMessage('error', err.message); }
     };
 
-    const formatDuration = (minutes) => {
-        if (!minutes) return 'Not set';
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        if (mins === 0) return `${hours}h`;
-        return `${hours}h ${mins}m`;
+    const handleAddCategory = async () => {
+        if (!newCategoryName) return;
+        try {
+            const { error } = await supabase.from('price_categories').insert([{ name: newCategoryName, sort_order: localCategories.length * 10 }]);
+            if (error) throw error;
+            setNewCategoryName('');
+            refresh();
+            showMessage('success', 'Category added');
+        } catch (err) { showMessage('error', err.message); }
+    };
+
+    const handleDeleteCategory = async (cat) => {
+        if (!confirm(`Are you sure? This will NOT delete services in this category, but they will point to a missing category. Delete "${cat.name}"?`)) return;
+        try {
+            const { error } = await supabase.from('price_categories').delete().eq('id', cat.id);
+            if (error) throw error;
+            refresh();
+            showMessage('success', 'Category removed');
+        } catch (err) { showMessage('error', err.message); }
+    };
+
+    const handleUpdateCategory = async (cat, newName) => {
+        try {
+            const { error } = await supabase.from('price_categories').update({ name: newName }).eq('id', cat.id);
+            if (error) throw error;
+            refresh();
+            showMessage('success', 'Category updated');
+        } catch (err) { showMessage('error', err.message); }
     };
 
     return (
@@ -1661,7 +1745,61 @@ const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) =>
                 defaultHeadingName="Price list"
                 description="Enable or disable the pricing list section and customize its heading."
             />
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Price List</h2>
+
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900">Price List</h2>
+                <button
+                    onClick={() => setIsManagingCategories(!isManagingCategories)}
+                    className="text-sm font-medium text-stone-800 hover:underline flex items-center gap-1"
+                >
+                    {isManagingCategories ? 'Close Category Manager' : 'Manage Service Categories'}
+                </button>
+            </div>
+
+            {isManagingCategories && (
+                <div className="bg-stone-50 rounded-xl border border-stone-200 p-6 mb-8">
+                    <h3 className="text-lg font-semibold text-stone-900 mb-4">Manage Service Categories</h3>
+
+                    <div className="flex gap-4 mb-6">
+                        <input
+                            placeholder="New Category Name (e.g. NAILS)"
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                            className="flex-grow px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                        <button
+                            onClick={handleAddCategory}
+                            className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all flex items-center gap-2"
+                            style={{ backgroundColor: "#3D2B1F" }}
+                        >
+                            <Plus size={18} /> Add Category
+                        </button>
+                    </div>
+
+                    <div className="space-y-3">
+                        {localCategories.map((cat, idx) => (
+                            <div key={cat.id || idx} className="flex items-center justify-between p-3 bg-white border border-stone-200 rounded-lg">
+                                <input
+                                    value={cat.name}
+                                    onChange={(e) => {
+                                        const updated = [...localCategories];
+                                        updated[idx].name = e.target.value;
+                                        setLocalCategories(updated);
+                                    }}
+                                    onBlur={(e) => handleUpdateCategory(cat, e.target.value)}
+                                    className="font-medium text-stone-800 border-none p-0 focus:ring-0 outline-none flex-grow"
+                                />
+                                <button
+                                    onClick={() => handleDeleteCategory(cat)}
+                                    className="text-red-500 hover:text-red-700 p-1"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm">
                 <h3 className="text-sm font-medium text-gray-700 mb-4">Add New Service</h3>
@@ -1671,11 +1809,9 @@ const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) =>
                         onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
                         className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     >
-                        <option>CUT & STYLING</option>
-                        <option>COLOURING</option>
-                        <option>HAIR TREATMENTS</option>
-                        <option>HAIR EXTENSIONS</option>
-                        <option>MAKE UP</option>
+                        {localCategories.map(cat => (
+                            <option key={cat.id} value={cat.name}>{cat.name}</option>
+                        ))}
                     </select>
                     <input
                         placeholder="Service Name"
@@ -1717,7 +1853,15 @@ const PricingTab = ({ pricing, refresh, showMessage, settings, setSettings }) =>
                     <div key={item.id || idx} className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col md:flex-row md:items-center justify-between shadow-sm hover:shadow-md transition-shadow gap-4">
                         <div className="flex-grow flex flex-col md:flex-row md:items-center gap-4">
                             <div className="min-w-[120px]">
-                                <span className="text-[10px] text-gray-500 uppercase tracking-wider block mb-1">{item.category}</span>
+                                <select
+                                    value={item.category}
+                                    onChange={(e) => handleFieldChange(idx, 'category', e.target.value)}
+                                    className="text-[10px] text-gray-500 uppercase tracking-wider block mb-1 border-none bg-transparent p-0 focus:ring-0 outline-none cursor-pointer"
+                                >
+                                    {localCategories.map(cat => (
+                                        <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                    ))}
+                                </select>
                                 <input
                                     value={item.item_name}
                                     onChange={(e) => handleFieldChange(idx, 'item_name', e.target.value)}
@@ -4291,6 +4435,1555 @@ const TestimonialsTab = ({ testimonials, settings, setSettings, refresh, showMes
                 )}
             </AnimatePresence>
         </motion.div>
+    );
+};
+
+// ============================================================
+// CUSTOM SECTIONS TAB - Dynamic Section Builder
+// ============================================================
+
+const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, refresh, showMessage }) => {
+    const [editingSection, setEditingSection] = useState(null);
+
+    const handleAddSection = async () => {
+        try {
+            const maxOrder = customSections.length > 0
+                ? Math.max(...customSections.map(s => s.sort_order))
+                : 0;
+
+            const { data, error } = await supabase
+                .from('custom_sections')
+                .insert([{
+                    title: 'New Section',
+                    menu_name: 'New Section',
+                    heading_name: 'New Section',
+                    enabled: true,
+                    sort_order: maxOrder + 1,
+                    element_limit: 10,
+                    background_color: siteSettings?.background_color || '#FDFBF9',
+                    text_color: siteSettings?.primary_brown || '#3D2B1F'
+                }])
+                .select('*, custom_section_elements(*)')
+                .single();
+
+            if (error) throw error;
+
+            // Immediately add to page flow table for visibility
+            await supabase.from('site_page_sections').upsert({
+                id: data.id,
+                label: data.title,
+                is_custom: true,
+                sort_order: (maxOrder + 1) * 10,
+                enabled: true
+            });
+
+            setCustomSections([...customSections, data]);
+            setEditingSection(data);
+            showMessage('success', 'Section created! Add elements to get started.');
+        } catch (err) {
+            console.error('Error creating section:', err);
+            showMessage('error', 'Error creating section');
+        }
+    };
+
+    const handleDeleteSection = async (sectionId) => {
+        if (!window.confirm('Are you sure you want to delete this section and all its elements?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('custom_sections')
+                .delete()
+                .eq('id', sectionId);
+
+            if (error) throw error;
+
+            // Also remove from page flow table
+            await supabase.from('site_page_sections').delete().eq('id', sectionId);
+
+            const updatedSections = customSections.filter(s => s.id !== sectionId);
+            setCustomSections(updatedSections);
+            if (editingSection?.id === sectionId) setEditingSection(null);
+            showMessage('success', 'Section deleted');
+        } catch (err) {
+            console.error('Error deleting section:', err);
+            showMessage('error', 'Error deleting section');
+        }
+    };
+
+    const handleReorderSections = async (newOrder) => {
+        try {
+            const updates = newOrder.map((section, index) => ({
+                id: section.id,
+                sort_order: index
+            }));
+
+            const { error } = await supabase
+                .from('custom_sections')
+                .upsert(updates);
+
+            if (error) throw error;
+            setCustomSections(newOrder.map((s, idx) => ({ ...s, sort_order: idx })));
+            showMessage('success', 'Sections reordered');
+        } catch (err) {
+            console.error('Error reordering sections:', err);
+            showMessage('error', 'Error reordering sections');
+        }
+    };
+
+    if (editingSection) {
+        return (
+            <CustomSectionEditor
+                section={editingSection}
+                onClose={() => {
+                    setEditingSection(null);
+                    refresh();
+                }}
+                showMessage={showMessage}
+            />
+        );
+    }
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <List size={24} />
+                    Custom Sections
+                </h2>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleAddSection}
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all"
+                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                    >
+                        <Plus size={18} />
+                        Add New Section
+                    </button>
+                </div>
+            </div>
+
+            {customSections.length === 0 ? (
+                <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+                    <List size={48} className="mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Custom Sections Yet</h3>
+                    <p className="text-gray-600 mb-6">
+                        Create your first custom section to add dynamic content to your website
+                    </p>
+                    <button
+                        onClick={handleAddSection}
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all"
+                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                    >
+                        <Plus size={18} />
+                        Add New Section
+                    </button>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-4">
+                    {customSections.map((section) => (
+                        <div key={section.id} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-center justify-between">
+                                <div className="flex-grow">
+                                    <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
+                                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                                        <span>Menu: {section.menu_name}</span>
+                                        <span>•</span>
+                                        <span>Heading: {section.heading_name}</span>
+                                        <span>•</span>
+                                        <span>{section.custom_section_elements?.length || 0} / {section.element_limit} elements</span>
+                                        <span>•</span>
+                                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${section.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                            {section.enabled ? 'Visible' : 'Hidden'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setEditingSection(section)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all"
+                                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                                    >
+                                        <Edit size={16} />
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteSection(section.id)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all"
+                                    >
+                                        <Trash2 size={16} />
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </motion.div>
+    );
+};
+
+// ============================================================
+// PAGE FLOW TAB - Global Page Order Management
+// ============================================================
+
+const PageFlowTab = ({ customSections, showMessage }) => {
+    const [pageSections, setPageSections] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchPageSections();
+    }, [customSections]);
+
+    const fetchPageSections = async () => {
+        try {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('site_page_sections')
+                .select('*')
+                .order('sort_order', { ascending: true });
+
+            if (error) throw error;
+
+            // Merge with current custom sections to ensure all are present
+            let merged = [...(data || [])];
+            let changed = false;
+
+            customSections.forEach(cs => {
+                if (!merged.find(ps => ps.id === cs.id)) {
+                    merged.push({
+                        id: cs.id,
+                        label: cs.title,
+                        is_custom: true,
+                        sort_order: merged.length > 0 ? Math.max(...merged.map(m => m.sort_order)) + 10 : 10,
+                        enabled: cs.enabled
+                    });
+                    changed = true;
+                }
+            });
+
+            // Remove sections that no longer exist (custom sections only)
+            const activeIds = merged.filter(m => !m.is_custom || customSections.find(cs => cs.id === m.id));
+            if (activeIds.length !== merged.length) {
+                merged = activeIds;
+                changed = true;
+            }
+
+            if (changed) {
+                // Upsert back to keep it in sync
+                await supabase.from('site_page_sections').upsert(merged.map(m => ({
+                    id: m.id,
+                    label: m.label,
+                    is_custom: m.is_custom,
+                    sort_order: m.sort_order,
+                    enabled: m.enabled
+                })));
+            }
+
+            setPageSections(merged.sort((a, b) => a.sort_order - b.sort_order));
+        } catch (err) {
+            console.error('Error fetching page sections:', err);
+            showMessage('error', 'Error loading page configuration');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleToggleEnabled = async (id, currentStatus) => {
+        try {
+            const newStatus = !currentStatus;
+            const { error } = await supabase
+                .from('site_page_sections')
+                .update({ enabled: newStatus })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            // Also update custom_sections if this is a custom section to keep in sync
+            const section = pageSections.find(s => s.id === id);
+            if (section && section.is_custom) {
+                await supabase
+                    .from('custom_sections')
+                    .update({ enabled: newStatus })
+                    .eq('id', id);
+            }
+
+            setPageSections(prev => prev.map(s => s.id === id ? { ...s, enabled: newStatus } : s));
+            showMessage('success', 'Visibility updated');
+        } catch (err) {
+            showMessage('error', 'Error updating visibility');
+        }
+    };
+
+    const handleMove = async (index, direction) => {
+        const newSections = [...pageSections];
+        const newIndex = index + direction;
+
+        if (newIndex < 0 || newIndex >= newSections.length) return;
+
+        [newSections[index], newSections[newIndex]] = [newSections[newIndex], newSections[index]];
+
+        // Update sort_order for all to ensure uniqueness and clean sequencing
+        const updated = newSections.map((s, i) => ({
+            ...s,
+            sort_order: (i + 1) * 10
+        }));
+
+        setPageSections(updated);
+
+        try {
+            const { error } = await supabase.from('site_page_sections').upsert(updated.map(u => ({
+                id: u.id,
+                label: u.label,
+                is_custom: u.is_custom,
+                sort_order: u.sort_order,
+                enabled: u.enabled
+            })));
+            if (error) throw error;
+        } catch (err) {
+            showMessage('error', 'Error saving new order');
+            fetchPageSections(); // Revert on error
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center p-12">
+                <Loader2 size={40} className="animate-spin text-stone-800" />
+            </div>
+        );
+    }
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex items-center justify-between mb-6">
+                <div>
+                    <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                        <Database size={24} />
+                        Page Flow
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Control the global vertical order and visibility of all website sections.
+                    </p>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="bg-stone-50 border-b border-gray-100 p-4 grid grid-cols-12 text-xs font-bold uppercase tracking-wider text-gray-500">
+                    <div className="col-span-1 text-center">Order</div>
+                    <div className="col-span-6 ml-4">Section Name</div>
+                    <div className="col-span-3 text-center">Type</div>
+                    <div className="col-span-2 text-center">Visibility</div>
+                </div>
+
+                <div className="divide-y divide-gray-100">
+                    {pageSections.map((section, index) => (
+                        <div key={section.id} className="grid grid-cols-12 items-center p-4 hover:bg-stone-50 transition-colors group">
+                            <div className="col-span-1 flex flex-col items-center gap-1">
+                                <button
+                                    onClick={() => handleMove(index, -1)}
+                                    disabled={index === 0}
+                                    className="p-1 hover:bg-gray-200 rounded disabled:opacity-20 text-gray-400 hover:text-gray-600"
+                                >
+                                    <ChevronUp size={16} />
+                                </button>
+                                <button
+                                    onClick={() => handleMove(index, 1)}
+                                    disabled={index === pageSections.length - 1}
+                                    className="p-1 hover:bg-gray-200 rounded disabled:opacity-20 text-gray-400 hover:text-gray-600"
+                                >
+                                    <ChevronDown size={16} />
+                                </button>
+                            </div>
+
+                            <div className="col-span-6 flex items-center gap-3 ml-4">
+                                {section.is_custom ? <List size={16} className="text-stone-400" /> : <Layout size={16} className="text-blue-400" />}
+                                <span className={`font-medium ${section.enabled ? 'text-gray-900' : 'text-gray-400 line-through'}`}>
+                                    {section.label}
+                                </span>
+                            </div>
+
+                            <div className="col-span-3 flex justify-center">
+                                <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-widest ${section.is_custom ? 'bg-stone-100 text-stone-600' : 'bg-blue-100 text-blue-700'}`}>
+                                    {section.is_custom ? 'Custom' : 'System'}
+                                </span>
+                            </div>
+
+                            <div className="col-span-2 flex justify-center">
+                                <button
+                                    onClick={() => handleToggleEnabled(section.id, section.enabled)}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-stone-500 focus:outline-none ${section.enabled ? 'bg-stone-800' : 'bg-gray-400'}`}
+                                    style={section.enabled ? { backgroundColor: 'var(--primary-brown)' } : { backgroundColor: '#9ca3af' }}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${section.enabled ? 'translate-x-6' : 'translate-x-1'}`}
+                                    />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl flex gap-4">
+                <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                    <Info size={20} />
+                </div>
+                <div>
+                    <h4 className="font-bold text-blue-900">About Page Flow</h4>
+                    <p className="text-sm text-blue-800/80 mt-1 leading-relaxed">
+                        This table directly controls the <code>site_page_sections</code> database table.
+                        Moving items here will immediately change their position on the live website.
+                        System sections (like Services or Team) can be hidden but cannot be deleted.
+                        Custom sections can be edited in the "Custom Sections" tab.
+                    </p>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
+// Custom Section Editor Component
+const CustomSectionEditor = ({ section, onClose, showMessage }) => {
+    const [localSection, setLocalSection] = useState(section);
+    const [elements, setElements] = useState(section.custom_section_elements || []);
+    const [editingElement, setEditingElement] = useState(null);
+    const [addingElementType, setAddingElementType] = useState(null);
+    const [saving, setSaving] = useState(false);
+
+    const elementTypes = [
+        { type: 'gallery', label: 'Gallery Grid', icon: <Image size={18} />, description: 'Multiple images in a grid' },
+        { type: 'image_carousel', label: 'Image Carousel', icon: <ChevronRight size={18} />, description: 'Sliding gallery of images' },
+        { type: 'text_box', label: 'Text Box', icon: <MessageCircle size={18} />, description: 'Rich text content' },
+        { type: 'card', label: 'Card', icon: <Tag size={18} />, description: 'Title, description, image & link' },
+        { type: 'image', label: 'Single Image', icon: <Image size={18} />, description: 'One image with caption' },
+        { type: 'video', label: 'Video', icon: <Image size={18} />, description: 'Embedded or uploaded video' },
+        { type: 'qr_code', label: 'QR Code', icon: <Maximize2 size={18} />, description: 'Scan to visit a link' },
+        { type: 'list', label: 'Standard List', icon: <List size={18} />, description: 'Bullet points or numbered items' },
+        { type: 'button', label: 'Button', icon: <Plus size={18} />, description: 'Call to action link' },
+        { type: 'table', label: 'Table', icon: <List size={18} />, description: 'Structured data grid' },
+    ];
+
+    const handleSaveSection = async () => {
+        try {
+            setSaving(true);
+            const { error } = await supabase
+                .from('custom_sections')
+                .update({
+                    title: localSection.title,
+                    menu_name: localSection.menu_name,
+                    heading_name: localSection.heading_name,
+                    enabled: localSection.enabled,
+                    element_limit: localSection.element_limit,
+                    background_color: localSection.background_color,
+                    text_color: localSection.text_color
+                })
+                .eq('id', localSection.id);
+
+            if (error) throw error;
+
+            // Update label and visibility in page flow table
+            await supabase.from('site_page_sections')
+                .update({
+                    label: localSection.title,
+                    enabled: localSection.enabled
+                })
+                .eq('id', localSection.id);
+
+            showMessage('success', 'Section settings saved');
+        } catch (err) {
+            console.error('Error saving section:', err);
+            showMessage('error', 'Error saving section');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleAddElement = async (elementType) => {
+        if (elements.length >= localSection.element_limit) {
+            showMessage('error', `Maximum ${localSection.element_limit} elements allowed`);
+            return;
+        }
+
+        try {
+            const maxOrder = elements.length > 0 ? Math.max(...elements.map(e => e.sort_order)) : -1;
+            const { data, error } = await supabase
+                .from('custom_section_elements')
+                .insert([{
+                    section_id: localSection.id,
+                    element_type: elementType,
+                    sort_order: maxOrder + 1,
+                    config: {}
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+            setElements([...elements, data]);
+            setEditingElement(data);
+            setAddingElementType(null);
+            showMessage('success', 'Element added');
+        } catch (err) {
+            console.error('Error adding element:', err);
+            showMessage('error', 'Error adding element');
+        }
+    };
+
+    const handleDeleteElement = async (elementId) => {
+        if (!window.confirm('Delete this element?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('custom_section_elements')
+                .delete()
+                .eq('id', elementId);
+
+            if (error) throw error;
+            setElements(elements.filter(e => e.id !== elementId));
+            if (editingElement?.id === elementId) setEditingElement(null);
+            showMessage('success', 'Element deleted');
+        } catch (err) {
+            console.error('Error deleting element:', err);
+            showMessage('error', 'Error deleting element');
+        }
+    };
+
+    const handleReorderElements = async (newElements) => {
+        try {
+            const updates = newElements.map((element, index) => ({
+                id: element.id,
+                sort_order: index
+            }));
+
+            const { error } = await supabase
+                .from('custom_section_elements')
+                .upsert(updates);
+
+            if (error) throw error;
+            setElements(newElements.map((e, idx) => ({ ...e, sort_order: idx })));
+            showMessage('success', 'Elements reordered');
+        } catch (err) {
+            console.error('Error reordering elements:', err);
+            showMessage('error', 'Error reordering elements');
+        }
+    };
+
+    const handleSaveElement = async (elementId, newConfig) => {
+        try {
+            const { error } = await supabase
+                .from('custom_section_elements')
+                .update({ config: newConfig })
+                .eq('id', elementId);
+
+            if (error) throw error;
+            setElements(elements.map(e => e.id === elementId ? { ...e, config: newConfig } : e));
+            showMessage('success', 'Element updated');
+        } catch (err) {
+            console.error('Error updating element:', err);
+            showMessage('error', 'Error updating element');
+        }
+    };
+
+    const getElementIcon = (type) => {
+        const found = elementTypes.find(et => et.type === type);
+        return found ? found.icon : <Tag size={16} />;
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <Edit size={24} />
+                    Edit Section: {localSection.title}
+                </h2>
+                <button
+                    onClick={onClose}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-all"
+                >
+                    <X size={18} />
+                    Close
+                </button>
+            </div>
+
+            {/* Section Settings */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Section Settings</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Section Title</label>
+                        <input
+                            value={localSection.title}
+                            onChange={e => setLocalSection({ ...localSection, title: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Menu Name</label>
+                        <input
+                            value={localSection.menu_name}
+                            onChange={e => setLocalSection({ ...localSection, menu_name: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Section Heading</label>
+                        <input
+                            value={localSection.heading_name}
+                            onChange={e => setLocalSection({ ...localSection, heading_name: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Element Limit</label>
+                        <input
+                            type="number"
+                            min="1"
+                            max="50"
+                            value={localSection.element_limit}
+                            onChange={e => setLocalSection({ ...localSection, element_limit: parseInt(e.target.value) || 10 })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Background Color (optional)</label>
+                        <input
+                            type="color"
+                            value={localSection.background_color || '#ffffff'}
+                            onChange={e => setLocalSection({ ...localSection, background_color: e.target.value })}
+                            className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Text Color</label>
+                        <input
+                            type="color"
+                            value={localSection.text_color || '#3d2b1f'}
+                            onChange={e => setLocalSection({ ...localSection, text_color: e.target.value })}
+                            className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                    </div>
+                    <div className="flex items-center">
+                        <label className="text-sm font-medium text-gray-700 mr-4">Show Section</label>
+                        <button
+                            onClick={() => setLocalSection({ ...localSection, enabled: !localSection.enabled })}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${localSection.enabled ? 'bg-stone-800' : 'bg-gray-400'}`}
+                            style={localSection.enabled ? { backgroundColor: 'var(--primary-brown)' } : { backgroundColor: '#9ca3af' }}
+                        >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${localSection.enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
+                    </div>
+                </div>
+                <div className="mt-6">
+                    <button
+                        onClick={handleSaveSection}
+                        disabled={saving}
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all disabled:opacity-50"
+                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                    >
+                        {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                        {saving ? 'Saving...' : 'Save Settings'}
+                    </button>
+                </div>
+            </div>
+
+            {/* Elements Management */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                        Elements ({elements.length} / {localSection.element_limit})
+                    </h3>
+                    <button
+                        onClick={() => setAddingElementType(true)}
+                        disabled={elements.length >= localSection.element_limit}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                    >
+                        <Plus size={18} />
+                        Add Element
+                    </button>
+                </div>
+
+                {/* Element Type Selector */}
+                {addingElementType && (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm font-medium text-blue-900 mb-3">Select Element Type:</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                            {elementTypes.map(et => (
+                                <button
+                                    key={et.type}
+                                    onClick={() => handleAddElement(et.type)}
+                                    className="flex flex-col items-center gap-2 p-4 bg-white border border-gray-300 rounded-lg hover:border-stone-800 hover:shadow-md transition-all"
+                                >
+                                    {et.icon}
+                                    <span className="font-medium text-sm">{et.label}</span>
+                                    <span className="text-xs text-gray-600 text-center">{et.description}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => setAddingElementType(false)}
+                            className="mt-3 text-sm text-gray-600 hover:text-gray-900"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                )}
+
+                {/* Elements List */}
+                {elements.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                        <Image size={48} className="mx-auto mb-3 text-gray-400" />
+                        <p>No elements yet. Add your first element to get started!</p>
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {elements.sort((a, b) => a.sort_order - b.sort_order).map((element) => (
+                            <div key={element.id} className="flex items-center gap-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                                <div className="flex-shrink-0">
+                                    {getElementIcon(element.element_type)}
+                                </div>
+                                <div className="flex-grow">
+                                    <p className="font-medium text-gray-900 capitalize">{element.element_type.replace('_', ' ')}</p>
+                                    <p className="text-xs text-gray-600">
+                                        {Object.keys(element.config || {}).length > 0 ? 'Configured' : 'Not configured'}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex flex-col gap-1 mr-2">
+                                        <button
+                                            onClick={() => {
+                                                const sorted = [...elements].sort((a, b) => a.sort_order - b.sort_order);
+                                                const index = sorted.findIndex(e => e.id === element.id);
+                                                if (index > 0) {
+                                                    const newOrder = [...sorted];
+                                                    [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+                                                    handleReorderElements(newOrder);
+                                                }
+                                            }}
+                                            disabled={elements.sort((a, b) => a.sort_order - b.sort_order).findIndex(e => e.id === element.id) === 0}
+                                            className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
+                                        >
+                                            <ChevronUp size={14} />
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                const sorted = [...elements].sort((a, b) => a.sort_order - b.sort_order);
+                                                const index = sorted.findIndex(e => e.id === element.id);
+                                                if (index < sorted.length - 1) {
+                                                    const newOrder = [...sorted];
+                                                    [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+                                                    handleReorderElements(newOrder);
+                                                }
+                                            }}
+                                            disabled={elements.sort((a, b) => a.sort_order - b.sort_order).findIndex(e => e.id === element.id) === elements.length - 1}
+                                            className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
+                                        >
+                                            <ChevronDown size={14} />
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={() => setEditingElement(element)}
+                                        className="px-3 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all text-sm"
+                                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                                    >
+                                        Configure
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteElement(element.id)}
+                                        className="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all text-sm flex items-center justify-center"
+                                        title="Delete Element"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Element Configuration Modal */}
+            <AnimatePresence>
+                {editingElement && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+                        onClick={() => setEditingElement(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.95 }}
+                            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-semibold text-gray-900 capitalize">
+                                        Configure {editingElement.element_type.replace('_', ' ')}
+                                    </h3>
+                                    <button
+                                        onClick={() => setEditingElement(null)}
+                                        className="text-gray-500 hover:text-gray-700"
+                                    >
+                                        <X size={24} />
+                                    </button>
+                                </div>
+
+                                {editingElement.element_type === 'gallery' && (
+                                    <GalleryElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                        showMessage={showMessage}
+                                    />
+                                )}
+                                {editingElement.element_type === 'text_box' && (
+                                    <TextBoxElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                    />
+                                )}
+                                {editingElement.element_type === 'card' && (
+                                    <CardElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                        showMessage={showMessage}
+                                    />
+                                )}
+                                {editingElement.element_type === 'image' && (
+                                    <ImageElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                        showMessage={showMessage}
+                                    />
+                                )}
+                                {editingElement.element_type === 'image_carousel' && (
+                                    <CarouselElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                        showMessage={showMessage}
+                                    />
+                                )}
+                                {editingElement.element_type === 'qr_code' && (
+                                    <QRCodeElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                    />
+                                )}
+                                {editingElement.element_type === 'list' && (
+                                    <ListElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                    />
+                                )}
+                                {editingElement.element_type === 'button' && (
+                                    <ButtonElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                    />
+                                )}
+                                {editingElement.element_type === 'table' && (
+                                    <TableElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                    />
+                                )}
+                                {editingElement.element_type === 'video' && (
+                                    <VideoElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                        showMessage={showMessage}
+                                    />
+                                )}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
+
+// Element Configuration Components
+const GalleryElementConfig = ({ config, onSave, showMessage }) => {
+    const [images, setImages] = useState(config.images || []);
+    const [columns, setColumns] = useState(config.columns || 3);
+
+    const handleAddImage = (url) => {
+        setImages([...images, { url, alt: '', caption: '' }]);
+    };
+
+    const handleRemoveImage = (index) => {
+        setImages(images.filter((_, i) => i !== index));
+    };
+
+    const handleUpdateImage = (index, field, value) => {
+        setImages(images.map((img, i) => i === index ? { ...img, [field]: value } : img));
+    };
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Grid Columns</label>
+                <select
+                    value={columns}
+                    onChange={e => setColumns(parseInt(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                >
+                    <option value={2}>2 Columns</option>
+                    <option value={3}>3 Columns</option>
+                    <option value={4}>4 Columns</option>
+                </select>
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Images</label>
+                <ImageUploader folder="custom-sections" onUpload={handleAddImage} showMessage={showMessage} />
+            </div>
+
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+                {images.map((img, idx) => (
+                    <div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="flex items-start gap-3">
+                            <img src={img.url} alt="" className="w-16 h-16 object-cover rounded" />
+                            <div className="flex-grow space-y-2">
+                                <input
+                                    placeholder="Alt text"
+                                    value={img.alt}
+                                    onChange={e => handleUpdateImage(idx, 'alt', e.target.value)}
+                                    className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                />
+                                <input
+                                    placeholder="Caption (optional)"
+                                    value={img.caption}
+                                    onChange={e => handleUpdateImage(idx, 'caption', e.target.value)}
+                                    className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                />
+                            </div>
+                            <button
+                                onClick={() => handleRemoveImage(idx)}
+                                className="text-red-500 hover:text-red-700"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <button
+                onClick={() => onSave({ images, columns })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Gallery
+            </button>
+        </div>
+    );
+};
+
+const TextBoxElementConfig = ({ config, onSave }) => {
+    const [content, setContent] = useState(config.content || '');
+    const [alignment, setAlignment] = useState(config.alignment || 'left');
+    const [fontSize, setFontSize] = useState(config.fontSize || 'medium');
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Content</label>
+                <textarea
+                    value={content}
+                    onChange={e => setContent(e.target.value)}
+                    placeholder="Enter your text content here..."
+                    className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none"
+                />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Alignment</label>
+                    <select
+                        value={alignment}
+                        onChange={e => setAlignment(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    >
+                        <option value="left">Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Font Size</label>
+                    <select
+                        value={fontSize}
+                        onChange={e => setFontSize(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    >
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+            </div>
+
+            <button
+                onClick={() => onSave({ content, alignment, fontSize })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Text Box
+            </button>
+        </div>
+    );
+};
+
+const CardElementConfig = ({ config, onSave, showMessage }) => {
+    const [title, setTitle] = useState(config.title || '');
+    const [description, setDescription] = useState(config.description || '');
+    const [imageUrl, setImageUrl] = useState(config.image_url || '');
+    const [linkUrl, setLinkUrl] = useState(config.link_url || '');
+    const [linkText, setLinkText] = useState(config.link_text || '');
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Title</label>
+                <input
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    placeholder="Card title"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+                <textarea
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    placeholder="Card description"
+                    className="w-full h-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none"
+                />
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Image</label>
+                <ImageUploader folder="custom-sections" onUpload={setImageUrl} showMessage={showMessage} />
+                {imageUrl && <img src={imageUrl} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded" />}
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Link URL (optional)</label>
+                <input
+                    value={linkUrl}
+                    onChange={e => setLinkUrl(e.target.value)}
+                    placeholder="https://example.com"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Link Text (optional)</label>
+                <input
+                    value={linkText}
+                    onChange={e => setLinkText(e.target.value)}
+                    placeholder="Learn More"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+
+            <button
+                onClick={() => onSave({ title, description, image_url: imageUrl, link_url: linkUrl, link_text: linkText })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Card
+            </button>
+        </div>
+    );
+};
+
+const ImageElementConfig = ({ config, onSave, showMessage }) => {
+    const [url, setUrl] = useState(config.url || '');
+    const [alt, setAlt] = useState(config.alt || '');
+    const [caption, setCaption] = useState(config.caption || '');
+    const [size, setSize] = useState(config.size || 'full');
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Image</label>
+                <ImageUploader folder="custom-sections" onUpload={setUrl} showMessage={showMessage} />
+                {url && <img src={url} alt="Preview" className="mt-2 w-full max-h-64 object-contain rounded" />}
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Alt Text</label>
+                <input
+                    value={alt}
+                    onChange={e => setAlt(e.target.value)}
+                    placeholder="Describe the image"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Caption (optional)</label>
+                <input
+                    value={caption}
+                    onChange={e => setCaption(e.target.value)}
+                    placeholder="Image caption"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Size</label>
+                <select
+                    value={size}
+                    onChange={e => setSize(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                >
+                    <option value="full">Full Width</option>
+                    <option value="large">Large</option>
+                    <option value="medium">Medium</option>
+                    <option value="small">Small</option>
+                </select>
+            </div>
+
+            <button
+                onClick={() => onSave({ url, alt, caption, size })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Image
+            </button>
+        </div>
+    );
+};
+
+const VideoElementConfig = ({ config, onSave, showMessage }) => {
+    const [url, setUrl] = useState(config.url || '');
+    const [type, setType] = useState(config.type || 'upload');
+    const [autoplay, setAutoplay] = useState(config.autoplay || false);
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Video Type</label>
+                <select
+                    value={type}
+                    onChange={e => setType(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                >
+                    <option value="upload">Upload Video</option>
+                    <option value="embed">Embed URL</option>
+                </select>
+            </div>
+
+            {type === 'upload' ? (
+                <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Upload Video</label>
+                    <VideoUploader folder="custom-sections" onUpload={setUrl} showMessage={showMessage} />
+                    {url && <video src={url} controls className="mt-2 w-full rounded" />}
+                </div>
+            ) : (
+                <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Video URL</label>
+                    <input
+                        value={url}
+                        onChange={e => setUrl(e.target.value)}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    />
+                </div>
+            )}
+
+            <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-gray-700">Autoplay</label>
+                <button
+                    onClick={() => setAutoplay(!autoplay)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${autoplay ? 'border-[#3D2B1F]' : 'border-gray-200'}`}
+                    style={{ backgroundColor: autoplay ? '#3D2B1F' : '#E5E7EB' }}
+                >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoplay ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+            </div>
+
+            <button
+                onClick={() => onSave({ url, type, autoplay })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Video
+            </button>
+        </div>
+    );
+};
+
+const CarouselElementConfig = ({ config, onSave, showMessage }) => {
+    const [images, setImages] = useState(config.images || []);
+
+    const handleAddImage = (url) => {
+        setImages([...images, { url, alt: '', caption: '' }]);
+    };
+
+    const handleUpdateImage = (index, field, value) => {
+        const newImages = [...images];
+        newImages[index][field] = value;
+        setImages(newImages);
+    };
+
+    const handleRemoveImage = (index) => {
+        setImages(images.filter((_, i) => i !== index));
+    };
+
+    return (
+        <div className="space-y-6">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Add Image to Carousel</label>
+                <ImageUploader folder="custom-sections" onUpload={handleAddImage} showMessage={showMessage} />
+            </div>
+
+            <div className="space-y-3">
+                {images.map((img, idx) => (
+                    <div key={idx} className="p-3 bg-gray-50 border border-gray-200 rounded-lg flex gap-4">
+                        <img src={img.url} className="w-20 h-20 object-cover rounded shadow-sm" alt="Preview" />
+                        <div className="flex-grow space-y-2">
+                            <input
+                                value={img.caption}
+                                onChange={e => handleUpdateImage(idx, 'caption', e.target.value)}
+                                placeholder="Caption (optional)"
+                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded outline-none"
+                            />
+                            <input
+                                value={img.alt}
+                                onChange={e => handleUpdateImage(idx, 'alt', e.target.value)}
+                                placeholder="Alt Text"
+                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded outline-none"
+                            />
+                        </div>
+                        <button onClick={() => handleRemoveImage(idx)} className="text-red-500 hover:text-red-700">
+                            <Trash2 size={18} />
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            <button
+                onClick={() => onSave({ images })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Carousel
+            </button>
+        </div>
+    );
+};
+
+const QRCodeElementConfig = ({ config, onSave }) => {
+    const [content, setContent] = useState(config.content || '');
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">QR Code Content (URL or Text)</label>
+                <input
+                    value={content}
+                    onChange={e => setContent(e.target.value)}
+                    placeholder="https://example.com"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+            {content && (
+                <div className="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
+                    <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(content)}`}
+                        alt="QR Preview"
+                        className="bg-white p-2 shadow-sm rounded border border-gray-200"
+                    />
+                    <p className="text-xs text-gray-500 mt-2">Preview of your QR code</p>
+                </div>
+            )}
+            <button
+                onClick={() => onSave({ content })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save QR Code
+            </button>
+        </div>
+    );
+};
+
+const ListElementConfig = ({ config, onSave }) => {
+    const [items, setItems] = useState(config.items || []);
+    const [type, setType] = useState(config.type || 'bullet'); // bullet, numbered
+
+    const handleAddItem = () => {
+        setItems([...items, 'New list item']);
+    };
+
+    const handleUpdateItem = (index, value) => {
+        const newItems = [...items];
+        newItems[index] = value;
+        setItems(newItems);
+    };
+
+    const handleRemoveItem = (index) => {
+        setItems(items.filter((_, i) => i !== index));
+    };
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">List Type</label>
+                <select
+                    value={type}
+                    onChange={e => setType(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                >
+                    <option value="bullet">Bullet Points</option>
+                    <option value="numbered">Numbered List</option>
+                </select>
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 block">List Items</label>
+                {items.map((item, idx) => (
+                    <div key={idx} className="flex gap-2">
+                        <span className="mt-2 text-gray-400 font-mono text-sm">
+                            {type === 'numbered' ? `${idx + 1}.` : '•'}
+                        </span>
+                        <input
+                            value={item}
+                            onChange={e => handleUpdateItem(idx, e.target.value)}
+                            className="flex-grow px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                        <button onClick={() => handleRemoveItem(idx)} className="text-red-500 hover:text-red-700 px-1">
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                ))}
+                <button
+                    onClick={handleAddItem}
+                    className="mt-2 flex items-center gap-1 text-sm text-stone-800 hover:underline"
+                >
+                    <Plus size={14} /> Add Item
+                </button>
+            </div>
+
+            <button
+                onClick={() => onSave({ items, type })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save List
+            </button>
+        </div>
+    );
+};
+
+const ButtonElementConfig = ({ config, onSave }) => {
+    const [label, setLabel] = useState(config.label || 'Click Here');
+    const [url, setUrl] = useState(config.url || '');
+    const [style, setStyle] = useState(config.style || 'solid'); // solid, outline
+    const [alignment, setAlignment] = useState(config.alignment || 'center'); // left, center, right
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Button Label</label>
+                <input
+                    value={label}
+                    onChange={e => setLabel(e.target.value)}
+                    placeholder="e.g. Book Appointment"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Link URL</label>
+                <input
+                    value={url}
+                    onChange={e => setUrl(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Style</label>
+                    <select
+                        value={style}
+                        onChange={e => setStyle(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    >
+                        <option value="solid">Solid</option>
+                        <option value="outline">Outline</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Alignment</label>
+                    <select
+                        value={alignment}
+                        onChange={e => setAlignment(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    >
+                        <option value="left">Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                    </select>
+                </div>
+            </div>
+            <button
+                onClick={() => onSave({ label, url, style, alignment })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Button
+            </button>
+        </div>
+    );
+};
+
+const TableElementConfig = ({ config, onSave }) => {
+    const [rows, setRows] = useState(config.rows || [['Header 1', 'Header 2'], ['Row 1 Col 1', 'Row 1 Col 2']]);
+    const [hasHeader, setHasHeader] = useState(config.hasHeader !== false);
+
+    const handleUpdateCell = (rowIndex, colIndex, value) => {
+        const newRows = [...rows];
+        newRows[rowIndex][colIndex] = value;
+        setRows(newRows);
+    };
+
+    const handleAddRow = () => {
+        const newRow = new Array(rows[0]?.length || 2).fill('');
+        setRows([...rows, newRow]);
+    };
+
+    const handleAddColumn = () => {
+        setRows(rows.map(row => [...row, '']));
+    };
+
+    const handleRemoveRow = (rowIndex) => {
+        if (rows.length <= 1) return;
+        setRows(rows.filter((_, i) => i !== rowIndex));
+    };
+
+    const handleRemoveColumn = (colIndex) => {
+        if (rows[0].length <= 1) return;
+        setRows(rows.map(row => row.filter((_, i) => i !== colIndex)));
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <input
+                        type="checkbox"
+                        checked={hasHeader}
+                        onChange={e => setHasHeader(e.target.checked)}
+                        className="rounded border-gray-300 text-stone-800 focus:ring-stone-800"
+                    />
+                    First row as header
+                </label>
+            </div>
+
+            <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                <table className="w-full border-collapse">
+                    <tbody>
+                        {rows.map((row, rowIndex) => (
+                            <tr key={rowIndex} className={rowIndex === 0 && hasHeader ? 'bg-gray-50' : ''}>
+                                {row.map((cell, colIndex) => (
+                                    <td key={colIndex} className="p-2 border border-gray-100 min-w-[120px]">
+                                        <div className="relative group">
+                                            <input
+                                                value={cell}
+                                                onChange={e => handleUpdateCell(rowIndex, colIndex, e.target.value)}
+                                                className={`w-full px-2 py-1 text-sm border border-transparent rounded focus:border-stone-800 outline-none ${rowIndex === 0 && hasHeader ? 'font-bold' : ''}`}
+                                            />
+                                            {rowIndex === 0 && (
+                                                <button
+                                                    onClick={() => handleRemoveColumn(colIndex)}
+                                                    className="absolute -top-6 left-1/2 -translate-x-1/2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    title="Remove Column"
+                                                >
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            )}
+                                            {colIndex === 0 && (
+                                                <button
+                                                    onClick={() => handleRemoveRow(rowIndex)}
+                                                    className="absolute top-1/2 -left-6 -translate-y-1/2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    title="Remove Row"
+                                                >
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <div className="flex gap-4">
+                <button
+                    onClick={handleAddRow}
+                    className="flex-1 flex items-center justify-center gap-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all text-sm font-medium"
+                >
+                    <Plus size={14} /> Add Row
+                </button>
+                <button
+                    onClick={handleAddColumn}
+                    className="flex-1 flex items-center justify-center gap-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all text-sm font-medium"
+                >
+                    <Plus size={14} /> Add Column
+                </button>
+            </div>
+
+            <button
+                onClick={() => onSave({ rows, hasHeader })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Table
+            </button>
+        </div>
     );
 };
 

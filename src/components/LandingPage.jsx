@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2 } from 'lucide-react';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 
-const Navbar = ({ settings }) => {
+const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -61,30 +61,72 @@ const Navbar = ({ settings }) => {
             {/* Desktop Menu */}
             <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px', fontWeight: '500' }}>
                 <a href="#home">Home</a>
-                {settings.show_services_section !== 'false' && (
-                    <a href="#services">{settings.services_menu_name || 'Services'}</a>
+                {(() => {
+                    const DEFAULT_ORDER = [
+                        { id: 'services', label: 'Services', sort_order: 10 },
+                        { id: 'team', label: 'Team', sort_order: 20 },
+                        { id: 'pricing', label: 'Pricing', sort_order: 30 },
+                        { id: 'gallery', label: 'Gallery', sort_order: 60 },
+                        { id: 'testimonials', label: 'Testimonials', sort_order: 40 },
+                        { id: 'contact', label: 'Contact', sort_order: 70 }
+                    ];
+
+                    let sectionsToRender = pageSections.length > 0
+                        ? [...pageSections]
+                        : DEFAULT_ORDER.map(s => ({ ...s, enabled: true }));
+
+                    DEFAULT_ORDER.forEach(def => {
+                        if (!sectionsToRender.find(s => s.id === def.id)) {
+                            sectionsToRender.push({ ...def, enabled: true });
+                        }
+                    });
+
+                    customSections.forEach(cs => {
+                        if (cs.enabled !== false && !sectionsToRender.find(ps => ps.id === cs.id)) {
+                            sectionsToRender.push({
+                                id: cs.id,
+                                is_custom: true,
+                                enabled: true,
+                                sort_order: 999
+                            });
+                        }
+                    });
+
+                    return sectionsToRender.sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999)).map(section => {
+                        const id = section.id;
+                        if (section.enabled === false) return null;
+
+                        if (id === 'services' && settings.show_services_section !== 'false')
+                            return <a key="services" href="#services">{settings.services_menu_name || 'Services'}</a>;
+                        if (id === 'team' && settings.show_team_section !== 'false')
+                            return <a key="team" href="#team">{settings.team_menu_name || 'Team'}</a>;
+                        if (id === 'pricing' && settings.show_pricing_section !== 'false')
+                            return <a key="pricing" href="#pricing">{settings.pricing_menu_name || 'Pricing'}</a>;
+                        if (id === 'gallery' && settings.show_gallery_section !== 'false')
+                            return <a key="gallery" href="#gallery">{settings.gallery_menu_name || 'Gallery'}</a>;
+                        if (id === 'testimonials' && settings.show_testimonials_section === 'true')
+                            return <a key="testimonials" href="#testimonials">{settings.testimonials_menu_name || 'Testimonials'}</a>;
+                        if (id === 'contact')
+                            return <a key="contact" href="#contact">Contact</a>;
+                        if (id === 'booking') return null; // Booking usually in CTA
+
+                        const custom = customSections.find(s => s.id === id);
+                        if (custom && custom.enabled !== false) {
+                            return <a key={custom.id} href={`#custom-section-${custom.id}`}>{custom.menu_name}</a>;
+                        }
+                        return null;
+                    });
+                })()}
+                {pageSections.find(s => s.id === 'booking')?.enabled !== false && (
+                    <a href="#booking" className="btn-primary" style={{
+                        padding: '10px 24px',
+                        backgroundColor: 'var(--accent-cream)',
+                        color: 'var(--primary-brown)',
+                        textDecoration: 'none'
+                    }}>
+                        Book Now
+                    </a>
                 )}
-                {settings.show_team_section !== 'false' && (
-                    <a href="#team">{settings.team_menu_name || 'Team'}</a>
-                )}
-                {settings.show_pricing_section !== 'false' && (
-                    <a href="#pricing">{settings.pricing_menu_name || 'Pricing'}</a>
-                )}
-                {settings.show_gallery_section !== 'false' && (
-                    <a href="#gallery">{settings.gallery_menu_name || 'Gallery'}</a>
-                )}
-                {settings.show_testimonials_section === 'true' && (
-                    <a href="#testimonials">{settings.testimonials_menu_name || 'Testimonials'}</a>
-                )}
-                <a href="#contact">Contact</a>
-                <a href="#booking" className="btn-primary" style={{
-                    padding: '10px 24px',
-                    backgroundColor: 'var(--accent-cream)',
-                    color: 'var(--primary-brown)',
-                    textDecoration: 'none'
-                }}>
-                    Book Now
-                </a>
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -95,29 +137,73 @@ const Navbar = ({ settings }) => {
             {/* Mobile Menu Overlay */}
             <div className="nav-links-mobile">
                 <a href="#home" onClick={toggleMenu}>Home</a>
-                {settings.show_services_section !== 'false' && (
-                    <a href="#services" onClick={toggleMenu}>{settings.services_menu_name || 'Services'}</a>
+                {(() => {
+                    const DEFAULT_ORDER = [
+                        { id: 'services', label: 'Services', sort_order: 10 },
+                        { id: 'team', label: 'Team', sort_order: 20 },
+                        { id: 'pricing', label: 'Pricing', sort_order: 30 },
+                        { id: 'gallery', label: 'Gallery', sort_order: 60 },
+                        { id: 'testimonials', label: 'Testimonials', sort_order: 40 },
+                        { id: 'contact', label: 'Contact', sort_order: 70 }
+                    ];
+
+                    let sectionsToRender = pageSections.length >
+                        0
+                        ? [...pageSections]
+                        : DEFAULT_ORDER.map(s => ({ ...s, enabled: true }));
+
+                    DEFAULT_ORDER.forEach(def => {
+                        if (!sectionsToRender.find(s => s.id === def.id)) {
+                            sectionsToRender.push({ ...def, enabled: true });
+                        }
+                    });
+
+                    customSections.forEach(cs => {
+                        if (cs.enabled !== false && !sectionsToRender.find(ps => ps.id === cs.id)) {
+                            sectionsToRender.push({
+                                id: cs.id,
+                                is_custom: true,
+                                enabled: true,
+                                sort_order: 999
+                            });
+                        }
+                    });
+
+                    return sectionsToRender.sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999)).map(section => {
+                        const id = section.id;
+                        if (section.enabled === false) return null;
+
+                        if (id === 'services' && settings.show_services_section !== 'false')
+                            return <a key="services" href="#services" onClick={toggleMenu}>{settings.services_menu_name || 'Services'}</a>;
+                        if (id === 'team' && settings.show_team_section !== 'false')
+                            return <a key="team" href="#team" onClick={toggleMenu}>{settings.team_menu_name || 'Team'}</a>;
+                        if (id === 'pricing' && settings.show_pricing_section !== 'false')
+                            return <a key="pricing" href="#pricing" onClick={toggleMenu}>{settings.pricing_menu_name || 'Pricing'}</a>;
+                        if (id === 'gallery' && settings.show_gallery_section !== 'false')
+                            return <a key="gallery" href="#gallery" onClick={toggleMenu}>{settings.gallery_menu_name || 'Gallery'}</a>;
+                        if (id === 'testimonials' && settings.show_testimonials_section === 'true')
+                            return <a key="testimonials" href="#testimonials" onClick={toggleMenu}>{settings.testimonials_menu_name || 'Testimonials'}</a>;
+                        if (id === 'contact')
+                            return <a key="contact" href="#contact" onClick={toggleMenu}>Contact</a>;
+
+                        const custom = customSections.find(s => s.id === id);
+                        if (custom && custom.enabled !== false) {
+                            return <a key={custom.id} href={`#custom-section-${custom.id}`} onClick={toggleMenu}>{custom.menu_name}</a>;
+                        }
+                        return null;
+                    });
+                })()}
+                {pageSections.find(s => s.id === 'booking')?.enabled !== false && (
+                    <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
                 )}
-                {settings.show_team_section !== 'false' && (
-                    <a href="#team" onClick={toggleMenu}>{settings.team_menu_name || 'Team'}</a>
-                )}
-                {settings.show_pricing_section !== 'false' && (
-                    <a href="#pricing" onClick={toggleMenu}>{settings.pricing_menu_name || 'Pricing'}</a>
-                )}
-                {settings.show_gallery_section !== 'false' && (
-                    <a href="#gallery" onClick={toggleMenu}>{settings.gallery_menu_name || 'Gallery'}</a>
-                )}
-                {settings.show_testimonials_section === 'true' && (
-                    <a href="#testimonials" onClick={toggleMenu}>{settings.testimonials_menu_name || 'Testimonials'}</a>
-                )}
-                <a href="#contact" onClick={toggleMenu}>Contact</a>
-                <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
             </div>
         </nav>
     );
 };
 
-const Hero = ({ settings = {} }) => {
+const Hero = ({ settings = {}, pageSections = [] }) => {
+    const isBookingEnabled = pageSections.find(s => s.id === 'booking')?.enabled !== false;
+
     return (
         <section id="home" style={{
             height: '100vh',
@@ -174,22 +260,26 @@ const Hero = ({ settings = {} }) => {
                 <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '1.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
                     {settings.hero_subtitle || "Luxury hair styling and bespoke treatments at 938 High Road."}
                 </p>
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    marginBottom: '2.5rem',
-                    opacity: 0.8,
-                    fontSize: '0.95rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px'
-                }}>
-                    <Calendar size={18} />
-                    <span>{settings.opening_hours || "Tuesday - Saturday: 9:00 AM - 6:00 PM"}</span>
-                </div>
+                {settings.show_opening_hours !== 'false' && (
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px',
+                        marginBottom: '2.5rem',
+                        opacity: 0.8,
+                        fontSize: '0.95rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                    }}>
+                        <Calendar size={18} />
+                        <span>{settings.opening_hours || "Tuesday - Saturday: 9:00 AM - 6:00 PM"}</span>
+                    </div>
+                )}
                 <div className="hero-buttons" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', width: '100%', margin: '0 auto' }}>
-                    <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</a>
+                    {isBookingEnabled && (
+                        <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</a>
+                    )}
                     <a href="#services" style={{
                         border: '1px solid #FFFFFF',
                         color: '#FFFFFF',
@@ -403,7 +493,7 @@ const PriceList = ({ pricing = [], settings = {} }) => {
                 }}
             >
                 <h2 className="price-list-title" style={{
-                    fontFamily: "'Great Vibes', cursive",
+                    fontFamily: 'var(--font-heading)',
                     fontSize: '6rem',
                     color: 'var(--primary-brown)',
                     textAlign: 'center',
@@ -423,7 +513,7 @@ const PriceList = ({ pricing = [], settings = {} }) => {
                     {displayCategories.map((cat, idx) => (
                         <div key={idx} style={{ width: '100%' }}>
                             <h3 style={{
-                                fontFamily: "'Inter', sans-serif",
+                                fontFamily: 'var(--font-heading)',
                                 fontSize: 'clamp(1.1rem, 3vw, 1.4rem)',
                                 fontWeight: '700',
                                 color: 'var(--primary-brown)',
