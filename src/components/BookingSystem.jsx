@@ -314,15 +314,7 @@ const BookingSystem = () => {
                     <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--primary-brown)', margin: '0 auto' }}></div>
                 </div>
 
-                <div style={{
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: '20px',
-                    boxShadow: '0 40px 100px rgba(61, 43, 31, 0.08)',
-                    overflow: 'hidden',
-                    display: 'grid',
-                    gridTemplateColumns: 'minmax(300px, 1fr) 2fr',
-                    height: '750px'
-                }} className="booking-card">
+                <div className="booking-card">
 
                     <div style={{
                         backgroundColor: 'var(--primary-brown)',
