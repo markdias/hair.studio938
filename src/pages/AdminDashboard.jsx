@@ -1177,8 +1177,11 @@ const ThemeTab = ({ showMessage }) => {
                                 <option value="'Great Vibes', cursive">Great Vibes (Script)</option>
                             </select>
                             <div
-                                className="mt-2 p-3 bg-white border border-gray-200 rounded text-center shadow-sm"
-                                style={{ fontFamily: localTheme['--font-heading'] || "'Playfair Display', serif" }}
+                                className="mt-2 p-3 bg-white border border-gray-200 rounded text-center shadow-sm flex items-center justify-center"
+                                style={{
+                                    fontFamily: localTheme['--font-heading'] || "'Playfair Display', serif",
+                                    minHeight: '100px'
+                                }}
                             >
                                 <p className="text-xl">The Art of Hair Styling</p>
                             </div>
@@ -1198,8 +1201,11 @@ const ThemeTab = ({ showMessage }) => {
                                 <option value="'Playfair Display', serif">Playfair Display (Serif)</option>
                             </select>
                             <div
-                                className="mt-2 p-3 bg-white border border-gray-200 rounded shadow-sm"
-                                style={{ fontFamily: localTheme['--font-body'] || "'Inter', sans-serif" }}
+                                className="mt-2 p-3 bg-white border border-gray-200 rounded shadow-sm flex items-center justify-center text-center"
+                                style={{
+                                    fontFamily: localTheme['--font-body'] || "'Inter', sans-serif",
+                                    minHeight: '100px'
+                                }}
                             >
                                 <p className="text-sm leading-relaxed">Luxury hair styling and bespoke treatments at 938 High Road. We provide professional hair services tailored to your unique style.</p>
                             </div>
