@@ -4465,7 +4465,7 @@ const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, re
                                     </button>
                                     <button
                                         onClick={() => handleDeleteSection(section.id)}
-                                        className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-opacity-90 transition-all"
+                                        className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all"
                                     >
                                         <Trash2 size={16} />
                                         Delete
@@ -5042,7 +5042,8 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                                     </button>
                                     <button
                                         onClick={() => handleDeleteElement(element.id)}
-                                        className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-opacity-90 transition-all text-sm"
+                                        className="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all text-sm flex items-center justify-center"
+                                        title="Delete Element"
                                     >
                                         <Trash2 size={16} />
                                     </button>
