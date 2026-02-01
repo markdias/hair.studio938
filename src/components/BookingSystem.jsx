@@ -2,12 +2,82 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar as CalendarIcon, Clock, User, Scissors, Check, ChevronRight, ChevronLeft, Phone, Mail, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import AntdDatePicker from './AntdDatePicker';
 
 const categories = [
     { title: "CUT & STYLING", items: ["Wash cut & blowdry", "Wash & cut", "Wash & blowdry", "Styling", "Hair Up"] },
     { title: "COLOURING", items: ["T-section highlights", "Half head highlights", "Full head highlights", "Balyage", "Full head tint"] },
     { title: "TREATMENTS", items: ["Keratin blowdry", "Hair Botox", "Olaplex"] },
 ];
+
+// Helper function to parse opening hours string
+const parseOpeningHours = (text) => {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const hours = Array.from({ length: 13 }, (_, i) => i + 8);
+    const selectedSlots = {};
+
+    // Initialize all days as closed
+    days.forEach(day => {
+        selectedSlots[day] = new Array(13).fill(false);
+    });
+
+    if (!text || text.toLowerCase() === 'closed') return selectedSlots;
+
+    // Parse text (basic implementation - can be enhanced)
+    // Expected format: "Mon-Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM"
+    const parts = text.split(',').map(p => p.trim());
+
+    parts.forEach(part => {
+        const match = part.match(/([A-Za-z\-]+):\s*(.+)/);
+        if (!match) return;
+
+        const [, dayPart, timePart] = match;
+        const timeRanges = timePart.split(',').map(t => t.trim());
+
+        // Parse day range
+        let targetDays = [];
+        if (dayPart.includes('-')) {
+            const [start, end] = dayPart.split('-').map(d => d.trim());
+            const startIdx = days.indexOf(start);
+            const endIdx = days.indexOf(end);
+            if (startIdx !== -1 && endIdx !== -1) {
+                for (let i = startIdx; i <= endIdx; i++) {
+                    targetDays.push(days[i]);
+                }
+            }
+        } else {
+            const day = days.find(d => dayPart.includes(d));
+            if (day) targetDays.push(day);
+        }
+
+        // Parse time ranges
+        timeRanges.forEach(timeRange => {
+            const timeMatch = timeRange.match(/(\d+)\s*(AM|PM)\s*-\s*(\d+)\s*(AM|PM)/i);
+            if (!timeMatch) return;
+
+            let [, startHour, startPeriod, endHour, endPeriod] = timeMatch;
+            startHour = parseInt(startHour);
+            endHour = parseInt(endHour);
+
+            // Convert to 24-hour
+            if (startPeriod.toUpperCase() === 'PM' && startHour !== 12) startHour += 12;
+            if (startPeriod.toUpperCase() === 'AM' && startHour === 12) startHour = 0;
+            if (endPeriod.toUpperCase() === 'PM' && endHour !== 12) endHour += 12;
+            if (endPeriod.toUpperCase() === 'AM' && endHour === 12) endHour = 0;
+
+            // Mark slots as selected
+            targetDays.forEach(day => {
+                hours.forEach((hour, idx) => {
+                    if (hour >= startHour && hour < endHour) {
+                        selectedSlots[day][idx] = true;
+                    }
+                });
+            });
+        });
+    });
+
+    return selectedSlots;
+};
 
 const BookingSystem = () => {
     const [stylists, setStylists] = useState([]);
@@ -351,31 +421,29 @@ const BookingSystem = () => {
                                             <h4 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>Date & Time</h4>
                                             <p style={{ color: '#666', marginBottom: '30px', fontSize: '0.9rem' }}>Select your preferred date to see available time slots.</p>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                                                <div style={{ position: 'relative' }}>
+                                                <div>
                                                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: 'var(--primary-brown)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                                         Pick a Date
                                                     </label>
-                                                    <div style={{ position: 'relative' }}>
-                                                        <CalendarIcon size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#999', pointerEvents: 'none' }} />
-                                                        <input
-                                                            type="date"
-                                                            min={new Date().toISOString().split('T')[0]}
-                                                            onChange={(e) => setBooking({ ...booking, date: e.target.value, time: null })}
-                                                            value={booking.date || ''}
-                                                            style={{
-                                                                width: '100%',
-                                                                padding: '15px 15px 15px 45px',
-                                                                borderRadius: '12px',
-                                                                border: '1px solid var(--accent-cream)',
-                                                                fontSize: '1rem',
-                                                                color: 'var(--primary-brown)',
-                                                                backgroundColor: '#FFF',
-                                                                cursor: 'pointer',
-                                                                outline: 'none',
-                                                                boxSizing: 'border-box'
-                                                            }}
-                                                        />
-                                                    </div>
+                                                    <AntdDatePicker
+                                                        value={booking.date}
+                                                        onChange={(date, dateString) => setBooking({ ...booking, date: dateString, time: null })}
+                                                        className=""
+                                                        disabledDate={(date) => {
+                                                            // Disable dates in the past
+                                                            const today = new Date();
+                                                            today.setHours(0, 0, 0, 0);
+                                                            if (date < today) return true;
+
+                                                            // Disable closed days
+                                                            if (!openingHours) return false;
+                                                            const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                                                            const dayName = WEEK_DAYS[date.getDay()];
+                                                            const parsedHours = parseOpeningHours(openingHours);
+                                                            const slots = parsedHours[dayName];
+                                                            return !slots || !slots.some(s => s);
+                                                        }}
+                                                    />
                                                 </div>
 
                                                 <div>
