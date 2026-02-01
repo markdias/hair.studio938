@@ -115,7 +115,7 @@ const AdminDashboard = () => {
                 supabase.from('site_settings').select('*'),
                 supabase.from('services_overview').select('*'),
                 supabase.from('price_list').select('*').order('sort_order'),
-                supabase.from('stylist_calendars').select('*'),
+                supabase.from('stylist_calendars').select('*').order('sort_order'),
                 supabase.from('gallery_images').select('*').order('sort_order'),
                 supabase.from('clients').select('*').order('created_at', { ascending: false }),
                 supabase.from('testimonials').select('*').order('sort_order'),
@@ -1938,7 +1938,7 @@ const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
     const [localStylists, setLocalStylists] = useState(stylists);
     const [showHelp, setShowHelp] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
-    const [newStylist, setNewStylist] = useState({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '' });
+    const [newStylist, setNewStylist] = useState({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0 });
 
     useEffect(() => { setLocalStylists(stylists); }, [stylists]);
 
@@ -1962,7 +1962,7 @@ const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
         try {
             const { error } = await supabase.from('stylist_calendars').insert([newStylist]);
             if (error) throw error;
-            setNewStylist({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '' });
+            setNewStylist({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0 });
             setIsAdding(false);
             refresh();
             showMessage('success', 'New stylist added!');
@@ -2058,6 +2058,7 @@ const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input value={newStylist.stylist_name} onChange={e => setNewStylist({ ...newStylist, stylist_name: e.target.value })} placeholder="Name" className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
                         <input value={newStylist.role} onChange={e => setNewStylist({ ...newStylist, role: e.target.value })} placeholder="Role" className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
+                        <input type="number" value={newStylist.sort_order} onChange={e => setNewStylist({ ...newStylist, sort_order: parseInt(e.target.value) || 0 })} placeholder="Order" className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
                     </div>
                     <input
                         value={newStylist.calendar_id}
@@ -2095,6 +2096,15 @@ const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
                             <div className="flex-grow space-y-2">
                                 <input value={s.stylist_name} onChange={(e) => handleFieldChange(idx, 'stylist_name', e.target.value)} className="w-full text-lg font-semibold border-none p-0 focus:ring-0 outline-none" />
                                 <input value={s.role || ''} placeholder="Role" onChange={(e) => handleFieldChange(idx, 'role', e.target.value)} className="w-full text-sm text-gray-600 border-none p-0 focus:ring-0 outline-none" />
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-xs text-gray-400">Display Order:</span>
+                                    <input
+                                        type="number"
+                                        value={s.sort_order || 0}
+                                        onChange={(e) => handleFieldChange(idx, 'sort_order', parseInt(e.target.value) || 0)}
+                                        className="w-16 text-xs border border-gray-200 rounded px-1 py-0.5 focus:ring-1 focus:ring-stone-800 outline-none"
+                                    />
+                                </div>
                             </div>
                         </div>
                         <input

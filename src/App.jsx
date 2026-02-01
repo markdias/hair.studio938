@@ -67,7 +67,7 @@ const MainSite = () => {
         supabase.from('site_settings').select('*'),
         supabase.from('services_overview').select('*'),
         supabase.from('price_list').select('*').order('sort_order'),
-        supabase.from('stylist_calendars').select('*'),
+        supabase.from('stylist_calendars').select('*').order('sort_order'),
         supabase.from('gallery_images').select('*').order('sort_order'),
         supabase.from('testimonials').select('*').order('sort_order'),
         supabase.from('phone_numbers').select('*').order('display_order'),
