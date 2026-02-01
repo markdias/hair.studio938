@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
-const TermsAndConditionsModal = ({ isOpen, onClose, content }) => {
+const TermsAndConditionsModal = ({ isOpen, onClose, content, title }) => {
     // Close on escape key
     React.useEffect(() => {
         const handleEscape = (e) => {
@@ -86,7 +86,7 @@ const TermsAndConditionsModal = ({ isOpen, onClose, content }) => {
                                     margin: 0,
                                     fontFamily: 'var(--font-heading)'
                                 }}>
-                                    Terms & Conditions
+                                    {title || "Terms & Conditions"}
                                 </h2>
                                 <button
                                     onClick={onClose}

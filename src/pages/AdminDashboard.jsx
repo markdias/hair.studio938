@@ -262,8 +262,8 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
         case 'testimonials': return <TestimonialsTab testimonials={data.testimonials} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
         case 'custom_sections': return <CustomSectionsTab customSections={data.customSections} setCustomSections={setData.setCustomSections} siteSettings={data.site_settings} refresh={refresh} showMessage={showMessage} />;
-        case 'privacy': return <PrivacyPolicyEditor showMessage={showMessage} />;
-        case 'terms': return <TermsAndConditionsEditor showMessage={showMessage} />;
+        case 'privacy': return <PrivacyPolicyEditor settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} />;
+        case 'terms': return <TermsAndConditionsEditor settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} />;
         case 'page_flow': return <PageFlowTab customSections={data.customSections} showMessage={showMessage} />;
         default: return null;
@@ -950,7 +950,7 @@ const PhoneNumbersEditor = ({ showMessage }) => {
     );
 };
 
-const PrivacyPolicyEditor = ({ showMessage }) => {
+const PrivacyPolicyEditor = ({ settings, setSettings, showMessage }) => {
     const [content, setContent] = useState('');
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -1003,6 +1003,15 @@ const PrivacyPolicyEditor = ({ showMessage }) => {
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <SectionConfig
+                sectionId="privacy"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultMenuName="Privacy Policy"
+                defaultHeadingName="Privacy Policy"
+                description="Enable or disable the privacy policy link in the footer and customize its name."
+            />
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
                     <Shield size={24} />
@@ -1062,7 +1071,7 @@ const PrivacyPolicyEditor = ({ showMessage }) => {
     );
 };
 
-const TermsAndConditionsEditor = ({ showMessage }) => {
+const TermsAndConditionsEditor = ({ settings, setSettings, showMessage }) => {
     const [content, setContent] = useState('');
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -1115,6 +1124,15 @@ const TermsAndConditionsEditor = ({ showMessage }) => {
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <SectionConfig
+                sectionId="terms"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultMenuName="Terms & Conditions"
+                defaultHeadingName="Terms & Conditions"
+                description="Enable or disable the terms & conditions link in the footer and customize its name."
+            />
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
                     <Shield size={24} />

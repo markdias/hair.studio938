@@ -882,51 +882,57 @@ const Footer = ({ settings = {}, phoneNumbers = [] }) => {
                     </div>
 
                     {/* Column 2: Links */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <h4 style={{
-                            fontFamily: 'var(--font-heading)',
-                            fontSize: '1.4rem',
-                            margin: 0
-                        }}>Important Links</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <button
-                                onClick={() => setIsPrivacyModalOpen(true)}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--primary-brown)',
-                                    fontSize: '0.95rem',
-                                    cursor: 'pointer',
-                                    textAlign: 'left',
-                                    padding: 0,
-                                    opacity: 0.8,
-                                    transition: 'opacity 0.2s'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
-                            >
-                                Privacy Policy
-                            </button>
-                            <button
-                                onClick={() => setIsTermsModalOpen(true)}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--primary-brown)',
-                                    fontSize: '0.95rem',
-                                    cursor: 'pointer',
-                                    textAlign: 'left',
-                                    padding: 0,
-                                    opacity: 0.8,
-                                    transition: 'opacity 0.2s'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
-                            >
-                                Terms & Conditions
-                            </button>
+                    {(settings?.show_privacy_section !== 'false' || settings?.show_terms_section !== 'false') && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <h4 style={{
+                                fontFamily: 'var(--font-heading)',
+                                fontSize: '1.4rem',
+                                margin: 0
+                            }}>Important Links</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {settings?.show_privacy_section !== 'false' && (
+                                    <button
+                                        onClick={() => setIsPrivacyModalOpen(true)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'var(--primary-brown)',
+                                            fontSize: '0.95rem',
+                                            cursor: 'pointer',
+                                            textAlign: 'left',
+                                            padding: 0,
+                                            opacity: 0.8,
+                                            transition: 'opacity 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                                    >
+                                        {settings?.privacy_menu_name || "Privacy Policy"}
+                                    </button>
+                                )}
+                                {settings?.show_terms_section !== 'false' && (
+                                    <button
+                                        onClick={() => setIsTermsModalOpen(true)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'var(--primary-brown)',
+                                            fontSize: '0.95rem',
+                                            cursor: 'pointer',
+                                            textAlign: 'left',
+                                            padding: 0,
+                                            opacity: 0.8,
+                                            transition: 'opacity 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                                    >
+                                        {settings?.terms_menu_name || "Terms & Conditions"}
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Column 3: Contact */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1008,11 +1014,13 @@ const Footer = ({ settings = {}, phoneNumbers = [] }) => {
                 isOpen={isPrivacyModalOpen}
                 onClose={() => setIsPrivacyModalOpen(false)}
                 content={settings.privacy_policy || ''}
+                title={settings.privacy_heading_name}
             />
             <TermsAndConditionsModal
                 isOpen={isTermsModalOpen}
                 onClose={() => setIsTermsModalOpen(false)}
                 content={settings.terms_and_conditions || ''}
+                title={settings.terms_heading_name}
             />
         </>
     );

@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
-const PrivacyPolicyModal = ({ isOpen, onClose, content }) => {
+const PrivacyPolicyModal = ({ isOpen, onClose, content, title }) => {
     // Close on escape key
     React.useEffect(() => {
         const handleEscape = (e) => {
@@ -86,7 +86,7 @@ const PrivacyPolicyModal = ({ isOpen, onClose, content }) => {
                                     margin: 0,
                                     fontFamily: 'var(--font-heading)'
                                 }}>
-                                    Privacy Policy
+                                    {title || "Privacy Policy"}
                                 </h2>
                                 <button
                                     onClick={onClose}
