@@ -417,6 +417,79 @@ CREATE POLICY "Public can view stylist calendars" ON public.stylist_calendars
 CREATE POLICY "Authenticated users can manage stylist calendars" ON public.stylist_calendars
     FOR ALL USING (auth.role() = 'authenticated');
 
+-- SERVICES OVERVIEW TABLE
+CREATE TABLE IF NOT EXISTS public.services_overview (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.services_overview ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read access" ON public.services_overview FOR SELECT USING (true);
+CREATE POLICY "Auth write access" ON public.services_overview FOR ALL USING (auth.role() = 'authenticated');
+
+-- GALLERY IMAGES TABLE
+CREATE TABLE IF NOT EXISTS public.gallery_images (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    image_url TEXT NOT NULL,
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.gallery_images ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read access" ON public.gallery_images FOR SELECT USING (true);
+CREATE POLICY "Auth write access" ON public.gallery_images FOR ALL USING (auth.role() = 'authenticated');
+
+-- CUSTOM SECTIONS TABLE
+CREATE TABLE IF NOT EXISTS public.custom_sections (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    menu_name TEXT NOT NULL,
+    heading_name TEXT NOT NULL,
+    enabled BOOLEAN DEFAULT true,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    element_limit INTEGER DEFAULT 10,
+    background_color TEXT,
+    text_color TEXT DEFAULT '#2A1D15',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.custom_sections ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read" ON public.custom_sections FOR SELECT USING (enabled = true);
+CREATE POLICY "Auth manage" ON public.custom_sections FOR ALL USING (auth.role() = 'authenticated');
+
+-- CUSTOM SECTION ELEMENTS TABLE
+CREATE TABLE IF NOT EXISTS public.custom_section_elements (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    section_id UUID NOT NULL REFERENCES public.custom_sections(id) ON DELETE CASCADE,
+    element_type TEXT NOT NULL CHECK (element_type IN ('gallery', 'text_box', 'card', 'image', 'video')),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    config JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.custom_section_elements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read" ON public.custom_section_elements FOR SELECT USING (true);
+CREATE POLICY "Auth manage" ON public.custom_section_elements FOR ALL USING (auth.role() = 'authenticated');
+
+-- SITE PAGE SECTIONS (ORDERING)
+CREATE TABLE IF NOT EXISTS public.site_page_sections (
+    id TEXT PRIMARY KEY,
+    label TEXT NOT NULL,
+    is_custom BOOLEAN DEFAULT false,
+    sort_order INTEGER NOT NULL,
+    enabled BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.site_page_sections ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read" ON public.site_page_sections FOR SELECT USING (enabled = true);
+CREATE POLICY "Auth manage" ON public.site_page_sections FOR ALL USING (auth.role() = 'authenticated');
+
 -- DEFAULT SETTINGS
 INSERT INTO public.site_settings (key, value)
 VALUES
@@ -428,8 +501,30 @@ VALUES
     ('theme_text_light', '#FFFFFF'),
     ('intro_video_url', ''),
     ('business_name', 'Hair Studio 938'),
-    ('opening_hours', 'Mon-Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM')
+    ('opening_hours', 'Mon-Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM'),
+    ('footer_description', 'Your premium hair salon experience.'),
+    ('terms_and_conditions', ''),
+    ('privacy_policy', ''),
+    ('payment_methods', 'visa,mastercard,paypal'),
+    ('show_privacy_section', 'true'),
+    ('privacy_menu_name', 'Privacy Policy'),
+    ('privacy_heading_name', 'Privacy Policy'),
+    ('show_terms_section', 'true'),
+    ('terms_menu_name', 'Terms & Conditions'),
+    ('terms_heading_name', 'Terms & Conditions')
 ON CONFLICT (key) DO NOTHING;
+
+-- INITIAL SEED FOR FIXED SECTIONS
+INSERT INTO public.site_page_sections (id, label, is_custom, sort_order)
+VALUES 
+    ('services', 'Services', false, 10),
+    ('team', 'Team', false, 20),
+    ('pricing', 'Pricing', false, 30),
+    ('testimonials', 'Testimonials', false, 40),
+    ('booking', 'Booking', false, 50),
+    ('gallery', 'Gallery', false, 60),
+    ('contact', 'Contact', false, 70)
+ON CONFLICT (id) DO NOTHING;
 ```
 
 ---
@@ -438,7 +533,7 @@ ON CONFLICT (key) DO NOTHING;
 
 ### 1. Database Check
 - [ ] Go to Supabase → **Table Editor**
-- [ ] Verify tables exist: `site_settings`, `clients`, `appointments`, `testimonials`, `phone_numbers`
+- [ ] Verify tables exist: `site_settings`, `clients`, `appointments`, `testimonials`, `phone_numbers`, `services_overview`, `price_list`, `price_categories`, `stylist_calendars`, `gallery_images`, `custom_sections`, `custom_section_elements`
 - [ ] Check `site_settings` has theme values
 
 ### 2. Website Check
@@ -532,5 +627,5 @@ This template provides a complete salon booking website with:
 
 ---
 
-**Last Updated**: January 2026  
-**Version**: 1.0
+**Last Updated**: February 2026  
+**Version**: 1.1
