@@ -63,6 +63,10 @@ const ElementRenderer = ({ element, index }) => {
             return <QRCodeElement config={config} index={index} />;
         case 'list':
             return <ListElement config={config} index={index} />;
+        case 'button':
+            return <ButtonElement config={config} index={index} />;
+        case 'table':
+            return <TableElement config={config} index={index} />;
         default:
             return null;
     }
@@ -415,5 +419,80 @@ const ListElement = ({ config, index }) => {
     );
 };
 
+// Button Element - Call to action
+const ButtonElement = ({ config, index }) => {
+    const { label = 'Click Here', url = '', style = 'solid', alignment = 'center' } = config;
+
+    const alignmentClass = {
+        left: 'justify-start',
+        center: 'justify-center',
+        right: 'justify-end'
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.1 }}
+            className={`flex w-full ${alignmentClass[alignment]}`}
+        >
+            <a
+                href={url || '#'}
+                target={url && url.startsWith('http') ? '_blank' : '_self'}
+                rel="noopener noreferrer"
+                className={`inline-block px-8 py-4 rounded-lg font-bold text-lg transition-all hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl ${style === 'outline'
+                        ? 'border-2 border-[var(--primary-brown)] text-[var(--primary-brown)] bg-transparent hover:bg-[var(--primary-brown)] hover:text-white'
+                        : 'bg-[var(--primary-brown)] text-white hover:bg-opacity-90'
+                    }`}
+                style={style === 'outline' ? { borderColor: 'var(--primary-brown)', color: 'var(--primary-brown)' } : { backgroundColor: 'var(--primary-brown)' }}
+            >
+                {label}
+            </a>
+        </motion.div>
+    );
+};
+
+// Table Element - Structured Grid
+const TableElement = ({ config, index }) => {
+    const { rows = [], hasHeader = true } = config;
+    if (rows.length === 0) return null;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.1 }}
+            className="w-full max-w-5xl mx-auto overflow-x-auto rounded-xl shadow-lg border border-stone-100"
+        >
+            <table className="w-full border-collapse bg-white">
+                <thead>
+                    {hasHeader && rows.length > 0 && (
+                        <tr className="bg-stone-50 border-b-2 border-stone-100">
+                            {rows[0].map((cell, i) => (
+                                <th key={i} className="p-4 text-left font-bold text-stone-800 border-r border-stone-50 last:border-r-0">
+                                    {cell}
+                                </th>
+                            ))}
+                        </tr>
+                    )}
+                </thead>
+                <tbody className="divide-y divide-stone-50">
+                    {rows.slice(hasHeader ? 1 : 0).map((row, i) => (
+                        <tr key={i} className="hover:bg-stone-50/50 transition-colors">
+                            {row.map((cell, j) => (
+                                <td key={j} className="p-4 text-stone-600 border-r border-stone-50 last:border-r-0">
+                                    {cell}
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </motion.div>
+    );
+};
+
 export default CustomSection;
-export { GalleryElement, TextBoxElement, CardElement, ImageElement, VideoElement, CarouselElement, QRCodeElement, ListElement };
+export { GalleryElement, TextBoxElement, CardElement, ImageElement, VideoElement, CarouselElement, QRCodeElement, ListElement, ButtonElement, TableElement };

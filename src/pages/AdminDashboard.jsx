@@ -4770,6 +4770,8 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
         { type: 'video', label: 'Video', icon: <Image size={18} />, description: 'Embedded or uploaded video' },
         { type: 'qr_code', label: 'QR Code', icon: <Maximize2 size={18} />, description: 'Scan to visit a link' },
         { type: 'list', label: 'Standard List', icon: <List size={18} />, description: 'Bullet points or numbered items' },
+        { type: 'button', label: 'Button', icon: <Plus size={18} />, description: 'Call to action link' },
+        { type: 'table', label: 'Table', icon: <List size={18} />, description: 'Structured data grid' },
     ];
 
     const handleSaveSection = async () => {
@@ -5200,6 +5202,24 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                                 )}
                                 {editingElement.element_type === 'list' && (
                                     <ListElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                    />
+                                )}
+                                {editingElement.element_type === 'button' && (
+                                    <ButtonElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                    />
+                                )}
+                                {editingElement.element_type === 'table' && (
+                                    <TableElementConfig
                                         config={editingElement.config}
                                         onSave={(config) => {
                                             handleSaveElement(editingElement.id, config);
@@ -5701,6 +5721,177 @@ const ListElementConfig = ({ config, onSave }) => {
                 style={{ backgroundColor: 'var(--primary-brown)' }}
             >
                 Save List
+            </button>
+        </div>
+    );
+};
+
+const ButtonElementConfig = ({ config, onSave }) => {
+    const [label, setLabel] = useState(config.label || 'Click Here');
+    const [url, setUrl] = useState(config.url || '');
+    const [style, setStyle] = useState(config.style || 'solid'); // solid, outline
+    const [alignment, setAlignment] = useState(config.alignment || 'center'); // left, center, right
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Button Label</label>
+                <input
+                    value={label}
+                    onChange={e => setLabel(e.target.value)}
+                    placeholder="e.g. Book Appointment"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Link URL</label>
+                <input
+                    value={url}
+                    onChange={e => setUrl(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Style</label>
+                    <select
+                        value={style}
+                        onChange={e => setStyle(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    >
+                        <option value="solid">Solid</option>
+                        <option value="outline">Outline</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Alignment</label>
+                    <select
+                        value={alignment}
+                        onChange={e => setAlignment(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    >
+                        <option value="left">Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                    </select>
+                </div>
+            </div>
+            <button
+                onClick={() => onSave({ label, url, style, alignment })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Button
+            </button>
+        </div>
+    );
+};
+
+const TableElementConfig = ({ config, onSave }) => {
+    const [rows, setRows] = useState(config.rows || [['Header 1', 'Header 2'], ['Row 1 Col 1', 'Row 1 Col 2']]);
+    const [hasHeader, setHasHeader] = useState(config.hasHeader !== false);
+
+    const handleUpdateCell = (rowIndex, colIndex, value) => {
+        const newRows = [...rows];
+        newRows[rowIndex][colIndex] = value;
+        setRows(newRows);
+    };
+
+    const handleAddRow = () => {
+        const newRow = new Array(rows[0]?.length || 2).fill('');
+        setRows([...rows, newRow]);
+    };
+
+    const handleAddColumn = () => {
+        setRows(rows.map(row => [...row, '']));
+    };
+
+    const handleRemoveRow = (rowIndex) => {
+        if (rows.length <= 1) return;
+        setRows(rows.filter((_, i) => i !== rowIndex));
+    };
+
+    const handleRemoveColumn = (colIndex) => {
+        if (rows[0].length <= 1) return;
+        setRows(rows.map(row => row.filter((_, i) => i !== colIndex)));
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <input
+                        type="checkbox"
+                        checked={hasHeader}
+                        onChange={e => setHasHeader(e.target.checked)}
+                        className="rounded border-gray-300 text-stone-800 focus:ring-stone-800"
+                    />
+                    First row as header
+                </label>
+            </div>
+
+            <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                <table className="w-full border-collapse">
+                    <tbody>
+                        {rows.map((row, rowIndex) => (
+                            <tr key={rowIndex} className={rowIndex === 0 && hasHeader ? 'bg-gray-50' : ''}>
+                                {row.map((cell, colIndex) => (
+                                    <td key={colIndex} className="p-2 border border-gray-100 min-w-[120px]">
+                                        <div className="relative group">
+                                            <input
+                                                value={cell}
+                                                onChange={e => handleUpdateCell(rowIndex, colIndex, e.target.value)}
+                                                className={`w-full px-2 py-1 text-sm border border-transparent rounded focus:border-stone-800 outline-none ${rowIndex === 0 && hasHeader ? 'font-bold' : ''}`}
+                                            />
+                                            {rowIndex === 0 && (
+                                                <button
+                                                    onClick={() => handleRemoveColumn(colIndex)}
+                                                    className="absolute -top-6 left-1/2 -translate-x-1/2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    title="Remove Column"
+                                                >
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            )}
+                                            {colIndex === 0 && (
+                                                <button
+                                                    onClick={() => handleRemoveRow(rowIndex)}
+                                                    className="absolute top-1/2 -left-6 -translate-y-1/2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    title="Remove Row"
+                                                >
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <div className="flex gap-4">
+                <button
+                    onClick={handleAddRow}
+                    className="flex-1 flex items-center justify-center gap-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all text-sm font-medium"
+                >
+                    <Plus size={14} /> Add Row
+                </button>
+                <button
+                    onClick={handleAddColumn}
+                    className="flex-1 flex items-center justify-center gap-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all text-sm font-medium"
+                >
+                    <Plus size={14} /> Add Column
+                </button>
+            </div>
+
+            <button
+                onClick={() => onSave({ rows, hasHeader })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Table
             </button>
         </div>
     );
