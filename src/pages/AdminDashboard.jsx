@@ -4369,7 +4369,9 @@ const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, re
                     heading_name: 'New Section',
                     enabled: true,
                     sort_order: maxOrder + 1,
-                    element_limit: 10
+                    element_limit: 10,
+                    background_color: siteSettings?.background_color || '#FDFBF9',
+                    text_color: siteSettings?.primary_brown || '#3D2B1F'
                 }])
                 .select('*, custom_section_elements(*)')
                 .single();
@@ -4760,11 +4762,14 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
     const [saving, setSaving] = useState(false);
 
     const elementTypes = [
-        { type: 'gallery', label: 'Gallery', icon: <Image size={18} />, description: 'Multiple images in a grid' },
+        { type: 'gallery', label: 'Gallery Grid', icon: <Image size={18} />, description: 'Multiple images in a grid' },
+        { type: 'image_carousel', label: 'Image Carousel', icon: <ChevronRight size={18} />, description: 'Sliding gallery of images' },
         { type: 'text_box', label: 'Text Box', icon: <MessageCircle size={18} />, description: 'Rich text content' },
         { type: 'card', label: 'Card', icon: <Tag size={18} />, description: 'Title, description, image & link' },
         { type: 'image', label: 'Single Image', icon: <Image size={18} />, description: 'One image with caption' },
         { type: 'video', label: 'Video', icon: <Image size={18} />, description: 'Embedded or uploaded video' },
+        { type: 'qr_code', label: 'QR Code', icon: <Maximize2 size={18} />, description: 'Scan to visit a link' },
+        { type: 'list', label: 'Standard List', icon: <List size={18} />, description: 'Bullet points or numbered items' },
     ];
 
     const handleSaveSection = async () => {
@@ -5174,6 +5179,34 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                                         showMessage={showMessage}
                                     />
                                 )}
+                                {editingElement.element_type === 'image_carousel' && (
+                                    <CarouselElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                        showMessage={showMessage}
+                                    />
+                                )}
+                                {editingElement.element_type === 'qr_code' && (
+                                    <QRCodeElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                    />
+                                )}
+                                {editingElement.element_type === 'list' && (
+                                    <ListElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                    />
+                                )}
                                 {editingElement.element_type === 'video' && (
                                     <VideoElementConfig
                                         config={editingElement.config}
@@ -5505,6 +5538,169 @@ const VideoElementConfig = ({ config, onSave, showMessage }) => {
                 style={{ backgroundColor: 'var(--primary-brown)' }}
             >
                 Save Video
+            </button>
+        </div>
+    );
+};
+
+const CarouselElementConfig = ({ config, onSave, showMessage }) => {
+    const [images, setImages] = useState(config.images || []);
+
+    const handleAddImage = (url) => {
+        setImages([...images, { url, alt: '', caption: '' }]);
+    };
+
+    const handleUpdateImage = (index, field, value) => {
+        const newImages = [...images];
+        newImages[index][field] = value;
+        setImages(newImages);
+    };
+
+    const handleRemoveImage = (index) => {
+        setImages(images.filter((_, i) => i !== index));
+    };
+
+    return (
+        <div className="space-y-6">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Add Image to Carousel</label>
+                <ImageUploader folder="custom-sections" onUpload={handleAddImage} showMessage={showMessage} />
+            </div>
+
+            <div className="space-y-3">
+                {images.map((img, idx) => (
+                    <div key={idx} className="p-3 bg-gray-50 border border-gray-200 rounded-lg flex gap-4">
+                        <img src={img.url} className="w-20 h-20 object-cover rounded shadow-sm" alt="Preview" />
+                        <div className="flex-grow space-y-2">
+                            <input
+                                value={img.caption}
+                                onChange={e => handleUpdateImage(idx, 'caption', e.target.value)}
+                                placeholder="Caption (optional)"
+                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded outline-none"
+                            />
+                            <input
+                                value={img.alt}
+                                onChange={e => handleUpdateImage(idx, 'alt', e.target.value)}
+                                placeholder="Alt Text"
+                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded outline-none"
+                            />
+                        </div>
+                        <button onClick={() => handleRemoveImage(idx)} className="text-red-500 hover:text-red-700">
+                            <Trash2 size={18} />
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            <button
+                onClick={() => onSave({ images })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Carousel
+            </button>
+        </div>
+    );
+};
+
+const QRCodeElementConfig = ({ config, onSave }) => {
+    const [content, setContent] = useState(config.content || '');
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">QR Code Content (URL or Text)</label>
+                <input
+                    value={content}
+                    onChange={e => setContent(e.target.value)}
+                    placeholder="https://example.com"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+            {content && (
+                <div className="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
+                    <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(content)}`}
+                        alt="QR Preview"
+                        className="bg-white p-2 shadow-sm rounded border border-gray-200"
+                    />
+                    <p className="text-xs text-gray-500 mt-2">Preview of your QR code</p>
+                </div>
+            )}
+            <button
+                onClick={() => onSave({ content })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save QR Code
+            </button>
+        </div>
+    );
+};
+
+const ListElementConfig = ({ config, onSave }) => {
+    const [items, setItems] = useState(config.items || []);
+    const [type, setType] = useState(config.type || 'bullet'); // bullet, numbered
+
+    const handleAddItem = () => {
+        setItems([...items, 'New list item']);
+    };
+
+    const handleUpdateItem = (index, value) => {
+        const newItems = [...items];
+        newItems[index] = value;
+        setItems(newItems);
+    };
+
+    const handleRemoveItem = (index) => {
+        setItems(items.filter((_, i) => i !== index));
+    };
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">List Type</label>
+                <select
+                    value={type}
+                    onChange={e => setType(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                >
+                    <option value="bullet">Bullet Points</option>
+                    <option value="numbered">Numbered List</option>
+                </select>
+            </div>
+
+            <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700 block">List Items</label>
+                {items.map((item, idx) => (
+                    <div key={idx} className="flex gap-2">
+                        <span className="mt-2 text-gray-400 font-mono text-sm">
+                            {type === 'numbered' ? `${idx + 1}.` : '•'}
+                        </span>
+                        <input
+                            value={item}
+                            onChange={e => handleUpdateItem(idx, e.target.value)}
+                            className="flex-grow px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                        <button onClick={() => handleRemoveItem(idx)} className="text-red-500 hover:text-red-700 px-1">
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                ))}
+                <button
+                    onClick={handleAddItem}
+                    className="mt-2 flex items-center gap-1 text-sm text-stone-800 hover:underline"
+                >
+                    <Plus size={14} /> Add Item
+                </button>
+            </div>
+
+            <button
+                onClick={() => onSave({ items, type })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save List
             </button>
         </div>
     );

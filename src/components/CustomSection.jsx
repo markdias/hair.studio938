@@ -1,5 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Main CustomSection component that renders a dynamic section with elements
 const CustomSection = ({ data }) => {
@@ -48,6 +49,8 @@ const ElementRenderer = ({ element, index }) => {
     switch (element_type) {
         case 'gallery':
             return <GalleryElement config={config} index={index} />;
+        case 'image_carousel':
+            return <CarouselElement config={config} index={index} />;
         case 'text_box':
             return <TextBoxElement config={config} index={index} />;
         case 'card':
@@ -56,6 +59,10 @@ const ElementRenderer = ({ element, index }) => {
             return <ImageElement config={config} index={index} />;
         case 'video':
             return <VideoElement config={config} index={index} />;
+        case 'qr_code':
+            return <QRCodeElement config={config} index={index} />;
+        case 'list':
+            return <ListElement config={config} index={index} />;
         default:
             return null;
     }
@@ -272,5 +279,141 @@ const VideoElement = ({ config, index }) => {
     );
 };
 
+// Carousel Element - Ported from Gallery.jsx slider
+const CarouselElement = ({ config, index }) => {
+    const { images = [] } = config;
+    const [currentIndex, setCurrentIndex] = React.useState(0);
+    const [direction, setDirection] = React.useState(0);
+
+    if (images.length === 0) return null;
+
+    const nextSlide = () => {
+        setDirection(1);
+        setCurrentIndex((prev) => (prev + 1) % images.length);
+    };
+
+    const prevSlide = () => {
+        setDirection(-1);
+        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    };
+
+    const slideVariants = {
+        enter: (dir) => ({ x: dir > 0 ? 500 : -500, opacity: 0 }),
+        center: { zIndex: 1, x: 0, opacity: 1 },
+        exit: (dir) => ({ zIndex: 0, x: dir < 0 ? 500 : -500, opacity: 0 })
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.1 }}
+            className="flex flex-col items-center"
+        >
+            <div className="relative w-full max-w-4xl h-[400px] md:h-[500px] overflow-hidden rounded-xl shadow-2xl">
+                <AnimatePresence initial={false} custom={direction}>
+                    <motion.div
+                        key={currentIndex}
+                        custom={direction}
+                        variants={slideVariants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        transition={{ duration: 0.5, ease: 'easeInOut' }}
+                        className="absolute inset-0"
+                    >
+                        <img
+                            src={images[currentIndex].url}
+                            alt={images[currentIndex].alt || ''}
+                            className="w-full h-full object-cover"
+                        />
+                        {images[currentIndex].caption && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/40 backdrop-blur-sm p-4 text-white text-center">
+                                {images[currentIndex].caption}
+                            </div>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
+
+                <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/20 hover:bg-white/40 rounded-full backdrop-blur-sm text-white transition-all">
+                    <ChevronLeft size={30} />
+                </button>
+                <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/20 hover:bg-white/40 rounded-full backdrop-blur-sm text-white transition-all">
+                    <ChevronRight size={30} />
+                </button>
+            </div>
+
+            <div className="flex gap-2 mt-4">
+                {images.map((_, idx) => (
+                    <button
+                        key={idx}
+                        onClick={() => {
+                            setDirection(idx > currentIndex ? 1 : -1);
+                            setCurrentIndex(idx);
+                        }}
+                        className={`h-2 rounded-full transition-all ${idx === currentIndex ? 'w-8 bg-stone-800' : 'w-2 bg-stone-300'}`}
+                        style={{ backgroundColor: idx === currentIndex ? 'var(--primary-brown)' : '#d1d5db' }}
+                    />
+                ))}
+            </div>
+        </motion.div>
+    );
+};
+
+// QR Code Element - Using public QR API
+const QRCodeElement = ({ config, index }) => {
+    const { content = '' } = config;
+    if (!content) return null;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.1 }}
+            className="flex flex-col items-center py-6"
+        >
+            <div className="p-4 bg-white rounded-2xl shadow-xl inline-block border-8 border-stone-50">
+                <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(content)}`}
+                    alt="QR Code"
+                    className="w-[200px] h-[200px] md:w-[250px] md:h-[250px]"
+                />
+            </div>
+            <p className="mt-4 text-sm opacity-60 font-medium">Scan to visit</p>
+        </motion.div>
+    );
+};
+
+// List Element - Bullet points or numbered items
+const ListElement = ({ config, index }) => {
+    const { items = [], type = 'bullet' } = config;
+    if (items.length === 0) return null;
+
+    const Tag = type === 'numbered' ? 'ol' : 'ul';
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.1 }}
+            className="max-w-4xl mx-auto w-full"
+        >
+            <Tag className={`space-y-4 ${type === 'numbered' ? 'list-decimal pl-6' : 'list-none'}`}>
+                {items.map((item, i) => (
+                    <li key={i} className="flex gap-4 items-start text-lg md:text-xl">
+                        {type === 'bullet' && (
+                            <span className="mt-2 w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--primary-brown)' }} />
+                        )}
+                        <span>{item}</span>
+                    </li>
+                ))}
+            </Tag>
+        </motion.div>
+    );
+};
+
 export default CustomSection;
-export { GalleryElement, TextBoxElement, CardElement, ImageElement, VideoElement };
+export { GalleryElement, TextBoxElement, CardElement, ImageElement, VideoElement, CarouselElement, QRCodeElement, ListElement };
