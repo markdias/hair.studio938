@@ -442,10 +442,10 @@ const ButtonElement = ({ config, index }) => {
                 target={url && url.startsWith('http') ? '_blank' : '_self'}
                 rel="noopener noreferrer"
                 className={`inline-block px-8 py-4 rounded-lg font-bold text-lg transition-all hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl ${style === 'outline'
-                        ? 'border-2 border-[var(--primary-brown)] text-[var(--primary-brown)] bg-transparent hover:bg-[var(--primary-brown)] hover:text-white'
-                        : 'bg-[var(--primary-brown)] text-white hover:bg-opacity-90'
+                    ? 'border-2 border-[var(--primary-brown)] text-[var(--primary-brown)] bg-transparent hover:bg-[var(--primary-brown)] hover:text-white'
+                    : 'bg-[var(--primary-brown)] text-white hover:bg-opacity-90'
                     }`}
-                style={style === 'outline' ? { borderColor: 'var(--primary-brown)', color: 'var(--primary-brown)' } : { backgroundColor: 'var(--primary-brown)' }}
+                style={style === 'outline' ? { borderColor: 'var(--primary-brown)', color: 'var(--primary-brown)' } : { backgroundColor: 'var(--primary-brown)', color: 'white' }}
             >
                 {label}
             </a>
