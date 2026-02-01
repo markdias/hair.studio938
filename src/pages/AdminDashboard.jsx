@@ -6,7 +6,7 @@ import {
     Save, LogOut, Check, Info, Loader2,
     Settings, Scissors, Tag, Image, Plus, Trash2,
     MapPin, Phone, Mail, Clock, User, Calendar, Edit, X,
-    List, ChevronLeft, ChevronRight, ChevronDown, Instagram, Facebook, Music2, Maximize2, Search, Palette, MessageCircle, Shield
+    List, ChevronLeft, ChevronRight, ChevronDown, Instagram, Facebook, Music2, Maximize2, Search, Palette, MessageCircle, Shield, AlertTriangle
 } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
@@ -1280,8 +1280,8 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                             await handleSave('site_enabled', newValue);
                         }}
                         className={`relative inline-flex h-8 w-16 items-center rounded-full border-2 transition-colors ${settings.site_enabled === 'false'
-                                ? 'border-red-400 bg-red-500'
-                                : 'border-green-400 bg-green-500'
+                            ? 'border-red-400 bg-red-500'
+                            : 'border-green-400 bg-green-500'
                             }`}
                     >
                         <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${settings.site_enabled === 'false' ? 'translate-x-1' : 'translate-x-9'
