@@ -117,14 +117,16 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         return null;
                     });
                 })()}
-                <a href="#booking" className="btn-primary" style={{
-                    padding: '10px 24px',
-                    backgroundColor: 'var(--accent-cream)',
-                    color: 'var(--primary-brown)',
-                    textDecoration: 'none'
-                }}>
-                    Book Now
-                </a>
+                {pageSections.find(s => s.id === 'booking')?.enabled !== false && (
+                    <a href="#booking" className="btn-primary" style={{
+                        padding: '10px 24px',
+                        backgroundColor: 'var(--accent-cream)',
+                        color: 'var(--primary-brown)',
+                        textDecoration: 'none'
+                    }}>
+                        Book Now
+                    </a>
+                )}
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -191,13 +193,17 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         return null;
                     });
                 })()}
-                <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
+                {pageSections.find(s => s.id === 'booking')?.enabled !== false && (
+                    <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
+                )}
             </div>
         </nav>
     );
 };
 
-const Hero = ({ settings = {} }) => {
+const Hero = ({ settings = {}, pageSections = [] }) => {
+    const isBookingEnabled = pageSections.find(s => s.id === 'booking')?.enabled !== false;
+
     return (
         <section id="home" style={{
             height: '100vh',
@@ -269,7 +275,9 @@ const Hero = ({ settings = {} }) => {
                     <span>{settings.opening_hours || "Tuesday - Saturday: 9:00 AM - 6:00 PM"}</span>
                 </div>
                 <div className="hero-buttons" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', width: '100%', margin: '0 auto' }}>
-                    <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</a>
+                    {isBookingEnabled && (
+                        <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</a>
+                    )}
                     <a href="#services" style={{
                         border: '1px solid #FFFFFF',
                         color: '#FFFFFF',

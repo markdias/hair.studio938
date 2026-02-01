@@ -115,7 +115,7 @@ const MainSite = () => {
           {(showMainSite || !siteData.settings.intro_video_url) && (
             <main className="main-content">
               <Navbar settings={siteData.settings} customSections={siteData.customSections} pageSections={siteData.pageSections} />
-              <Hero settings={siteData.settings} />
+              <Hero settings={siteData.settings} pageSections={siteData.pageSections} />
 
               {(() => {
                 const DEFAULT_ORDER = [
