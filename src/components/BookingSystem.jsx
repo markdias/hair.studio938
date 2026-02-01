@@ -230,11 +230,20 @@ const BookingSystem = () => {
     const handleBooking = async () => {
         setIsSubmitting(true);
         setError(null);
+
+        // If no stylist selected, pick one randomly
+        let finalBooking = { ...booking };
+        if (!finalBooking.stylist && stylists.length > 0) {
+            const randomStylist = stylists[Math.floor(Math.random() * stylists.length)];
+            finalBooking.stylist = randomStylist;
+            setBooking(finalBooking);
+        }
+
         try {
             const response = await fetch('/api/book', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(booking)
+                body: JSON.stringify(finalBooking)
             });
 
             if (!response.ok) {
@@ -320,56 +329,54 @@ const BookingSystem = () => {
                     <div style={{ padding: '60px', position: 'relative' }}>
                         <AnimatePresence mode="wait">
                             {isSuccess ? (
-                                <motion.div key="success" variants={containerVariants} initial="hidden" animate="visible" style={{ textAlign: 'center', paddingTop: '40px' }}>
-                                    <div style={{ width: '80px', height: '80px', backgroundColor: 'var(--primary-brown)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 30px' }}>
-                                        <Check color="var(--accent-cream)" size={40} />
+                                <motion.div key="success" variants={containerVariants} initial="hidden" animate="visible" style={{ textAlign: 'center', paddingTop: '20px' }}>
+                                    <div style={{ width: '60px', height: '60px', backgroundColor: 'var(--primary-brown)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                                        <Check color="var(--accent-cream)" size={30} />
                                     </div>
-                                    <h3 style={{ fontSize: '2.5rem', color: 'var(--primary-brown)', marginBottom: '15px' }}>Booking Confirmed!</h3>
+                                    <h3 style={{ fontSize: '1.8rem', color: 'var(--primary-brown)', marginBottom: '10px' }}>Booking Confirmed!</h3>
 
                                     {/* Booking Details */}
                                     <div style={{
                                         backgroundColor: '#F9F9F9',
-                                        borderRadius: '12px',
-                                        padding: '30px',
-                                        margin: '30px 0',
+                                        borderRadius: '10px',
+                                        padding: '20px',
+                                        margin: '20px 0',
                                         textAlign: 'left',
-                                        maxWidth: '500px',
-                                        marginLeft: 'auto',
-                                        marginRight: 'auto'
+                                        fontSize: '0.9rem'
                                     }}>
-                                        <h4 style={{ fontSize: '1.2rem', color: 'var(--primary-brown)', marginBottom: '20px', fontWeight: '700' }}>Your Appointment Details</h4>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1px solid #E5E5E5' }}>
-                                                <span style={{ color: '#666', fontSize: '0.9rem' }}>Stylist:</span>
-                                                <span style={{ fontWeight: '600', color: '#333' }}>{booking.stylist?.name}</span>
+                                        <h4 style={{ fontSize: '1rem', color: 'var(--primary-brown)', marginBottom: '15px', fontWeight: '700' }}>Your Appointment</h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
+                                                <span style={{ color: '#666', fontSize: '0.85rem' }}>Stylist:</span>
+                                                <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.stylist?.name}</span>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1px solid #E5E5E5' }}>
-                                                <span style={{ color: '#666', fontSize: '0.9rem' }}>Service:</span>
-                                                <span style={{ fontWeight: '600', color: '#333' }}>{booking.service}</span>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
+                                                <span style={{ color: '#666', fontSize: '0.85rem' }}>Service:</span>
+                                                <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.service}</span>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1px solid #E5E5E5' }}>
-                                                <span style={{ color: '#666', fontSize: '0.9rem' }}>Date:</span>
-                                                <span style={{ fontWeight: '600', color: '#333' }}>{booking.date}</span>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
+                                                <span style={{ color: '#666', fontSize: '0.85rem' }}>Date:</span>
+                                                <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.date}</span>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1px solid #E5E5E5' }}>
-                                                <span style={{ color: '#666', fontSize: '0.9rem' }}>Time:</span>
-                                                <span style={{ fontWeight: '600', color: '#333' }}>{booking.time}</span>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
+                                                <span style={{ color: '#666', fontSize: '0.85rem' }}>Time:</span>
+                                                <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.time}</span>
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                <span style={{ color: '#666', fontSize: '0.9rem' }}>Name:</span>
-                                                <span style={{ fontWeight: '600', color: '#333' }}>{booking.name}</span>
+                                                <span style={{ color: '#666', fontSize: '0.85rem' }}>Name:</span>
+                                                <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.name}</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {booking.email && (
-                                        <p style={{ color: '#666', marginBottom: '20px', fontSize: '0.95rem' }}>
-                                            We've sent a confirmation email to <strong>{booking.email}</strong>
+                                        <p style={{ color: '#666', marginBottom: '12px', fontSize: '0.85rem' }}>
+                                            Confirmation email sent to <strong>{booking.email}</strong>
                                         </p>
                                     )}
 
-                                    <p style={{ color: '#666', marginBottom: '30px', fontSize: '0.95rem', fontStyle: 'italic' }}>
-                                        To make any changes or cancel your appointment, please call or email us.
+                                    <p style={{ color: '#666', marginBottom: '20px', fontSize: '0.85rem', fontStyle: 'italic' }}>
+                                        To make changes or cancel, please call or email us.
                                     </p>
 
                                     <button
