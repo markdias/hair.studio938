@@ -1254,6 +1254,51 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">General Settings</h2>
 
+            {/* Kill Switch - Website Enabled/Disabled */}
+            <div className={`rounded-lg border-2 p-6 shadow-sm mb-6 ${settings.site_enabled === 'false' ? 'bg-red-50 border-red-300' : 'bg-white border-gray-200'}`}>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className={`font-semibold text-lg flex items-center gap-2 mb-2 ${settings.site_enabled === 'false' ? 'text-red-900' : 'text-gray-900'}`}>
+                            <AlertTriangle size={22} className={settings.site_enabled === 'false' ? 'text-red-600' : 'text-gray-600'} />
+                            Website Status
+                        </h3>
+                        <p className={`text-sm ${settings.site_enabled === 'false' ? 'text-red-700' : 'text-gray-600'}`}>
+                            {settings.site_enabled === 'false'
+                                ? '⚠️ Website is currently DISABLED. Visitors will see a maintenance screen.'
+                                : '✓ Website is currently ACTIVE and accessible to visitors.'
+                            }
+                        </p>
+                    </div>
+                    <button
+                        onClick={async () => {
+                            const newValue = settings.site_enabled === 'false' ? 'true' : 'false';
+                            if (newValue === 'false') {
+                                if (!window.confirm('Are you sure you want to DISABLE the website? Visitors will see a maintenance screen.')) {
+                                    return;
+                                }
+                            }
+                            await handleSave('site_enabled', newValue);
+                        }}
+                        className={`relative inline-flex h-8 w-16 items-center rounded-full border-2 transition-colors ${settings.site_enabled === 'false'
+                                ? 'border-red-400 bg-red-500'
+                                : 'border-green-400 bg-green-500'
+                            }`}
+                    >
+                        <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${settings.site_enabled === 'false' ? 'translate-x-1' : 'translate-x-9'
+                            }`} />
+                    </button>
+                </div>
+
+                {settings.site_enabled === 'false' && (
+                    <div className="mt-4 p-3 bg-red-100 border border-red-200 rounded-lg">
+                        <p className="text-xs text-red-800 font-medium">
+                            <Info size={14} className="inline mr-1" />
+                            The admin dashboard remains accessible at /admin/dashboard even when the site is disabled.
+                        </p>
+                    </div>
+                )}
+            </div>
+
             {/* Dedicated Business Name Editor */}
             <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">

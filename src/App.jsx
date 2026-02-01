@@ -5,6 +5,7 @@ import { Navbar, Hero, Services, TeamSection, PriceList, Testimonials, Contact, 
 import Gallery from './components/Gallery'
 import BookingSystem from './components/BookingSystem'
 import CookieConsent from './components/CookieConsent'
+import MaintenanceScreen from './components/MaintenanceScreen'
 import { Analytics } from '@vercel/analytics/react'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
@@ -95,25 +96,32 @@ const MainSite = () => {
 
   return (
     <>
-      {!showMainSite && siteData.settings.intro_video_url && (
-        <IntroVideo onComplete={handleIntroComplete} videoUrl={siteData.settings.intro_video_url} />
-      )}
+      {/* Kill Switch Check - Show maintenance screen if site is disabled */}
+      {siteData.settings.site_enabled === 'false' ? (
+        <MaintenanceScreen />
+      ) : (
+        <>
+          {!showMainSite && siteData.settings.intro_video_url && (
+            <IntroVideo onComplete={handleIntroComplete} videoUrl={siteData.settings.intro_video_url} />
+          )}
 
-      {(showMainSite || !siteData.settings.intro_video_url) && (
-        <main className="main-content">
-          <Navbar settings={siteData.settings} />
-          <Hero settings={siteData.settings} />
-          <Services services={siteData.services} settings={siteData.settings} />
-          <TeamSection team={siteData.team} settings={siteData.settings} />
-          <PriceList pricing={siteData.pricing} settings={siteData.settings} />
-          <Testimonials testimonials={siteData.testimonials} settings={siteData.settings} />
-          <BookingSystem />
-          <Gallery images={siteData.gallery} settings={siteData.settings} />
-          <Contact settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />
-          <Footer settings={siteData.settings} />
-          <Analytics />
-          <CookieConsent />
-        </main>
+          {(showMainSite || !siteData.settings.intro_video_url) && (
+            <main className="main-content">
+              <Navbar settings={siteData.settings} />
+              <Hero settings={siteData.settings} />
+              <Services services={siteData.services} settings={siteData.settings} />
+              <TeamSection team={siteData.team} settings={siteData.settings} />
+              <PriceList pricing={siteData.pricing} settings={siteData.settings} />
+              <Testimonials testimonials={siteData.testimonials} settings={siteData.settings} />
+              <BookingSystem />
+              <Gallery images={siteData.gallery} settings={siteData.settings} />
+              <Contact settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />
+              <Footer settings={siteData.settings} />
+              <Analytics />
+              <CookieConsent />
+            </main>
+          )}
+        </>
       )}
     </>
   )
