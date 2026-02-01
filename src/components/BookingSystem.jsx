@@ -99,7 +99,8 @@ const BookingSystem = () => {
         const fetchStylists = async () => {
             const { data, error } = await supabase
                 .from('stylist_calendars')
-                .select('*');
+                .select('*')
+                .order('sort_order');
             if (!error && data) {
                 // Transform to match previous structure
                 const formatted = data.map(s => ({
