@@ -4,6 +4,7 @@ import IntroVideo from './components/IntroVideo'
 import { Navbar, Hero, Services, TeamSection, PriceList, Testimonials, Contact, Footer } from './components/LandingPage'
 import Gallery from './components/Gallery'
 import BookingSystem from './components/BookingSystem'
+import CookieConsent from './components/CookieConsent'
 import { Analytics } from '@vercel/analytics/react'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
@@ -111,6 +112,7 @@ const MainSite = () => {
           <Contact settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />
           <Footer settings={siteData.settings} />
           <Analytics />
+          <CookieConsent />
         </main>
       )}
     </>
