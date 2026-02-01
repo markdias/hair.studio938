@@ -259,7 +259,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} setClients={setData.setClients} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} />;
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
         case 'testimonials': return <TestimonialsTab testimonials={data.testimonials} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
-        case 'custom_sections': return <CustomSectionsTab customSections={data.customSections} setCustomSections={setData.setCustomSections} refresh={refresh} showMessage={showMessage} />;
+        case 'custom_sections': return <CustomSectionsTab customSections={data.customSections} setCustomSections={setData.setCustomSections} siteSettings={data.site_settings} refresh={refresh} showMessage={showMessage} />;
         case 'privacy': return <PrivacyPolicyEditor showMessage={showMessage} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} />;
         default: return null;
@@ -4304,9 +4304,49 @@ const TestimonialsTab = ({ testimonials, settings, setSettings, refresh, showMes
 // CUSTOM SECTIONS TAB - Dynamic Section Builder
 // ============================================================
 
-const CustomSectionsTab = ({ customSections, setCustomSections, refresh, showMessage }) => {
+const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, refresh, showMessage }) => {
     const [editingSection, setEditingSection] = useState(null);
-    const [isAdding, setIsAdding] = useState(false);
+    const [isManagingOrder, setIsManagingOrder] = useState(false);
+    const [globalOrder, setGlobalOrder] = useState([]);
+
+    const FIXED_SECTIONS = [
+        { id: 'services', label: 'Services', isFixed: true },
+        { id: 'team', label: 'Team', isFixed: true },
+        { id: 'pricing', label: 'Pricing', isFixed: true },
+        { id: 'testimonials', label: 'Testimonials', isFixed: true },
+        { id: 'booking', label: 'Booking System', isFixed: true },
+        { id: 'gallery', label: 'Gallery', isFixed: true },
+        { id: 'contact', label: 'Contact', isFixed: true }
+    ];
+
+    useEffect(() => {
+        const order = siteSettings?.find(s => s.key === 'global_section_order')?.value;
+        if (order) {
+            setGlobalOrder(JSON.parse(order));
+        } else {
+            // Default order
+            const defaultOrder = [...FIXED_SECTIONS.map(s => s.id), ...customSections.map(s => s.id)];
+            setGlobalOrder(defaultOrder);
+        }
+    }, [customSections, siteSettings]);
+
+    const handleSaveSectionOrder = async (newOrder) => {
+        try {
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({
+                    key: 'global_section_order',
+                    value: JSON.stringify(newOrder)
+                }, { onConflict: 'key' });
+
+            if (error) throw error;
+            setGlobalOrder(newOrder);
+            showMessage('success', 'Page flow order saved');
+        } catch (err) {
+            console.error('Error saving order:', err);
+            showMessage('error', 'Error saving page flow');
+        }
+    };
 
     const handleAddSection = async () => {
         try {
@@ -4396,14 +4436,23 @@ const CustomSectionsTab = ({ customSections, setCustomSections, refresh, showMes
                     <List size={24} />
                     Custom Sections
                 </h2>
-                <button
-                    onClick={handleAddSection}
-                    className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all"
-                    style={{ backgroundColor: 'var(--primary-brown)' }}
-                >
-                    <Plus size={18} />
-                    Add New Section
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setIsManagingOrder(true)}
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-all"
+                    >
+                        <List size={18} />
+                        Manage Page Flow
+                    </button>
+                    <button
+                        onClick={handleAddSection}
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all"
+                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                    >
+                        <Plus size={18} />
+                        Add New Section
+                    </button>
+                </div>
             </div>
 
             {customSections.length === 0 ? (
@@ -4493,6 +4542,91 @@ const CustomSectionsTab = ({ customSections, setCustomSections, refresh, showMes
                     ))}
                 </div>
             )}
+
+            {isManagingOrder && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1100] p-4">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                    >
+                        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-stone-50">
+                            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                <List size={22} />
+                                Manage Page Flow
+                            </h3>
+                            <button onClick={() => setIsManagingOrder(false)} className="text-gray-500 hover:text-gray-700">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-grow bg-white">
+                            <p className="text-sm text-gray-600 mb-6" style={{ color: 'var(--text-dark)' }}>
+                                Drag and drop sections to change where they appear on your website. Custom sections can be intermixed with fixed sections.
+                            </p>
+                            <div className="space-y-2">
+                                {globalOrder.map((sectionId, index) => {
+                                    const fixed = FIXED_SECTIONS.find(s => s.id === sectionId);
+                                    const custom = customSections.find(s => s.id === sectionId);
+                                    if (!fixed && !custom) return null;
+
+                                    const label = fixed ? fixed.label : custom.title;
+                                    const isFixed = !!fixed;
+
+                                    return (
+                                        <div key={sectionId} className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg group">
+                                            <div className="flex flex-col gap-1">
+                                                <button
+                                                    onClick={() => {
+                                                        if (index > 0) {
+                                                            const newOrder = [...globalOrder];
+                                                            [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+                                                            handleSaveSectionOrder(newOrder);
+                                                        }
+                                                    }}
+                                                    disabled={index === 0}
+                                                    className="p-1 hover:bg-gray-200 rounded disabled:opacity-20"
+                                                >
+                                                    <ChevronUp size={14} />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        if (index < globalOrder.length - 1) {
+                                                            const newOrder = [...globalOrder];
+                                                            [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+                                                            handleSaveSectionOrder(newOrder);
+                                                        }
+                                                    }}
+                                                    disabled={index === globalOrder.length - 1}
+                                                    className="p-1 hover:bg-gray-200 rounded disabled:opacity-20"
+                                                >
+                                                    <ChevronDown size={14} />
+                                                </button>
+                                            </div>
+                                            <div className="flex-grow flex items-center justify-between">
+                                                <span className={`font-medium ${isFixed ? 'text-gray-900' : 'text-stone-700'}`}>
+                                                    {label}
+                                                </span>
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${isFixed ? 'bg-blue-100 text-blue-700' : 'bg-stone-100 text-stone-700'}`}>
+                                                    {isFixed ? 'Fixed Section' : 'Custom Section'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
+                            <button
+                                onClick={() => setIsManagingOrder(false)}
+                                className="px-6 py-2 bg-stone-800 text-white rounded-lg font-medium hover:bg-opacity-90"
+                                style={{ backgroundColor: 'var(--primary-brown)' }}
+                            >
+                                Done
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </motion.div>
     );
 };
@@ -4524,7 +4658,8 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                     heading_name: localSection.heading_name,
                     enabled: localSection.enabled,
                     element_limit: localSection.element_limit,
-                    background_color: localSection.background_color
+                    background_color: localSection.background_color,
+                    text_color: localSection.text_color
                 })
                 .eq('id', localSection.id);
 
@@ -4689,6 +4824,15 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                             type="color"
                             value={localSection.background_color || '#ffffff'}
                             onChange={e => setLocalSection({ ...localSection, background_color: e.target.value })}
+                            className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Text Color</label>
+                        <input
+                            type="color"
+                            value={localSection.text_color || '#3d2b1f'}
+                            onChange={e => setLocalSection({ ...localSection, text_color: e.target.value })}
                             className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
                         />
                     </div>

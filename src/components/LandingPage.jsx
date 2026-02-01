@@ -61,25 +61,41 @@ const Navbar = ({ settings, customSections = [] }) => {
             {/* Desktop Menu */}
             <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px', fontWeight: '500' }}>
                 <a href="#home">Home</a>
-                {settings.show_services_section !== 'false' && (
-                    <a href="#services">{settings.services_menu_name || 'Services'}</a>
-                )}
-                {settings.show_team_section !== 'false' && (
-                    <a href="#team">{settings.team_menu_name || 'Team'}</a>
-                )}
-                {settings.show_pricing_section !== 'false' && (
-                    <a href="#pricing">{settings.pricing_menu_name || 'Pricing'}</a>
-                )}
-                {settings.show_gallery_section !== 'false' && (
-                    <a href="#gallery">{settings.gallery_menu_name || 'Gallery'}</a>
-                )}
-                {settings.show_testimonials_section === 'true' && (
-                    <a href="#testimonials">{settings.testimonials_menu_name || 'Testimonials'}</a>
-                )}
-                {customSections.map((section) => (
-                    <a key={section.id} href={`#custom-section-${section.id}`}>{section.menu_name}</a>
-                ))}
-                <a href="#contact">Contact</a>
+                {(() => {
+                    const orderStr = settings.global_section_order;
+                    let order = [];
+                    try {
+                        order = orderStr ? JSON.parse(orderStr) : [
+                            'services', 'team', 'pricing', 'testimonials', 'gallery', 'contact'
+                        ];
+                    } catch (e) {
+                        order = ['services', 'team', 'pricing', 'testimonials', 'gallery', 'contact'];
+                    }
+
+                    // Ensure 'contact' is always present at the end if not in order
+                    if (!order.includes('contact')) order.push('contact');
+
+                    return order.map(id => {
+                        if (id === 'services' && settings.show_services_section !== 'false')
+                            return <a key="services" href="#services">{settings.services_menu_name || 'Services'}</a>;
+                        if (id === 'team' && settings.show_team_section !== 'false')
+                            return <a key="team" href="#team">{settings.team_menu_name || 'Team'}</a>;
+                        if (id === 'pricing' && settings.show_pricing_section !== 'false')
+                            return <a key="pricing" href="#pricing">{settings.pricing_menu_name || 'Pricing'}</a>;
+                        if (id === 'gallery' && settings.show_gallery_section !== 'false')
+                            return <a key="gallery" href="#gallery">{settings.gallery_menu_name || 'Gallery'}</a>;
+                        if (id === 'testimonials' && settings.show_testimonials_section === 'true')
+                            return <a key="testimonials" href="#testimonials">{settings.testimonials_menu_name || 'Testimonials'}</a>;
+                        if (id === 'contact')
+                            return <a key="contact" href="#contact">Contact</a>;
+
+                        const custom = customSections.find(s => s.id === id);
+                        if (custom && custom.enabled !== false) {
+                            return <a key={custom.id} href={`#custom-section-${custom.id}`}>{custom.menu_name}</a>;
+                        }
+                        return null;
+                    });
+                })()}
                 <a href="#booking" className="btn-primary" style={{
                     padding: '10px 24px',
                     backgroundColor: 'var(--accent-cream)',
@@ -98,25 +114,40 @@ const Navbar = ({ settings, customSections = [] }) => {
             {/* Mobile Menu Overlay */}
             <div className="nav-links-mobile">
                 <a href="#home" onClick={toggleMenu}>Home</a>
-                {settings.show_services_section !== 'false' && (
-                    <a href="#services" onClick={toggleMenu}>{settings.services_menu_name || 'Services'}</a>
-                )}
-                {settings.show_team_section !== 'false' && (
-                    <a href="#team" onClick={toggleMenu}>{settings.team_menu_name || 'Team'}</a>
-                )}
-                {settings.show_pricing_section !== 'false' && (
-                    <a href="#pricing" onClick={toggleMenu}>{settings.pricing_menu_name || 'Pricing'}</a>
-                )}
-                {settings.show_gallery_section !== 'false' && (
-                    <a href="#gallery" onClick={toggleMenu}>{settings.gallery_menu_name || 'Gallery'}</a>
-                )}
-                {settings.show_testimonials_section === 'true' && (
-                    <a href="#testimonials" onClick={toggleMenu}>{settings.testimonials_menu_name || 'Testimonials'}</a>
-                )}
-                {customSections.map((section) => (
-                    <a key={section.id} href={`#custom-section-${section.id}`} onClick={toggleMenu}>{section.menu_name}</a>
-                ))}
-                <a href="#contact" onClick={toggleMenu}>Contact</a>
+                {(() => {
+                    const orderStr = settings.global_section_order;
+                    let order = [];
+                    try {
+                        order = orderStr ? JSON.parse(orderStr) : [
+                            'services', 'team', 'pricing', 'testimonials', 'gallery', 'contact'
+                        ];
+                    } catch (e) {
+                        order = ['services', 'team', 'pricing', 'testimonials', 'gallery', 'contact'];
+                    }
+
+                    if (!order.includes('contact')) order.push('contact');
+
+                    return order.map(id => {
+                        if (id === 'services' && settings.show_services_section !== 'false')
+                            return <a key="services" href="#services" onClick={toggleMenu}>{settings.services_menu_name || 'Services'}</a>;
+                        if (id === 'team' && settings.show_team_section !== 'false')
+                            return <a key="team" href="#team" onClick={toggleMenu}>{settings.team_menu_name || 'Team'}</a>;
+                        if (id === 'pricing' && settings.show_pricing_section !== 'false')
+                            return <a key="pricing" href="#pricing" onClick={toggleMenu}>{settings.pricing_menu_name || 'Pricing'}</a>;
+                        if (id === 'gallery' && settings.show_gallery_section !== 'false')
+                            return <a key="gallery" href="#gallery" onClick={toggleMenu}>{settings.gallery_menu_name || 'Gallery'}</a>;
+                        if (id === 'testimonials' && settings.show_testimonials_section === 'true')
+                            return <a key="testimonials" href="#testimonials" onClick={toggleMenu}>{settings.testimonials_menu_name || 'Testimonials'}</a>;
+                        if (id === 'contact')
+                            return <a key="contact" href="#contact" onClick={toggleMenu}>Contact</a>;
+
+                        const custom = customSections.find(s => s.id === id);
+                        if (custom && custom.enabled !== false) {
+                            return <a key={custom.id} href={`#custom-section-${custom.id}`} onClick={toggleMenu}>{custom.menu_name}</a>;
+                        }
+                        return null;
+                    });
+                })()}
                 <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
             </div>
         </nav>

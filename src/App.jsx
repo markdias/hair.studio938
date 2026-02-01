@@ -113,16 +113,37 @@ const MainSite = () => {
             <main className="main-content">
               <Navbar settings={siteData.settings} customSections={siteData.customSections} />
               <Hero settings={siteData.settings} />
-              <Services services={siteData.services} settings={siteData.settings} />
-              <TeamSection team={siteData.team} settings={siteData.settings} />
-              <PriceList pricing={siteData.pricing} settings={siteData.settings} />
-              <Testimonials testimonials={siteData.testimonials} settings={siteData.settings} />
-              <BookingSystem />
-              {siteData.customSections.map((section) => (
-                <CustomSection key={section.id} data={section} />
-              ))}
-              <Gallery images={siteData.gallery} settings={siteData.settings} />
-              <Contact settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />
+
+              {(() => {
+                const orderStr = siteData.settings.global_section_order;
+                let order = [];
+                try {
+                  order = orderStr ? JSON.parse(orderStr) : [
+                    'services', 'team', 'pricing', 'testimonials', 'booking', 'gallery', 'contact'
+                  ];
+                } catch (e) {
+                  order = ['services', 'team', 'pricing', 'testimonials', 'booking', 'gallery', 'contact'];
+                }
+
+                return order.map(id => {
+                  // Fixed Sections
+                  if (id === 'services') return <Services key="services" services={siteData.services} settings={siteData.settings} />;
+                  if (id === 'team') return <TeamSection key="team" team={siteData.team} settings={siteData.settings} />;
+                  if (id === 'pricing') return <PriceList key="pricing" pricing={siteData.pricing} settings={siteData.settings} />;
+                  if (id === 'testimonials') return <Testimonials key="testimonials" testimonials={siteData.testimonials} settings={siteData.settings} />;
+                  if (id === 'booking') return <BookingSystem key="booking" />;
+                  if (id === 'gallery') return <Gallery key="gallery" images={siteData.gallery} settings={siteData.settings} />;
+                  if (id === 'contact') return <Contact key="contact" settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />;
+
+                  // Custom Sections
+                  const customSection = siteData.customSections.find(s => s.id === id);
+                  if (customSection) {
+                    return <CustomSection key={customSection.id} data={customSection} />;
+                  }
+                  return null;
+                });
+              })()}
+
               <Footer settings={siteData.settings} />
               <Analytics />
               <CookieConsent />

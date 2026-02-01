@@ -3,30 +3,33 @@ import { motion } from 'framer-motion';
 
 // Main CustomSection component that renders a dynamic section with elements
 const CustomSection = ({ data }) => {
-    const { id, heading_name, background_color, custom_section_elements } = data;
+    const { id, heading_name, background_color, text_color, custom_section_elements } = data;
 
     if (!custom_section_elements || custom_section_elements.length === 0) {
         return null;
     }
 
     const elements = [...custom_section_elements].sort((a, b) => a.sort_order - b.sort_order);
+    const textColor = text_color || 'var(--primary-brown)';
 
     return (
         <section
             id={`custom-section-${id}`}
             className="py-16"
-            style={{ backgroundColor: background_color || 'transparent' }}
+            style={{ backgroundColor: background_color || 'transparent', color: textColor }}
         >
             <div className="container mx-auto px-4">
-                <motion.h2
-                    initial={{ opacity: 0, y: -20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="text-4xl md:text-5xl font-bold text-center mb-12"
-                    style={{ color: 'var(--text-dark)' }}
-                >
-                    {heading_name}
-                </motion.h2>
+                <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+                    <motion.h2
+                        initial={{ opacity: 0, y: -20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        style={{ fontSize: '3rem', color: textColor, marginBottom: '15px' }}
+                    >
+                        {heading_name}
+                    </motion.h2>
+                    <div style={{ width: '60px', height: '2px', backgroundColor: textColor, margin: '0 auto' }}></div>
+                </div>
 
                 <div className="space-y-12">
                     {elements.map((element, index) => (
