@@ -491,7 +491,7 @@ const PriceList = ({ pricing = [], settings = {} }) => {
                 }}
             >
                 <h2 className="price-list-title" style={{
-                    fontFamily: "'Great Vibes', cursive",
+                    fontFamily: 'var(--font-heading)',
                     fontSize: '6rem',
                     color: 'var(--primary-brown)',
                     textAlign: 'center',
@@ -511,7 +511,7 @@ const PriceList = ({ pricing = [], settings = {} }) => {
                     {displayCategories.map((cat, idx) => (
                         <div key={idx} style={{ width: '100%' }}>
                             <h3 style={{
-                                fontFamily: "'Inter', sans-serif",
+                                fontFamily: 'var(--font-heading)',
                                 fontSize: 'clamp(1.1rem, 3vw, 1.4rem)',
                                 fontWeight: '700',
                                 color: 'var(--primary-brown)',

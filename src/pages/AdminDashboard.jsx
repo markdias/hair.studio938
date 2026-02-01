@@ -1176,6 +1176,12 @@ const ThemeTab = ({ showMessage }) => {
                                 <option value="'Lato', sans-serif">Lato (Sans-serif)</option>
                                 <option value="'Great Vibes', cursive">Great Vibes (Script)</option>
                             </select>
+                            <div
+                                className="mt-2 p-3 bg-white border border-gray-200 rounded text-center shadow-sm"
+                                style={{ fontFamily: localTheme['--font-heading'] || "'Playfair Display', serif" }}
+                            >
+                                <p className="text-xl">The Art of Hair Styling</p>
+                            </div>
                         </div>
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-medium text-gray-700">Body Font</label>
@@ -1191,6 +1197,12 @@ const ThemeTab = ({ showMessage }) => {
                                 <option value="'Montserrat', sans-serif">Montserrat (Sans-serif)</option>
                                 <option value="'Playfair Display', serif">Playfair Display (Serif)</option>
                             </select>
+                            <div
+                                className="mt-2 p-3 bg-white border border-gray-200 rounded shadow-sm"
+                                style={{ fontFamily: localTheme['--font-body'] || "'Inter', sans-serif" }}
+                            >
+                                <p className="text-sm leading-relaxed">Luxury hair styling and bespoke treatments at 938 High Road. We provide professional hair services tailored to your unique style.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1228,8 +1240,8 @@ const ThemeTab = ({ showMessage }) => {
                         </button>
                     </div>
                 </div>
-            </div>
-        </motion.div>
+            </div >
+        </motion.div >
     );
 };
 
