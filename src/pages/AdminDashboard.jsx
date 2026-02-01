@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft } from 'lucide-react';
+import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft, GripVertical } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
 
@@ -1979,6 +1979,27 @@ const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
         } catch (err) { showMessage('error', err.message); }
     };
 
+    const handleSaveOrder = async () => {
+        try {
+            const updates = localStylists.map((s, index) => ({
+                ...s,
+                sort_order: index
+            }));
+
+            // Optimistic update
+            setLocalStylists(updates);
+
+            const { error } = await supabase.from('stylist_calendars').upsert(updates);
+            if (error) throw error;
+
+            showMessage('success', 'Team order saved!');
+            refresh();
+        } catch (err) {
+            console.error(err);
+            showMessage('error', 'Failed to save order');
+        }
+    };
+
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <SectionConfig
@@ -2001,12 +2022,20 @@ const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
                         <Info size={20} />
                     </button>
                 </div>
-                <button
-                    onClick={() => setIsAdding(!isAdding)}
-                    className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}
-                >
-                    <Plus size={18} /> Add Stylist
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleSaveOrder}
+                        className="flex items-center gap-2 px-4 py-2 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-all border border-stone-200"
+                    >
+                        <Save size={18} /> Save Order
+                    </button>
+                    <button
+                        onClick={() => setIsAdding(!isAdding)}
+                        className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}
+                    >
+                        <Plus size={18} /> Add Stylist
+                    </button>
+                </div>
             </div>
 
             {showHelp && (
@@ -2079,9 +2108,12 @@ const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Reorder.Group axis="y" values={localStylists} onReorder={setLocalStylists} className="space-y-4">
                 {localStylists.map((s, idx) => (
-                    <div key={s.id || idx} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-4">
+                    <Reorder.Item key={s.id || idx} value={s} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-4 touch-none relative">
+                        <div className="absolute top-4 right-4 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
+                            <GripVertical size={20} />
+                        </div>
                         <div className="flex items-start gap-4">
                             <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0 relative group">
                                 <img src={s.image_url || '/placeholder.png'} className="w-full h-full object-cover" alt={s.stylist_name} />
@@ -2093,17 +2125,13 @@ const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
                                     />
                                 </div>
                             </div>
-                            <div className="flex-grow space-y-2">
+                            <div className="flex-grow space-y-2 pr-8">
                                 <input value={s.stylist_name} onChange={(e) => handleFieldChange(idx, 'stylist_name', e.target.value)} className="w-full text-lg font-semibold border-none p-0 focus:ring-0 outline-none" />
                                 <input value={s.role || ''} placeholder="Role" onChange={(e) => handleFieldChange(idx, 'role', e.target.value)} className="w-full text-sm text-gray-600 border-none p-0 focus:ring-0 outline-none" />
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs text-gray-400">Display Order:</span>
-                                    <input
-                                        type="number"
-                                        value={s.sort_order || 0}
-                                        onChange={(e) => handleFieldChange(idx, 'sort_order', parseInt(e.target.value) || 0)}
-                                        className="w-16 text-xs border border-gray-200 rounded px-1 py-0.5 focus:ring-1 focus:ring-stone-800 outline-none"
-                                    />
+                                <div className="flex items-center gap-2 mt-2 bg-stone-50 p-2 rounded-lg border border-stone-100">
+                                    <span className="text-sm font-medium text-stone-600">Display Order:</span>
+                                    <span className="text-sm font-bold text-stone-800">{idx}</span>
+                                    <span className="text-xs text-gray-400 ml-auto">(Drag to reorder)</span>
                                 </div>
                             </div>
                         </div>
@@ -2115,12 +2143,12 @@ const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
                         />
                         <textarea value={s.description || ''} onChange={(e) => handleFieldChange(idx, 'description', e.target.value)} placeholder="Bio" className="w-full text-sm text-gray-600 h-20 resize-none border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
                         <div className="flex gap-2">
-                            <button onClick={() => handleSave(s)} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Save</button>
+                            <button onClick={() => handleSave(s)} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Save Details</button>
                             <button onClick={() => handleDelete(s.id)} className="px-4 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all">Delete</button>
                         </div>
-                    </div>
+                    </Reorder.Item>
                 ))}
-            </div>
+            </Reorder.Group>
         </motion.div>
     );
 };
