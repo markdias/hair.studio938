@@ -126,6 +126,16 @@ button {
   background: var(--primary-brown-hover);
 }
 
+.booking-card {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) 2fr;
+  height: 750px;
+  background-color: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0 40px 100px rgba(61, 43, 31, 0.08);
+  overflow: hidden;
+}
+
 /* Mobile Specific Transitions and Fixes */
 @media (max-width: 768px) {
   .nav-links {
@@ -264,6 +274,10 @@ button {
 
   .booking-card {
     grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: 800px;
+    display: flex !important;
+    flex-direction: column;
   }
 
   .booking-card>div:first-child {
@@ -272,6 +286,7 @@ button {
 
   .booking-card>div:last-child {
     padding: 30px 20px !important;
+    overflow: visible !important;
   }
 
   .booking-time-grid {

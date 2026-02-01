@@ -405,6 +405,7 @@ CREATE TABLE IF NOT EXISTS public.stylist_calendars (
     calendar_id TEXT NOT NULL,
     image_url TEXT,
     role TEXT,
+    sort_order INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
