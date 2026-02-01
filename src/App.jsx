@@ -61,7 +61,8 @@ const MainSite = () => {
         { data: gly },
         { data: tests },
         { data: phones },
-        { data: customSects }
+        { data: customSects },
+        { data: sections }
       ] = await Promise.all([
         supabase.from('site_settings').select('*'),
         supabase.from('services_overview').select('*'),
@@ -70,7 +71,7 @@ const MainSite = () => {
         supabase.from('gallery_images').select('*').order('sort_order'),
         supabase.from('testimonials').select('*').order('sort_order'),
         supabase.from('phone_numbers').select('*').order('display_order'),
-        supabase.from('custom_sections').select('*, custom_section_elements(*)').eq('enabled', true).order('sort_order'),
+        supabase.from('custom_sections').select('*, custom_section_elements(*)').order('sort_order'),
         supabase.from('site_page_sections').select('*').order('sort_order')
       ]);
 
@@ -141,12 +142,12 @@ const MainSite = () => {
 
                 // Add any custom sections that aren't in the list yet
                 siteData.customSections.forEach(cs => {
-                  if (!sectionsToRender.find(ps => ps.id === cs.id)) {
+                  if (cs.enabled !== false && !sectionsToRender.find(ps => ps.id === cs.id)) {
                     sectionsToRender.push({
                       id: cs.id,
                       is_custom: true,
                       enabled: true,
-                      sort_order: 999 // Put at end by default
+                      sort_order: 999
                     });
                   }
                 });

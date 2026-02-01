@@ -82,7 +82,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                     });
 
                     customSections.forEach(cs => {
-                        if (!sectionsToRender.find(ps => ps.id === cs.id)) {
+                        if (cs.enabled !== false && !sectionsToRender.find(ps => ps.id === cs.id)) {
                             sectionsToRender.push({
                                 id: cs.id,
                                 is_custom: true,
@@ -157,7 +157,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                     });
 
                     customSections.forEach(cs => {
-                        if (!sectionsToRender.find(ps => ps.id === cs.id)) {
+                        if (cs.enabled !== false && !sectionsToRender.find(ps => ps.id === cs.id)) {
                             sectionsToRender.push({
                                 id: cs.id,
                                 is_custom: true,
