@@ -81,7 +81,7 @@ const DEFAULT_EMAIL_TEMPLATE = `
     </p>
 </div>`;
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ refreshSiteData }) => {
     const [activeTab, setActiveTab] = useState('general');
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -226,16 +226,19 @@ const AdminDashboard = () => {
                     <AnimatePresence mode="wait">
                         {message.text && (
                             <motion.div
-                                initial={{ opacity: 0, y: -20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                className={`mb-6 p-4 rounded-lg border flex items-center gap-3 ${message.type === 'success'
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
+                                className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg border flex items-center gap-3 min-w-[300px] ${message.type === 'success'
                                     ? 'bg-green-50 border-green-200 text-green-800'
                                     : 'bg-red-50 border-red-200 text-red-800'
                                     }`}
                             >
                                 {message.type === 'success' ? <Check size={18} /> : <Info size={18} />}
-                                {message.text}
+                                <div className="flex-1 font-medium">{message.text}</div>
+                                <button onClick={() => setMessage({ type: '', text: '' })} className="text-gray-400 hover:text-gray-600">
+                                    <X size={16} />
+                                </button>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -248,6 +251,7 @@ const AdminDashboard = () => {
                         showMessage={showMessage}
                         fetchClients={fetchClients}
                         theme={theme}
+                        refreshSiteData={refreshSiteData}
                     />
                 </div>
             </main>
@@ -255,7 +259,7 @@ const AdminDashboard = () => {
     );
 };
 
-const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClients, theme }) => {
+const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClients, theme, refreshSiteData }) => {
     switch (activeTab) {
         case 'general': return <GeneralTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} theme={theme} />;
         case 'contact': return <ContactTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} theme={theme} />;
@@ -272,7 +276,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'privacy': return <PrivacyPolicyEditor settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} theme={theme} />;
         case 'terms': return <TermsAndConditionsEditor settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} theme={theme} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} theme={theme} />;
-        case 'page_flow': return <PageFlowTab customSections={data.customSections} showMessage={showMessage} />;
+        case 'page_flow': return <PageFlowTab customSections={data.customSections} showMessage={showMessage} refreshSiteData={refreshSiteData} />;
         default: return null;
     }
 };
@@ -5018,7 +5022,7 @@ const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, re
 // PAGE FLOW TAB - Global Page Order Management
 // ============================================================
 
-const PageFlowTab = ({ customSections, showMessage }) => {
+const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
     const [pageSections, setPageSections] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -5067,7 +5071,8 @@ const PageFlowTab = ({ customSections, showMessage }) => {
                     label: m.label,
                     is_custom: m.is_custom,
                     sort_order: m.sort_order,
-                    enabled: m.enabled
+                    enabled: m.enabled,
+                    is_separate_page: m.is_separate_page || false
                 })));
             }
 
@@ -5077,6 +5082,34 @@ const PageFlowTab = ({ customSections, showMessage }) => {
             showMessage('error', 'Error loading page configuration');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleToggleSeparatePage = async (id, currentStatus) => {
+        try {
+            const newStatus = !currentStatus;
+            const { error } = await supabase
+                .from('site_page_sections')
+                .update({ is_separate_page: newStatus })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            // Also update custom_sections if this is a custom section to keep in sync
+            const section = pageSections.find(s => s.id === id);
+            if (section && section.is_custom) {
+                await supabase
+                    .from('custom_sections')
+                    .update({ is_separate_page: newStatus })
+                    .eq('id', id);
+            }
+
+            setPageSections(prev => prev.map(s => s.id === id ? { ...s, is_separate_page: newStatus } : s));
+            if (refreshSiteData) refreshSiteData();
+            showMessage('success', 'Page flow type updated');
+        } catch (err) {
+            console.error('Error updating page flow type:', err);
+            showMessage('error', 'Error updating page flow type');
         }
     };
 
@@ -5100,6 +5133,7 @@ const PageFlowTab = ({ customSections, showMessage }) => {
             }
 
             setPageSections(prev => prev.map(s => s.id === id ? { ...s, enabled: newStatus } : s));
+            if (refreshSiteData) refreshSiteData();
             showMessage('success', 'Visibility updated');
         } catch (err) {
             showMessage('error', 'Error updating visibility');
@@ -5128,9 +5162,11 @@ const PageFlowTab = ({ customSections, showMessage }) => {
                 label: u.label,
                 is_custom: u.is_custom,
                 sort_order: u.sort_order,
-                enabled: u.enabled
+                enabled: u.enabled,
+                is_separate_page: u.is_separate_page || false
             })));
             if (error) throw error;
+            if (refreshSiteData) refreshSiteData();
         } catch (err) {
             showMessage('error', 'Error saving new order');
             fetchPageSections(); // Revert on error
@@ -5162,8 +5198,9 @@ const PageFlowTab = ({ customSections, showMessage }) => {
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="bg-stone-50 border-b border-gray-100 p-4 grid grid-cols-12 text-xs font-bold uppercase tracking-wider text-gray-500">
                     <div className="col-span-1 text-center">Order</div>
-                    <div className="col-span-6 ml-4">Section Name</div>
-                    <div className="col-span-3 text-center">Type</div>
+                    <div className="col-span-5 pl-4">Section Name</div>
+                    <div className="col-span-2 text-center">Type</div>
+                    <div className="col-span-2 text-center">Flow Type</div>
                     <div className="col-span-2 text-center">Visibility</div>
                 </div>
 
@@ -5187,17 +5224,29 @@ const PageFlowTab = ({ customSections, showMessage }) => {
                                 </button>
                             </div>
 
-                            <div className="col-span-6 flex items-center gap-3 ml-4">
+                            <div className="col-span-5 flex items-center gap-3 pl-4">
                                 {section.is_custom ? <List size={16} className="text-stone-400" /> : <Layout size={16} className="text-blue-400" />}
                                 <span className={`font-medium ${section.enabled ? 'text-gray-900' : 'text-gray-400 line-through'}`}>
                                     {section.label}
                                 </span>
                             </div>
 
-                            <div className="col-span-3 flex justify-center">
+                            <div className="col-span-2 flex justify-center">
                                 <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-widest ${section.is_custom ? 'bg-stone-100 text-stone-600' : 'bg-blue-100 text-blue-700'}`}>
                                     {section.is_custom ? 'Custom' : 'System'}
                                 </span>
+                            </div>
+
+                            <div className="col-span-2 flex justify-center">
+                                <button
+                                    onClick={() => handleToggleSeparatePage(section.id, section.is_separate_page)}
+                                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${section.is_separate_page
+                                        ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                        }`}
+                                >
+                                    {section.is_separate_page ? 'Separate Page' : 'Landing Flow'}
+                                </button>
                             </div>
 
                             <div className="col-span-2 flex justify-center">
