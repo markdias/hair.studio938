@@ -6,7 +6,7 @@ import {
     Save, LogOut, Check, Info, Loader2,
     Settings, Scissors, Tag, Image, Plus, Trash2,
     MapPin, Phone, Mail, Clock, User, Calendar, Edit, X,
-    List, ChevronLeft, ChevronRight, ChevronDown, Instagram, Facebook, Music2, Maximize2, Search, Palette, MessageCircle, Shield, AlertTriangle
+    List, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Instagram, Facebook, Music2, Maximize2, Search, Palette, MessageCircle, Shield, AlertTriangle
 } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
@@ -22,6 +22,7 @@ const TABS = [
     { id: 'appointments', label: 'Appointments', icon: <Calendar size={18} /> },
     { id: 'clients', label: 'Clients', icon: <User size={18} /> }, // Added Clients tab
     { id: 'testimonials', label: 'Testimonials', icon: <MessageCircle size={18} /> },
+    { id: 'custom_sections', label: 'Custom Sections', icon: <List size={18} /> },
     { id: 'privacy', label: 'Privacy Policy', icon: <Shield size={18} /> },
     { id: 'messages', label: 'Messages', icon: <Mail size={18} /> },
 ];
@@ -94,6 +95,7 @@ const AdminDashboard = () => {
     const [appointments, setAppointments] = useState([]);
     const [clients, setClients] = useState([]); // Added clients state
     const [testimonials, setTestimonials] = useState([]);
+    const [customSections, setCustomSections] = useState([]);
 
     useEffect(() => {
         fetchAllData();
@@ -109,7 +111,8 @@ const AdminDashboard = () => {
                 { data: stls },
                 { data: gly },
                 { data: clts },
-                { data: tests }
+                { data: tests },
+                { data: customSects }
             ] = await Promise.all([
                 supabase.from('site_settings').select('*'),
                 supabase.from('services_overview').select('*'),
@@ -117,7 +120,8 @@ const AdminDashboard = () => {
                 supabase.from('stylist_calendars').select('*'),
                 supabase.from('gallery_images').select('*').order('sort_order'),
                 supabase.from('clients').select('*').order('created_at', { ascending: false }),
-                supabase.from('testimonials').select('*').order('sort_order')
+                supabase.from('testimonials').select('*').order('sort_order'),
+                supabase.from('custom_sections').select('*, custom_section_elements(*)').order('sort_order')
             ]);
             if (settings) {
                 const settingsObj = {};
@@ -131,6 +135,7 @@ const AdminDashboard = () => {
             if (gly) setGallery(gly);
             if (clts) setClients(clts);
             if (tests) setTestimonials(tests);
+            if (customSects) setCustomSections(customSects);
 
         } catch (err) {
             console.error('Error fetching data:', err.message);
@@ -230,11 +235,11 @@ const AdminDashboard = () => {
 
                     <TabContent
                         activeTab={activeTab}
-                        data={{ siteSettings, services, pricing, stylists, gallery, appointments, clients, testimonials }} // Pass clients data
-                        setData={{ setSiteSettings, setServices, setPricing, setStylists, setGallery, setAppointments, setClients, setTestimonials }} // Pass setClients
+                        data={{ siteSettings, services, pricing, stylists, gallery, appointments, clients, testimonials, customSections }}
+                        setData={{ setSiteSettings, setServices, setPricing, setStylists, setGallery, setAppointments, setClients, setTestimonials, setCustomSections }}
                         refresh={fetchAllData}
                         showMessage={showMessage}
-                        fetchClients={fetchClients} // Pass fetchClients
+                        fetchClients={fetchClients}
                     />
                 </div>
             </main>
@@ -254,6 +259,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} setClients={setData.setClients} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} />;
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
         case 'testimonials': return <TestimonialsTab testimonials={data.testimonials} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
+        case 'custom_sections': return <CustomSectionsTab customSections={data.customSections} setCustomSections={setData.setCustomSections} refresh={refresh} showMessage={showMessage} />;
         case 'privacy': return <PrivacyPolicyEditor showMessage={showMessage} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} />;
         default: return null;
@@ -4291,6 +4297,942 @@ const TestimonialsTab = ({ testimonials, settings, setSettings, refresh, showMes
                 )}
             </AnimatePresence>
         </motion.div>
+    );
+};
+
+// ============================================================
+// CUSTOM SECTIONS TAB - Dynamic Section Builder
+// ============================================================
+
+const CustomSectionsTab = ({ customSections, setCustomSections, refresh, showMessage }) => {
+    const [editingSection, setEditingSection] = useState(null);
+    const [isAdding, setIsAdding] = useState(false);
+
+    const handleAddSection = async () => {
+        try {
+            const maxOrder = customSections.length > 0
+                ? Math.max(...customSections.map(s => s.sort_order))
+                : 0;
+
+            const { data, error } = await supabase
+                .from('custom_sections')
+                .insert([{
+                    title: 'New Section',
+                    menu_name: 'New Section',
+                    heading_name: 'New Section',
+                    enabled: true,
+                    sort_order: maxOrder + 1,
+                    element_limit: 10
+                }])
+                .select('*, custom_section_elements(*)')
+                .single();
+
+            if (error) throw error;
+            setCustomSections([...customSections, data]);
+            setEditingSection(data);
+            showMessage('success', 'Section created! Add elements to get started.');
+        } catch (err) {
+            console.error('Error creating section:', err);
+            showMessage('error', 'Error creating section');
+        }
+    };
+
+    const handleDeleteSection = async (sectionId) => {
+        if (!window.confirm('Are you sure you want to delete this section and all its elements?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('custom_sections')
+                .delete()
+                .eq('id', sectionId);
+
+            if (error) throw error;
+            setCustomSections(customSections.filter(s => s.id !== sectionId));
+            if (editingSection?.id === sectionId) setEditingSection(null);
+            showMessage('success', 'Section deleted');
+        } catch (err) {
+            console.error('Error deleting section:', err);
+            showMessage('error', 'Error deleting section');
+        }
+    };
+
+    const handleReorderSections = async (newOrder) => {
+        try {
+            const updates = newOrder.map((section, index) => ({
+                id: section.id,
+                sort_order: index
+            }));
+
+            const { error } = await supabase
+                .from('custom_sections')
+                .upsert(updates);
+
+            if (error) throw error;
+            setCustomSections(newOrder.map((s, idx) => ({ ...s, sort_order: idx })));
+            showMessage('success', 'Sections reordered');
+        } catch (err) {
+            console.error('Error reordering sections:', err);
+            showMessage('error', 'Error reordering sections');
+        }
+    };
+
+    if (editingSection) {
+        return (
+            <CustomSectionEditor
+                section={editingSection}
+                onClose={() => {
+                    setEditingSection(null);
+                    refresh();
+                }}
+                showMessage={showMessage}
+            />
+        );
+    }
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <List size={24} />
+                    Custom Sections
+                </h2>
+                <button
+                    onClick={handleAddSection}
+                    className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all"
+                    style={{ backgroundColor: 'var(--primary-brown)' }}
+                >
+                    <Plus size={18} />
+                    Add New Section
+                </button>
+            </div>
+
+            {customSections.length === 0 ? (
+                <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+                    <List size={48} className="mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Custom Sections Yet</h3>
+                    <p className="text-gray-600 mb-6">
+                        Create your first custom section to add dynamic content to your website
+                    </p>
+                    <button
+                        onClick={handleAddSection}
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all"
+                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                    >
+                        <Plus size={18} />
+                        Add New Section
+                    </button>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-4">
+                    {customSections.map((section) => (
+                        <div key={section.id} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-center justify-between">
+                                <div className="flex-grow">
+                                    <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
+                                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                                        <span>Menu: {section.menu_name}</span>
+                                        <span>•</span>
+                                        <span>Heading: {section.heading_name}</span>
+                                        <span>•</span>
+                                        <span>{section.custom_section_elements?.length || 0} / {section.element_limit} elements</span>
+                                        <span>•</span>
+                                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${section.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                            {section.enabled ? 'Visible' : 'Hidden'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex flex-col gap-1 mr-2">
+                                        <button
+                                            onClick={() => {
+                                                const index = customSections.findIndex(s => s.id === section.id);
+                                                if (index > 0) {
+                                                    const newOrder = [...customSections];
+                                                    [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+                                                    handleReorderSections(newOrder);
+                                                }
+                                            }}
+                                            disabled={customSections.findIndex(s => s.id === section.id) === 0}
+                                            className="p-1 hover:bg-gray-100 rounded disabled:opacity-30"
+                                        >
+                                            <ChevronUp size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                const index = customSections.findIndex(s => s.id === section.id);
+                                                if (index < customSections.length - 1) {
+                                                    const newOrder = [...customSections];
+                                                    [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+                                                    handleReorderSections(newOrder);
+                                                }
+                                            }}
+                                            disabled={customSections.findIndex(s => s.id === section.id) === customSections.length - 1}
+                                            className="p-1 hover:bg-gray-100 rounded disabled:opacity-30"
+                                        >
+                                            <ChevronDown size={16} />
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={() => setEditingSection(section)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all"
+                                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                                    >
+                                        <Edit size={16} />
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteSection(section.id)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-opacity-90 transition-all"
+                                    >
+                                        <Trash2 size={16} />
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </motion.div>
+    );
+};
+
+// Custom Section Editor Component
+const CustomSectionEditor = ({ section, onClose, showMessage }) => {
+    const [localSection, setLocalSection] = useState(section);
+    const [elements, setElements] = useState(section.custom_section_elements || []);
+    const [editingElement, setEditingElement] = useState(null);
+    const [addingElementType, setAddingElementType] = useState(null);
+    const [saving, setSaving] = useState(false);
+
+    const elementTypes = [
+        { type: 'gallery', label: 'Gallery', icon: <Image size={18} />, description: 'Multiple images in a grid' },
+        { type: 'text_box', label: 'Text Box', icon: <MessageCircle size={18} />, description: 'Rich text content' },
+        { type: 'card', label: 'Card', icon: <Tag size={18} />, description: 'Title, description, image & link' },
+        { type: 'image', label: 'Single Image', icon: <Image size={18} />, description: 'One image with caption' },
+        { type: 'video', label: 'Video', icon: <Image size={18} />, description: 'Embedded or uploaded video' },
+    ];
+
+    const handleSaveSection = async () => {
+        try {
+            setSaving(true);
+            const { error } = await supabase
+                .from('custom_sections')
+                .update({
+                    title: localSection.title,
+                    menu_name: localSection.menu_name,
+                    heading_name: localSection.heading_name,
+                    enabled: localSection.enabled,
+                    element_limit: localSection.element_limit,
+                    background_color: localSection.background_color
+                })
+                .eq('id', localSection.id);
+
+            if (error) throw error;
+            showMessage('success', 'Section settings saved');
+        } catch (err) {
+            console.error('Error saving section:', err);
+            showMessage('error', 'Error saving section');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleAddElement = async (elementType) => {
+        if (elements.length >= localSection.element_limit) {
+            showMessage('error', `Maximum ${localSection.element_limit} elements allowed`);
+            return;
+        }
+
+        try {
+            const maxOrder = elements.length > 0 ? Math.max(...elements.map(e => e.sort_order)) : -1;
+            const { data, error } = await supabase
+                .from('custom_section_elements')
+                .insert([{
+                    section_id: localSection.id,
+                    element_type: elementType,
+                    sort_order: maxOrder + 1,
+                    config: {}
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+            setElements([...elements, data]);
+            setEditingElement(data);
+            setAddingElementType(null);
+            showMessage('success', 'Element added');
+        } catch (err) {
+            console.error('Error adding element:', err);
+            showMessage('error', 'Error adding element');
+        }
+    };
+
+    const handleDeleteElement = async (elementId) => {
+        if (!window.confirm('Delete this element?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('custom_section_elements')
+                .delete()
+                .eq('id', elementId);
+
+            if (error) throw error;
+            setElements(elements.filter(e => e.id !== elementId));
+            if (editingElement?.id === elementId) setEditingElement(null);
+            showMessage('success', 'Element deleted');
+        } catch (err) {
+            console.error('Error deleting element:', err);
+            showMessage('error', 'Error deleting element');
+        }
+    };
+
+    const handleReorderElements = async (newElements) => {
+        try {
+            const updates = newElements.map((element, index) => ({
+                id: element.id,
+                sort_order: index
+            }));
+
+            const { error } = await supabase
+                .from('custom_section_elements')
+                .upsert(updates);
+
+            if (error) throw error;
+            setElements(newElements.map((e, idx) => ({ ...e, sort_order: idx })));
+            showMessage('success', 'Elements reordered');
+        } catch (err) {
+            console.error('Error reordering elements:', err);
+            showMessage('error', 'Error reordering elements');
+        }
+    };
+
+    const handleSaveElement = async (elementId, newConfig) => {
+        try {
+            const { error } = await supabase
+                .from('custom_section_elements')
+                .update({ config: newConfig })
+                .eq('id', elementId);
+
+            if (error) throw error;
+            setElements(elements.map(e => e.id === elementId ? { ...e, config: newConfig } : e));
+            showMessage('success', 'Element updated');
+        } catch (err) {
+            console.error('Error updating element:', err);
+            showMessage('error', 'Error updating element');
+        }
+    };
+
+    const getElementIcon = (type) => {
+        const found = elementTypes.find(et => et.type === type);
+        return found ? found.icon : <Tag size={16} />;
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <Edit size={24} />
+                    Edit Section: {localSection.title}
+                </h2>
+                <button
+                    onClick={onClose}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-all"
+                >
+                    <X size={18} />
+                    Close
+                </button>
+            </div>
+
+            {/* Section Settings */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Section Settings</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Section Title</label>
+                        <input
+                            value={localSection.title}
+                            onChange={e => setLocalSection({ ...localSection, title: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Menu Name</label>
+                        <input
+                            value={localSection.menu_name}
+                            onChange={e => setLocalSection({ ...localSection, menu_name: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Section Heading</label>
+                        <input
+                            value={localSection.heading_name}
+                            onChange={e => setLocalSection({ ...localSection, heading_name: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Element Limit</label>
+                        <input
+                            type="number"
+                            min="1"
+                            max="50"
+                            value={localSection.element_limit}
+                            onChange={e => setLocalSection({ ...localSection, element_limit: parseInt(e.target.value) || 10 })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Background Color (optional)</label>
+                        <input
+                            type="color"
+                            value={localSection.background_color || '#ffffff'}
+                            onChange={e => setLocalSection({ ...localSection, background_color: e.target.value })}
+                            className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                        />
+                    </div>
+                    <div className="flex items-center">
+                        <label className="text-sm font-medium text-gray-700 mr-4">Show Section</label>
+                        <button
+                            onClick={() => setLocalSection({ ...localSection, enabled: !localSection.enabled })}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${localSection.enabled ? 'border-[#3D2B1F]' : 'border-gray-200'}`}
+                            style={{ backgroundColor: localSection.enabled ? '#3D2B1F' : '#E5E7EB' }}
+                        >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${localSection.enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
+                    </div>
+                </div>
+                <div className="mt-6">
+                    <button
+                        onClick={handleSaveSection}
+                        disabled={saving}
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all disabled:opacity-50"
+                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                    >
+                        {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                        {saving ? 'Saving...' : 'Save Settings'}
+                    </button>
+                </div>
+            </div>
+
+            {/* Elements Management */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                        Elements ({elements.length} / {localSection.element_limit})
+                    </h3>
+                    <button
+                        onClick={() => setAddingElementType(true)}
+                        disabled={elements.length >= localSection.element_limit}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                    >
+                        <Plus size={18} />
+                        Add Element
+                    </button>
+                </div>
+
+                {/* Element Type Selector */}
+                {addingElementType && (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm font-medium text-blue-900 mb-3">Select Element Type:</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                            {elementTypes.map(et => (
+                                <button
+                                    key={et.type}
+                                    onClick={() => handleAddElement(et.type)}
+                                    className="flex flex-col items-center gap-2 p-4 bg-white border border-gray-300 rounded-lg hover:border-stone-800 hover:shadow-md transition-all"
+                                >
+                                    {et.icon}
+                                    <span className="font-medium text-sm">{et.label}</span>
+                                    <span className="text-xs text-gray-600 text-center">{et.description}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => setAddingElementType(false)}
+                            className="mt-3 text-sm text-gray-600 hover:text-gray-900"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                )}
+
+                {/* Elements List */}
+                {elements.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                        <Image size={48} className="mx-auto mb-3 text-gray-400" />
+                        <p>No elements yet. Add your first element to get started!</p>
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {elements.sort((a, b) => a.sort_order - b.sort_order).map((element) => (
+                            <div key={element.id} className="flex items-center gap-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                                <div className="flex-shrink-0">
+                                    {getElementIcon(element.element_type)}
+                                </div>
+                                <div className="flex-grow">
+                                    <p className="font-medium text-gray-900 capitalize">{element.element_type.replace('_', ' ')}</p>
+                                    <p className="text-xs text-gray-600">
+                                        {Object.keys(element.config || {}).length > 0 ? 'Configured' : 'Not configured'}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex flex-col gap-1 mr-2">
+                                        <button
+                                            onClick={() => {
+                                                const sorted = [...elements].sort((a, b) => a.sort_order - b.sort_order);
+                                                const index = sorted.findIndex(e => e.id === element.id);
+                                                if (index > 0) {
+                                                    const newOrder = [...sorted];
+                                                    [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+                                                    handleReorderElements(newOrder);
+                                                }
+                                            }}
+                                            disabled={elements.sort((a, b) => a.sort_order - b.sort_order).findIndex(e => e.id === element.id) === 0}
+                                            className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
+                                        >
+                                            <ChevronUp size={14} />
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                const sorted = [...elements].sort((a, b) => a.sort_order - b.sort_order);
+                                                const index = sorted.findIndex(e => e.id === element.id);
+                                                if (index < sorted.length - 1) {
+                                                    const newOrder = [...sorted];
+                                                    [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+                                                    handleReorderElements(newOrder);
+                                                }
+                                            }}
+                                            disabled={elements.sort((a, b) => a.sort_order - b.sort_order).findIndex(e => e.id === element.id) === elements.length - 1}
+                                            className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
+                                        >
+                                            <ChevronDown size={14} />
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={() => setEditingElement(element)}
+                                        className="px-3 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all text-sm"
+                                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                                    >
+                                        Configure
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteElement(element.id)}
+                                        className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-opacity-90 transition-all text-sm"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Element Configuration Modal */}
+            <AnimatePresence>
+                {editingElement && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+                        onClick={() => setEditingElement(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.95 }}
+                            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-semibold text-gray-900 capitalize">
+                                        Configure {editingElement.element_type.replace('_', ' ')}
+                                    </h3>
+                                    <button
+                                        onClick={() => setEditingElement(null)}
+                                        className="text-gray-500 hover:text-gray-700"
+                                    >
+                                        <X size={24} />
+                                    </button>
+                                </div>
+
+                                {editingElement.element_type === 'gallery' && (
+                                    <GalleryElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                        showMessage={showMessage}
+                                    />
+                                )}
+                                {editingElement.element_type === 'text_box' && (
+                                    <TextBoxElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                    />
+                                )}
+                                {editingElement.element_type === 'card' && (
+                                    <CardElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                        showMessage={showMessage}
+                                    />
+                                )}
+                                {editingElement.element_type === 'image' && (
+                                    <ImageElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                        showMessage={showMessage}
+                                    />
+                                )}
+                                {editingElement.element_type === 'video' && (
+                                    <VideoElementConfig
+                                        config={editingElement.config}
+                                        onSave={(config) => {
+                                            handleSaveElement(editingElement.id, config);
+                                            setEditingElement(null);
+                                        }}
+                                        showMessage={showMessage}
+                                    />
+                                )}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
+
+// Element Configuration Components
+const GalleryElementConfig = ({ config, onSave, showMessage }) => {
+    const [images, setImages] = useState(config.images || []);
+    const [columns, setColumns] = useState(config.columns || 3);
+
+    const handleAddImage = (url) => {
+        setImages([...images, { url, alt: '', caption: '' }]);
+    };
+
+    const handleRemoveImage = (index) => {
+        setImages(images.filter((_, i) => i !== index));
+    };
+
+    const handleUpdateImage = (index, field, value) => {
+        setImages(images.map((img, i) => i === index ? { ...img, [field]: value } : img));
+    };
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Grid Columns</label>
+                <select
+                    value={columns}
+                    onChange={e => setColumns(parseInt(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                >
+                    <option value={2}>2 Columns</option>
+                    <option value={3}>3 Columns</option>
+                    <option value={4}>4 Columns</option>
+                </select>
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Images</label>
+                <ImageUploader folder="custom-sections" onUpload={handleAddImage} showMessage={showMessage} />
+            </div>
+
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+                {images.map((img, idx) => (
+                    <div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="flex items-start gap-3">
+                            <img src={img.url} alt="" className="w-16 h-16 object-cover rounded" />
+                            <div className="flex-grow space-y-2">
+                                <input
+                                    placeholder="Alt text"
+                                    value={img.alt}
+                                    onChange={e => handleUpdateImage(idx, 'alt', e.target.value)}
+                                    className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                />
+                                <input
+                                    placeholder="Caption (optional)"
+                                    value={img.caption}
+                                    onChange={e => handleUpdateImage(idx, 'caption', e.target.value)}
+                                    className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                                />
+                            </div>
+                            <button
+                                onClick={() => handleRemoveImage(idx)}
+                                className="text-red-500 hover:text-red-700"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <button
+                onClick={() => onSave({ images, columns })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Gallery
+            </button>
+        </div>
+    );
+};
+
+const TextBoxElementConfig = ({ config, onSave }) => {
+    const [content, setContent] = useState(config.content || '');
+    const [alignment, setAlignment] = useState(config.alignment || 'left');
+    const [fontSize, setFontSize] = useState(config.fontSize || 'medium');
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Content</label>
+                <textarea
+                    value={content}
+                    onChange={e => setContent(e.target.value)}
+                    placeholder="Enter your text content here..."
+                    className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none"
+                />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Alignment</label>
+                    <select
+                        value={alignment}
+                        onChange={e => setAlignment(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    >
+                        <option value="left">Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                    </select>
+                </div>
+                <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Font Size</label>
+                    <select
+                        value={fontSize}
+                        onChange={e => setFontSize(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    >
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+            </div>
+
+            <button
+                onClick={() => onSave({ content, alignment, fontSize })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Text Box
+            </button>
+        </div>
+    );
+};
+
+const CardElementConfig = ({ config, onSave, showMessage }) => {
+    const [title, setTitle] = useState(config.title || '');
+    const [description, setDescription] = useState(config.description || '');
+    const [imageUrl, setImageUrl] = useState(config.image_url || '');
+    const [linkUrl, setLinkUrl] = useState(config.link_url || '');
+    const [linkText, setLinkText] = useState(config.link_text || '');
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Title</label>
+                <input
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    placeholder="Card title"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Description</label>
+                <textarea
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    placeholder="Card description"
+                    className="w-full h-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none"
+                />
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Image</label>
+                <ImageUploader folder="custom-sections" onUpload={setImageUrl} showMessage={showMessage} />
+                {imageUrl && <img src={imageUrl} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded" />}
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Link URL (optional)</label>
+                <input
+                    value={linkUrl}
+                    onChange={e => setLinkUrl(e.target.value)}
+                    placeholder="https://example.com"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Link Text (optional)</label>
+                <input
+                    value={linkText}
+                    onChange={e => setLinkText(e.target.value)}
+                    placeholder="Learn More"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+
+            <button
+                onClick={() => onSave({ title, description, image_url: imageUrl, link_url: linkUrl, link_text: linkText })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Card
+            </button>
+        </div>
+    );
+};
+
+const ImageElementConfig = ({ config, onSave, showMessage }) => {
+    const [url, setUrl] = useState(config.url || '');
+    const [alt, setAlt] = useState(config.alt || '');
+    const [caption, setCaption] = useState(config.caption || '');
+    const [size, setSize] = useState(config.size || 'full');
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Image</label>
+                <ImageUploader folder="custom-sections" onUpload={setUrl} showMessage={showMessage} />
+                {url && <img src={url} alt="Preview" className="mt-2 w-full max-h-64 object-contain rounded" />}
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Alt Text</label>
+                <input
+                    value={alt}
+                    onChange={e => setAlt(e.target.value)}
+                    placeholder="Describe the image"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Caption (optional)</label>
+                <input
+                    value={caption}
+                    onChange={e => setCaption(e.target.value)}
+                    placeholder="Image caption"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                />
+            </div>
+
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Size</label>
+                <select
+                    value={size}
+                    onChange={e => setSize(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                >
+                    <option value="full">Full Width</option>
+                    <option value="large">Large</option>
+                    <option value="medium">Medium</option>
+                    <option value="small">Small</option>
+                </select>
+            </div>
+
+            <button
+                onClick={() => onSave({ url, alt, caption, size })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Image
+            </button>
+        </div>
+    );
+};
+
+const VideoElementConfig = ({ config, onSave, showMessage }) => {
+    const [url, setUrl] = useState(config.url || '');
+    const [type, setType] = useState(config.type || 'upload');
+    const [autoplay, setAutoplay] = useState(config.autoplay || false);
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Video Type</label>
+                <select
+                    value={type}
+                    onChange={e => setType(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                >
+                    <option value="upload">Upload Video</option>
+                    <option value="embed">Embed URL</option>
+                </select>
+            </div>
+
+            {type === 'upload' ? (
+                <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Upload Video</label>
+                    <VideoUploader folder="custom-sections" onUpload={setUrl} showMessage={showMessage} />
+                    {url && <video src={url} controls className="mt-2 w-full rounded" />}
+                </div>
+            ) : (
+                <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Video URL</label>
+                    <input
+                        value={url}
+                        onChange={e => setUrl(e.target.value)}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    />
+                </div>
+            )}
+
+            <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-gray-700">Autoplay</label>
+                <button
+                    onClick={() => setAutoplay(!autoplay)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${autoplay ? 'border-[#3D2B1F]' : 'border-gray-200'}`}
+                    style={{ backgroundColor: autoplay ? '#3D2B1F' : '#E5E7EB' }}
+                >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoplay ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+            </div>
+
+            <button
+                onClick={() => onSave({ url, type, autoplay })}
+                className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
+                style={{ backgroundColor: 'var(--primary-brown)' }}
+            >
+                Save Video
+            </button>
+        </div>
     );
 };
 

@@ -6,6 +6,7 @@ import Gallery from './components/Gallery'
 import BookingSystem from './components/BookingSystem'
 import CookieConsent from './components/CookieConsent'
 import MaintenanceScreen from './components/MaintenanceScreen'
+import CustomSection from './components/CustomSection'
 import { Analytics } from '@vercel/analytics/react'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
@@ -43,7 +44,7 @@ const MainSite = () => {
 
   // CMS Data States
   const [siteData, setSiteData] = useState({
-    settings: {}, services: [], pricing: [], team: [], gallery: [], testimonials: [], phoneNumbers: [], loading: true
+    settings: {}, services: [], pricing: [], team: [], gallery: [], testimonials: [], phoneNumbers: [], customSections: [], loading: true
   });
 
   useEffect(() => {
@@ -59,7 +60,8 @@ const MainSite = () => {
         { data: stls },
         { data: gly },
         { data: tests },
-        { data: phones }
+        { data: phones },
+        { data: customSects }
       ] = await Promise.all([
         supabase.from('site_settings').select('*'),
         supabase.from('services_overview').select('*'),
@@ -67,7 +69,8 @@ const MainSite = () => {
         supabase.from('stylist_calendars').select('*'),
         supabase.from('gallery_images').select('*').order('sort_order'),
         supabase.from('testimonials').select('*').order('sort_order'),
-        supabase.from('phone_numbers').select('*').order('display_order')
+        supabase.from('phone_numbers').select('*').order('display_order'),
+        supabase.from('custom_sections').select('*, custom_section_elements(*)').eq('enabled', true).order('sort_order')
       ]);
 
       const settingsObj = {};
@@ -81,6 +84,7 @@ const MainSite = () => {
         gallery: gly || [],
         testimonials: tests || [],
         phoneNumbers: phones || [],
+        customSections: customSects || [],
         loading: false
       });
     } catch (err) {
@@ -107,13 +111,16 @@ const MainSite = () => {
 
           {(showMainSite || !siteData.settings.intro_video_url) && (
             <main className="main-content">
-              <Navbar settings={siteData.settings} />
+              <Navbar settings={siteData.settings} customSections={siteData.customSections} />
               <Hero settings={siteData.settings} />
               <Services services={siteData.services} settings={siteData.settings} />
               <TeamSection team={siteData.team} settings={siteData.settings} />
               <PriceList pricing={siteData.pricing} settings={siteData.settings} />
               <Testimonials testimonials={siteData.testimonials} settings={siteData.settings} />
               <BookingSystem />
+              {siteData.customSections.map((section) => (
+                <CustomSection key={section.id} data={section} />
+              ))}
               <Gallery images={siteData.gallery} settings={siteData.settings} />
               <Contact settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />
               <Footer settings={siteData.settings} />

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2 } from 'lucide-react';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 
-const Navbar = ({ settings }) => {
+const Navbar = ({ settings, customSections = [] }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -76,6 +76,9 @@ const Navbar = ({ settings }) => {
                 {settings.show_testimonials_section === 'true' && (
                     <a href="#testimonials">{settings.testimonials_menu_name || 'Testimonials'}</a>
                 )}
+                {customSections.map((section) => (
+                    <a key={section.id} href={`#custom-section-${section.id}`}>{section.menu_name}</a>
+                ))}
                 <a href="#contact">Contact</a>
                 <a href="#booking" className="btn-primary" style={{
                     padding: '10px 24px',
@@ -110,6 +113,9 @@ const Navbar = ({ settings }) => {
                 {settings.show_testimonials_section === 'true' && (
                     <a href="#testimonials" onClick={toggleMenu}>{settings.testimonials_menu_name || 'Testimonials'}</a>
                 )}
+                {customSections.map((section) => (
+                    <a key={section.id} href={`#custom-section-${section.id}`} onClick={toggleMenu}>{section.menu_name}</a>
+                ))}
                 <a href="#contact" onClick={toggleMenu}>Contact</a>
                 <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
             </div>
