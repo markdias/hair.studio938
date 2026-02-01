@@ -2,25 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
 
 const TABS = [
     { id: 'general', label: 'General Settings', icon: <Settings size={18} /> },
-    { id: 'hours', label: 'Opening Hours', icon: <Clock size={18} /> },
-    { id: 'theme', label: 'Theme', icon: <Palette size={18} /> },
-    { id: 'services', label: 'Services', icon: <Scissors size={18} /> },
-    { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
-    { id: 'team', label: 'Team', icon: <User size={18} /> },
-    { id: 'gallery', label: 'Gallery', icon: <Image size={18} /> },
-    { id: 'appointments', label: 'Appointments', icon: <Calendar size={18} /> },
-    { id: 'clients', label: 'Clients', icon: <User size={18} /> }, // Added Clients tab
-    { id: 'testimonials', label: 'Testimonials', icon: <MessageCircle size={18} /> },
-    { id: 'custom_sections', label: 'Custom Sections', icon: <List size={18} /> },
-    { id: 'privacy', label: 'Privacy Policy', icon: <Shield size={18} /> },
+    { id: 'theme', label: 'Themes', icon: <Palette size={18} /> },
     { id: 'messages', label: 'Messages', icon: <Mail size={18} /> },
-    { id: 'page_flow', label: 'Page Flow', icon: <Database size={18} /> },
+    { id: 'privacy', label: 'Privacy Policy', icon: <Shield size={18} /> },
+    { id: 'page_flow', label: 'Page Flow', icon: <ArrowRightLeft size={18} /> },
+    { id: 'appointments', label: 'Appointments', icon: <Calendar size={18} /> },
+    { id: 'hours', label: 'Opening Hours', icon: <Clock size={18} /> },
+    { id: 'clients', label: 'Clients', icon: <User size={18} /> },
+    { id: 'team', label: 'Team', icon: <User size={18} /> },
+    { id: 'testimonials', label: 'Testimonials', icon: <MessageCircle size={18} /> },
+    { id: 'gallery', label: 'Gallery', icon: <Image size={18} /> },
+    { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
+    { id: 'services', label: 'Services', icon: <Scissors size={18} /> },
+    { id: 'custom_sections', label: 'Custom Section', icon: <List size={18} /> },
 ];
 
 const STYLIST_COLORS = {
@@ -726,9 +726,42 @@ const OpeningHoursTab = ({ settings, setSettings, showMessage }) => {
         }
     };
 
+    const handleToggleVisibility = async (enabled) => {
+        try {
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({ key: 'show_opening_hours', value: String(enabled) });
+            if (error) throw error;
+            setSettings(prev => ({ ...prev, show_opening_hours: String(enabled) }));
+            showMessage('success', `Opening hours ${enabled ? 'enabled' : 'disabled'} on site`);
+        } catch (err) {
+            showMessage('error', err.message);
+        }
+    };
+
+    const isVisible = settings.show_opening_hours !== 'false';
+
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Opening Hours</h2>
+
+            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-medium text-gray-900">Show on Website</h3>
+                        <p className="text-sm text-gray-500 text-pretty max-w-md mt-1">
+                            Toggle whether the opening hours are displayed in the hero section of the home page.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => handleToggleVisibility(!isVisible)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isVisible ? 'bg-stone-800' : 'bg-gray-400'}`}
+                        style={isVisible ? { backgroundColor: 'var(--primary-brown)' } : { backgroundColor: '#9ca3af' }}
+                    >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${isVisible ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                </div>
+            </div>
 
             <OpeningHoursPicker
                 initialValue={settings.opening_hours || ''}

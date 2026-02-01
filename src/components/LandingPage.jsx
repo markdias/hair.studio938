@@ -260,20 +260,22 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                 <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '1.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
                     {settings.hero_subtitle || "Luxury hair styling and bespoke treatments at 938 High Road."}
                 </p>
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    marginBottom: '2.5rem',
-                    opacity: 0.8,
-                    fontSize: '0.95rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px'
-                }}>
-                    <Calendar size={18} />
-                    <span>{settings.opening_hours || "Tuesday - Saturday: 9:00 AM - 6:00 PM"}</span>
-                </div>
+                {settings.show_opening_hours !== 'false' && (
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px',
+                        marginBottom: '2.5rem',
+                        opacity: 0.8,
+                        fontSize: '0.95rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                    }}>
+                        <Calendar size={18} />
+                        <span>{settings.opening_hours || "Tuesday - Saturday: 9:00 AM - 6:00 PM"}</span>
+                    </div>
+                )}
                 <div className="hero-buttons" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', width: '100%', margin: '0 auto' }}>
                     {isBookingEnabled && (
                         <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</a>
