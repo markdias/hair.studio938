@@ -6,7 +6,7 @@ import {
     Save, LogOut, Check, Info, Loader2,
     Settings, Scissors, Tag, Image, Plus, Trash2,
     MapPin, Phone, Mail, Clock, User, Calendar, Edit, X,
-    List, ChevronLeft, ChevronRight, ChevronDown, Instagram, Facebook, Music2, Maximize2, Search, Palette, MessageCircle
+    List, ChevronLeft, ChevronRight, ChevronDown, Instagram, Facebook, Music2, Maximize2, Search, Palette, MessageCircle, Shield, AlertTriangle
 } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
@@ -22,6 +22,7 @@ const TABS = [
     { id: 'appointments', label: 'Appointments', icon: <Calendar size={18} /> },
     { id: 'clients', label: 'Clients', icon: <User size={18} /> }, // Added Clients tab
     { id: 'testimonials', label: 'Testimonials', icon: <MessageCircle size={18} /> },
+    { id: 'privacy', label: 'Privacy Policy', icon: <Shield size={18} /> },
     { id: 'messages', label: 'Messages', icon: <Mail size={18} /> },
 ];
 
@@ -42,7 +43,6 @@ const GENERAL_FIELDS = [
     { key: 'instagram_url', label: 'Instagram URL', icon: <Instagram size={16} /> },
     { key: 'facebook_url', label: 'Facebook URL', icon: <Facebook size={16} /> },
     { key: 'tiktok_url', label: 'TikTok URL', icon: <Music2 size={16} /> },
-    { key: 'hero_bg_url', label: 'Hero Background Image URL', icon: <Image size={16} /> },
 ];
 
 const EMAIL_VARIABLES = [
@@ -254,6 +254,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} setClients={setData.setClients} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} />;
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
         case 'testimonials': return <TestimonialsTab testimonials={data.testimonials} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
+        case 'privacy': return <PrivacyPolicyEditor showMessage={showMessage} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} />;
         default: return null;
     }
@@ -906,6 +907,118 @@ const PhoneNumbersEditor = ({ showMessage }) => {
     );
 };
 
+const PrivacyPolicyEditor = ({ showMessage }) => {
+    const [content, setContent] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchPrivacyPolicy();
+    }, []);
+
+    const fetchPrivacyPolicy = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('site_settings')
+                .select('value')
+                .eq('key', 'privacy_policy')
+                .single();
+
+            if (error) throw error;
+            setContent(data?.value || '');
+        } catch (err) {
+            console.error('Error fetching privacy policy:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
+        try {
+            setSaving(true);
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({ key: 'privacy_policy', value: content });
+
+            if (error) throw error;
+            showMessage('success', 'Privacy policy updated successfully!');
+        } catch (err) {
+            console.error('Error saving privacy policy:', err);
+            showMessage('error', 'Error saving privacy policy: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center p-8">
+                <Loader2 size={40} className="animate-spin text-stone-800" />
+            </div>
+        );
+    }
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <Shield size={24} />
+                    Privacy Policy
+                </h2>
+                <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--primary-brown)' }}
+                >
+                    {saving ? (
+                        <>
+                            <Loader2 size={18} className="animate-spin" />
+                            Saving...
+                        </>
+                    ) : (
+                        <>
+                            <Save size={18} />
+                            Save Privacy Policy
+                        </>
+                    )}
+                </button>
+            </div>
+
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                <div className="mb-4">
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                        Privacy Policy Content
+                    </label>
+                    <p className="text-xs text-gray-500 mb-3">
+                        Enter your privacy policy here. This will be displayed in a modal when users click "Privacy Policy" in the footer.
+                    </p>
+                </div>
+
+                <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Enter your privacy policy content here..."
+                    className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none font-mono text-sm"
+                    style={{ fontFamily: 'monospace' }}
+                />
+
+                <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                    <span>{content.length} characters</span>
+                    <span>{content.split('\n').length} lines</span>
+                </div>
+
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-900">
+                        <Info size={16} className="inline mr-2" />
+                        <strong>Tip:</strong> Line breaks will be preserved when displayed to users.
+                    </p>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
 const BrandingEditor = ({ settings, onSave, showMessage }) => {
     const [logoUrl, setLogoUrl] = useState(settings.logo_url || '/logo.png');
     const [size, setSize] = useState(parseInt(settings.logo_size) || 85);
@@ -1139,6 +1252,35 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">General Settings</h2>
+
+            {/* Kill Switch Status - Read Only */}
+            <div className={`rounded-lg border-2 p-6 shadow-sm mb-6 ${settings.site_enabled === 'false' ? 'bg-red-50 border-red-300' : 'bg-white border-gray-200'}`}>
+                <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${settings.site_enabled === 'false' ? 'bg-red-100' : 'bg-green-100'}`}>
+                        <AlertTriangle size={24} className={settings.site_enabled === 'false' ? 'text-red-600' : 'text-green-600'} />
+                    </div>
+                    <div>
+                        <h3 className={`font-semibold text-lg ${settings.site_enabled === 'false' ? 'text-red-900' : 'text-gray-900'}`}>
+                            Website Status: {settings.site_enabled === 'false' ? 'DISABLED' : 'ACTIVE'}
+                        </h3>
+                        <p className={`text-sm ${settings.site_enabled === 'false' ? 'text-red-700' : 'text-gray-600'}`}>
+                            {settings.site_enabled === 'false'
+                                ? '⚠️ Website is currently DISABLED. Visitors see a maintenance screen.'
+                                : '✓ Website is currently ACTIVE and accessible to visitors.'
+                            }
+                        </p>
+                    </div>
+                </div>
+
+                {settings.site_enabled === 'false' && (
+                    <div className="mt-4 p-3 bg-red-100 border border-red-200 rounded-lg">
+                        <p className="text-xs text-red-800 font-medium">
+                            <Info size={14} className="inline mr-1" />
+                            To re-enable the website, update the 'site_enabled' setting in the database to 'true'.
+                        </p>
+                    </div>
+                )}
+            </div>
 
             {/* Dedicated Business Name Editor */}
             <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-6">

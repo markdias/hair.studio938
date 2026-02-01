@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2 } from 'lucide-react';
+import PrivacyPolicyModal from './PrivacyPolicyModal';
 
 const Navbar = ({ settings }) => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -734,13 +735,49 @@ const Testimonials = ({ testimonials = [], settings = {} }) => {
 };
 
 const Footer = ({ settings = {} }) => {
+    const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+
     return (
-        <footer style={{ padding: '60px 20px', backgroundColor: 'var(--primary-brown)', color: 'var(--accent-cream)', textAlign: 'center' }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto', paddingTop: '40px', borderTop: '1px solid rgba(234, 224, 213, 0.1)', opacity: 0.6, fontSize: '0.9rem' }}>
-                &copy; {new Date().getFullYear()} Hair Studio 938. All rights reserved.
-            </div>
-        </footer>
+        <>
+            <footer style={{ padding: '60px 20px', backgroundColor: 'var(--primary-brown)', color: 'var(--accent-cream)', textAlign: 'center' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                    {/* Privacy Policy Link */}
+                    <div style={{ marginBottom: '20px' }}>
+                        <button
+                            onClick={() => setIsPrivacyModalOpen(true)}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'var(--accent-cream)',
+                                fontSize: '0.9rem',
+                                cursor: 'pointer',
+                                textDecoration: 'underline',
+                                opacity: 0.8,
+                                transition: 'opacity 0.3s ease'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                        >
+                            Privacy Policy
+                        </button>
+                    </div>
+
+                    {/* Copyright */}
+                    <div style={{ paddingTop: '20px', borderTop: '1px solid rgba(234, 224, 213, 0.1)', opacity: 0.6, fontSize: '0.9rem' }}>
+                        &copy; {new Date().getFullYear()} Hair Studio 938. All rights reserved.
+                    </div>
+                </div>
+            </footer>
+
+            {/* Privacy Policy Modal */}
+            <PrivacyPolicyModal
+                isOpen={isPrivacyModalOpen}
+                onClose={() => setIsPrivacyModalOpen(false)}
+                content={settings.privacy_policy || ''}
+            />
+        </>
     );
 };
+
 
 export { Navbar, Hero, Services, TeamSection, PriceList, Testimonials, Contact, Footer };

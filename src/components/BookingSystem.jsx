@@ -2,12 +2,82 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar as CalendarIcon, Clock, User, Scissors, Check, ChevronRight, ChevronLeft, Phone, Mail, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import AntdDatePicker from './AntdDatePicker';
 
 const categories = [
     { title: "CUT & STYLING", items: ["Wash cut & blowdry", "Wash & cut", "Wash & blowdry", "Styling", "Hair Up"] },
     { title: "COLOURING", items: ["T-section highlights", "Half head highlights", "Full head highlights", "Balyage", "Full head tint"] },
     { title: "TREATMENTS", items: ["Keratin blowdry", "Hair Botox", "Olaplex"] },
 ];
+
+// Helper function to parse opening hours string
+const parseOpeningHours = (text) => {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const hours = Array.from({ length: 13 }, (_, i) => i + 8);
+    const selectedSlots = {};
+
+    // Initialize all days as closed
+    days.forEach(day => {
+        selectedSlots[day] = new Array(13).fill(false);
+    });
+
+    if (!text || text.toLowerCase() === 'closed') return selectedSlots;
+
+    // Parse text (basic implementation - can be enhanced)
+    // Expected format: "Mon-Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM"
+    const parts = text.split(',').map(p => p.trim());
+
+    parts.forEach(part => {
+        const match = part.match(/([A-Za-z\-]+):\s*(.+)/);
+        if (!match) return;
+
+        const [, dayPart, timePart] = match;
+        const timeRanges = timePart.split(',').map(t => t.trim());
+
+        // Parse day range
+        let targetDays = [];
+        if (dayPart.includes('-')) {
+            const [start, end] = dayPart.split('-').map(d => d.trim());
+            const startIdx = days.indexOf(start);
+            const endIdx = days.indexOf(end);
+            if (startIdx !== -1 && endIdx !== -1) {
+                for (let i = startIdx; i <= endIdx; i++) {
+                    targetDays.push(days[i]);
+                }
+            }
+        } else {
+            const day = days.find(d => dayPart.includes(d));
+            if (day) targetDays.push(day);
+        }
+
+        // Parse time ranges
+        timeRanges.forEach(timeRange => {
+            const timeMatch = timeRange.match(/(\d+)\s*(AM|PM)\s*-\s*(\d+)\s*(AM|PM)/i);
+            if (!timeMatch) return;
+
+            let [, startHour, startPeriod, endHour, endPeriod] = timeMatch;
+            startHour = parseInt(startHour);
+            endHour = parseInt(endHour);
+
+            // Convert to 24-hour
+            if (startPeriod.toUpperCase() === 'PM' && startHour !== 12) startHour += 12;
+            if (startPeriod.toUpperCase() === 'AM' && startHour === 12) startHour = 0;
+            if (endPeriod.toUpperCase() === 'PM' && endHour !== 12) endHour += 12;
+            if (endPeriod.toUpperCase() === 'AM' && endHour === 12) endHour = 0;
+
+            // Mark slots as selected
+            targetDays.forEach(day => {
+                hours.forEach((hour, idx) => {
+                    if (hour >= startHour && hour < endHour) {
+                        selectedSlots[day][idx] = true;
+                    }
+                });
+            });
+        });
+    });
+
+    return selectedSlots;
+};
 
 const BookingSystem = () => {
     const [stylists, setStylists] = useState([]);
@@ -160,11 +230,20 @@ const BookingSystem = () => {
     const handleBooking = async () => {
         setIsSubmitting(true);
         setError(null);
+
+        // If no stylist selected, pick one randomly
+        let finalBooking = { ...booking };
+        if (!finalBooking.stylist && stylists.length > 0) {
+            const randomStylist = stylists[Math.floor(Math.random() * stylists.length)];
+            finalBooking.stylist = randomStylist;
+            setBooking(finalBooking);
+        }
+
         try {
             const response = await fetch('/api/book', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(booking)
+                body: JSON.stringify(finalBooking)
             });
 
             if (!response.ok) {
@@ -219,7 +298,7 @@ const BookingSystem = () => {
                     overflow: 'hidden',
                     display: 'grid',
                     gridTemplateColumns: 'minmax(300px, 1fr) 2fr',
-                    minHeight: '600px'
+                    height: '750px'
                 }} className="booking-card">
 
                     <div style={{
@@ -250,12 +329,56 @@ const BookingSystem = () => {
                     <div style={{ padding: '60px', position: 'relative' }}>
                         <AnimatePresence mode="wait">
                             {isSuccess ? (
-                                <motion.div key="success" variants={containerVariants} initial="hidden" animate="visible" style={{ textAlign: 'center', paddingTop: '60px' }}>
-                                    <div style={{ width: '80px', height: '80px', backgroundColor: 'var(--primary-brown)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 30px' }}>
-                                        <Check color="var(--accent-cream)" size={40} />
+                                <motion.div key="success" variants={containerVariants} initial="hidden" animate="visible" style={{ textAlign: 'center', paddingTop: '10px' }}>
+                                    <div style={{ width: '60px', height: '60px', backgroundColor: 'var(--primary-brown)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                                        <Check color="var(--accent-cream)" size={30} />
                                     </div>
-                                    <h3 style={{ fontSize: '2.5rem', color: 'var(--primary-brown)', marginBottom: '15px' }}>Booking Confirmed!</h3>
-                                    <p style={{ color: '#666', marginBottom: '40px' }}>We've sent a confirmation email to {booking.email}.</p>
+                                    <h3 style={{ fontSize: '1.8rem', color: 'var(--primary-brown)', marginBottom: '10px' }}>Booking Confirmed!</h3>
+
+                                    {/* Booking Details */}
+                                    <div style={{
+                                        backgroundColor: '#F9F9F9',
+                                        borderRadius: '10px',
+                                        padding: '20px',
+                                        margin: '20px 0',
+                                        textAlign: 'left',
+                                        fontSize: '0.9rem'
+                                    }}>
+                                        <h4 style={{ fontSize: '1rem', color: 'var(--primary-brown)', marginBottom: '15px', fontWeight: '700' }}>Your Appointment</h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
+                                                <span style={{ color: '#666', fontSize: '0.85rem' }}>Stylist:</span>
+                                                <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.stylist?.name}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
+                                                <span style={{ color: '#666', fontSize: '0.85rem' }}>Service:</span>
+                                                <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.service}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
+                                                <span style={{ color: '#666', fontSize: '0.85rem' }}>Date:</span>
+                                                <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.date}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
+                                                <span style={{ color: '#666', fontSize: '0.85rem' }}>Time:</span>
+                                                <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.time}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span style={{ color: '#666', fontSize: '0.85rem' }}>Name:</span>
+                                                <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.name}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {booking.email && (
+                                        <p style={{ color: '#666', marginBottom: '12px', fontSize: '0.85rem' }}>
+                                            Confirmation email sent to <strong>{booking.email}</strong>
+                                        </p>
+                                    )}
+
+                                    <p style={{ color: '#666', marginBottom: '20px', fontSize: '0.85rem', fontStyle: 'italic' }}>
+                                        To make changes or cancel, please call or email us.
+                                    </p>
+
                                     <button
                                         onClick={() => { setIsSuccess(false); setStep(1); setBooking({ stylist: null, service: null, date: null, time: null, duration_minutes: null, name: '', email: '', phone: '' }); }}
                                         className="btn-primary"
@@ -295,6 +418,29 @@ const BookingSystem = () => {
                                                         <div style={{ fontSize: '0.8rem', color: '#666' }}>{s.role.split(' ')[0]}</div>
                                                     </button>
                                                 ))}
+                                            </div>
+                                            <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                                                <button
+                                                    onClick={nextStep}
+                                                    style={{
+                                                        padding: '12px 24px',
+                                                        backgroundColor: 'transparent',
+                                                        color: 'var(--primary-brown)',
+                                                        border: '1px solid var(--primary-brown)',
+                                                        borderRadius: '8px',
+                                                        fontSize: '0.9rem',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.target.style.backgroundColor = 'var(--soft-cream)';
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.target.style.backgroundColor = 'transparent';
+                                                    }}
+                                                >
+                                                    Skip - I'll take any available stylist
+                                                </button>
                                             </div>
                                         </div>
                                     )}
@@ -351,31 +497,29 @@ const BookingSystem = () => {
                                             <h4 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>Date & Time</h4>
                                             <p style={{ color: '#666', marginBottom: '30px', fontSize: '0.9rem' }}>Select your preferred date to see available time slots.</p>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                                                <div style={{ position: 'relative' }}>
+                                                <div>
                                                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: 'var(--primary-brown)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                                         Pick a Date
                                                     </label>
-                                                    <div style={{ position: 'relative' }}>
-                                                        <CalendarIcon size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#999', pointerEvents: 'none' }} />
-                                                        <input
-                                                            type="date"
-                                                            min={new Date().toISOString().split('T')[0]}
-                                                            onChange={(e) => setBooking({ ...booking, date: e.target.value, time: null })}
-                                                            value={booking.date || ''}
-                                                            style={{
-                                                                width: '100%',
-                                                                padding: '15px 15px 15px 45px',
-                                                                borderRadius: '12px',
-                                                                border: '1px solid var(--accent-cream)',
-                                                                fontSize: '1rem',
-                                                                color: 'var(--primary-brown)',
-                                                                backgroundColor: '#FFF',
-                                                                cursor: 'pointer',
-                                                                outline: 'none',
-                                                                boxSizing: 'border-box'
-                                                            }}
-                                                        />
-                                                    </div>
+                                                    <AntdDatePicker
+                                                        value={booking.date}
+                                                        onChange={(date, dateString) => setBooking({ ...booking, date: dateString, time: null })}
+                                                        className=""
+                                                        disabledDate={(date) => {
+                                                            // Disable dates in the past
+                                                            const today = new Date();
+                                                            today.setHours(0, 0, 0, 0);
+                                                            if (date < today) return true;
+
+                                                            // Disable closed days
+                                                            if (!openingHours) return false;
+                                                            const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                                                            const dayName = WEEK_DAYS[date.getDay()];
+                                                            const parsedHours = parseOpeningHours(openingHours);
+                                                            const slots = parsedHours[dayName];
+                                                            return !slots || !slots.some(s => s);
+                                                        }}
+                                                    />
                                                 </div>
 
                                                 <div>

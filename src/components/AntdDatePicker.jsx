@@ -115,10 +115,11 @@ const AntdDatePicker = ({ value, onChange, className, disabledDate }) => {
                                             ${isDisabled
                                             ? 'bg-gray-100 text-gray-300 cursor-not-allowed opacity-50'
                                             : isSelected
-                                                ? 'bg-[#3D2B1F] text-white font-bold shadow-md'
+                                                ? 'text-white font-bold shadow-md'
                                                 : 'hover:bg-[#3D2B1F]/10 text-gray-700'}
                                             ${isToday(date) && !isSelected && !isDisabled ? 'border border-[#3D2B1F] text-[#3D2B1F]' : ''}
                                         `}
+                                    style={isSelected ? { backgroundColor: 'var(--primary-brown)' } : {}}
                                 >
                                     {format(date, 'd')}
                                 </button>
