@@ -963,11 +963,28 @@ const Footer = ({ settings = {}, phoneNumbers = [] }) => {
                             <p style={{ fontWeight: '700', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase' }}>Salon</p>
                             <p style={{ margin: 0 }}>{settings.opening_hours || "Tue - Sat: 10:00am - 6:00pm"}</p>
                         </div>
-                        {/* Payment Icons Placeholder/Static for now as per image */}
-                        <div style={{ display: 'flex', gap: '15px', marginTop: '10px', opacity: 0.6 }}>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" style={{ height: '20px' }} />
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style={{ height: '20px' }} />
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '20px' }} />
+                        {/* Dynamic Payment Icons */}
+                        <div style={{ display: 'flex', gap: '15px', marginTop: '10px', opacity: 0.6, flexWrap: 'wrap' }}>
+                            {(() => {
+                                const paymentLogos = {
+                                    'visa': 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg',
+                                    'mastercard': 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg',
+                                    'paypal': 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg',
+                                    'applepay': 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg',
+                                    'googlepay': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Pay_Logo_%282020%29.svg',
+                                    'amex': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg',
+                                };
+                                const methods = (settings.payment_methods || 'visa,mastercard,paypal').split(',').filter(Boolean);
+                                return methods.map(method => (
+                                    <img
+                                        key={method}
+                                        src={paymentLogos[method]}
+                                        alt={method}
+                                        style={{ height: '20px' }}
+                                        onError={(e) => e.target.style.display = 'none'}
+                                    />
+                                ));
+                            })()}
                         </div>
                     </div>
                 </div>

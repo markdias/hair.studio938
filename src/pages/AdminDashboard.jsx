@@ -1403,6 +1403,66 @@ const ThemeTab = ({ showMessage }) => {
     );
 };
 
+const PaymentMethodsEditor = ({ settings, onSave, showMessage }) => {
+    const availableMethods = [
+        { id: 'visa', label: 'Visa', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg' },
+        { id: 'mastercard', label: 'Mastercard', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg' },
+        { id: 'paypal', label: 'PayPal', logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg' },
+        { id: 'applepay', label: 'Apple Pay', logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg' },
+        { id: 'googlepay', label: 'Google Pay', logo: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Pay_Logo_%282020%29.svg' },
+        { id: 'amex', label: 'American Express', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg' },
+    ];
+
+    const currentMethods = (settings.payment_methods || '').split(',').filter(Boolean);
+
+    const toggleMethod = (id) => {
+        let newMethods;
+        if (currentMethods.includes(id)) {
+            newMethods = currentMethods.filter(m => m !== id);
+        } else {
+            newMethods = [...currentMethods, id];
+        }
+        onSave('payment_methods', newMethods.join(','));
+    };
+
+    return (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                <Database size={18} /> Accepted Payment Methods
+            </h3>
+            <p className="text-xs text-gray-500 mb-6">
+                Select the payment methods you accept. These icons will be displayed in the website footer.
+            </p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                {availableMethods.map((method) => {
+                    const isActive = currentMethods.includes(method.id);
+                    return (
+                        <button
+                            key={method.id}
+                            onClick={() => toggleMethod(method.id)}
+                            className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all group ${isActive
+                                ? 'border-stone-800 bg-stone-50'
+                                : 'border-gray-100 hover:border-gray-200'
+                                }`}
+                        >
+                            <div className={`h-10 flex items-center justify-center transition-opacity ${isActive ? 'opacity-100' : 'opacity-40 grayscale group-hover:grayscale-0'}`}>
+                                <img src={method.logo} alt={method.label} className="max-h-full max-w-full" />
+                            </div>
+                            <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? 'text-stone-800' : 'text-gray-400'}`}>
+                                {method.label}
+                            </span>
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${isActive ? 'bg-stone-800 border-stone-800 text-white' : 'border-gray-300'}`}>
+                                {isActive && <Check size={12} />}
+                            </div>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
 const GeneralTab = ({ settings, setSettings, showMessage }) => {
 
     const handleSave = async (key, value) => {
@@ -1654,6 +1714,14 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                         </div>
                     </div>
                 ))}
+            </div>
+            {/* Payment Methods - Full Width */}
+            <div className="mb-6">
+                <PaymentMethodsEditor
+                    settings={settings}
+                    onSave={handleSave}
+                    showMessage={showMessage}
+                />
             </div>
         </motion.div>
     );
