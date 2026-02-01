@@ -21,6 +21,7 @@ const TABS = [
     { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
     { id: 'services', label: 'Services', icon: <Scissors size={18} /> },
     { id: 'custom_sections', label: 'Custom Section', icon: <List size={18} /> },
+    { id: 'terms', label: 'Terms & Conditions', icon: <Shield size={18} /> },
 ];
 
 const STYLIST_COLORS = {
@@ -40,6 +41,7 @@ const GENERAL_FIELDS = [
     { key: 'instagram_url', label: 'Instagram URL', icon: <Instagram size={16} /> },
     { key: 'facebook_url', label: 'Facebook URL', icon: <Facebook size={16} /> },
     { key: 'tiktok_url', label: 'TikTok URL', icon: <Music2 size={16} /> },
+    { key: 'footer_description', label: 'Footer Description', icon: <Info size={16} /> },
 ];
 
 const EMAIL_VARIABLES = [
@@ -261,6 +263,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'testimonials': return <TestimonialsTab testimonials={data.testimonials} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
         case 'custom_sections': return <CustomSectionsTab customSections={data.customSections} setCustomSections={setData.setCustomSections} siteSettings={data.site_settings} refresh={refresh} showMessage={showMessage} />;
         case 'privacy': return <PrivacyPolicyEditor showMessage={showMessage} />;
+        case 'terms': return <TermsAndConditionsEditor showMessage={showMessage} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} />;
         case 'page_flow': return <PageFlowTab customSections={data.customSections} showMessage={showMessage} />;
         default: return null;
@@ -1039,6 +1042,118 @@ const PrivacyPolicyEditor = ({ showMessage }) => {
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="Enter your privacy policy content here..."
+                    className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none font-mono text-sm"
+                    style={{ fontFamily: 'monospace' }}
+                />
+
+                <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                    <span>{content.length} characters</span>
+                    <span>{content.split('\n').length} lines</span>
+                </div>
+
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-900">
+                        <Info size={16} className="inline mr-2" />
+                        <strong>Tip:</strong> Line breaks will be preserved when displayed to users.
+                    </p>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
+const TermsAndConditionsEditor = ({ showMessage }) => {
+    const [content, setContent] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchTerms();
+    }, []);
+
+    const fetchTerms = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('site_settings')
+                .select('value')
+                .eq('key', 'terms_and_conditions')
+                .single();
+
+            if (error) throw error;
+            setContent(data?.value || '');
+        } catch (err) {
+            console.error('Error fetching terms:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
+        try {
+            setSaving(true);
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({ key: 'terms_and_conditions', value: content });
+
+            if (error) throw error;
+            showMessage('success', 'Terms & conditions updated successfully!');
+        } catch (err) {
+            console.error('Error saving terms:', err);
+            showMessage('error', 'Error saving terms: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center p-8">
+                <Loader2 size={40} className="animate-spin text-stone-800" />
+            </div>
+        );
+    }
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <Shield size={24} />
+                    Terms & Conditions
+                </h2>
+                <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--primary-brown)' }}
+                >
+                    {saving ? (
+                        <>
+                            <Loader2 size={18} className="animate-spin" />
+                            Saving...
+                        </>
+                    ) : (
+                        <>
+                            <Save size={18} />
+                            Save Terms & Conditions
+                        </>
+                    )}
+                </button>
+            </div>
+
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                <div className="mb-4">
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                        Terms & Conditions Content
+                    </label>
+                    <p className="text-xs text-gray-500 mb-3">
+                        Enter your terms and conditions here. This will be displayed in a modal when users click "Terms & Conditions" in the footer.
+                    </p>
+                </div>
+
+                <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Enter your terms and conditions content here..."
                     className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none font-mono text-sm"
                     style={{ fontFamily: 'monospace' }}
                 />

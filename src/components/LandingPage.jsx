@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2 } from 'lucide-react';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
+import TermsAndConditionsModal from './TermsAndConditionsModal';
 
 const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -824,46 +825,177 @@ const Testimonials = ({ testimonials = [], settings = {} }) => {
     );
 };
 
-const Footer = ({ settings = {} }) => {
+const Footer = ({ settings = {}, phoneNumbers = [] }) => {
     const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+    const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+
+    const businessName = settings.business_name || 'Hair Studio 938';
+    const footerDescription = settings.footer_description || "Our salon is a space created for deep connection, beauty, and confidence. From expert coloring to bespoke styling, each offering is designed to enhance your natural look.";
+    const email = settings.email || "hair.studio938@gmail.com";
+    const address = settings.address || "Unit 5, 938 High Road, London, N12 9RT";
+    const phone = phoneNumbers.length > 0 ? phoneNumbers[0].number : (settings.phone || "0208 113 112");
 
     return (
         <>
-            <footer style={{ padding: '60px 20px', backgroundColor: 'var(--primary-brown)', color: 'var(--accent-cream)', textAlign: 'center' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    {/* Privacy Policy Link */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <button
-                            onClick={() => setIsPrivacyModalOpen(true)}
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                color: 'var(--accent-cream)',
-                                fontSize: '0.9rem',
-                                cursor: 'pointer',
-                                textDecoration: 'underline',
-                                opacity: 0.8,
-                                transition: 'opacity 0.3s ease'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
-                        >
-                            Privacy Policy
-                        </button>
+            <footer style={{
+                padding: '80px 20px 40px',
+                backgroundColor: 'var(--soft-cream)',
+                color: 'var(--primary-brown)',
+                borderTop: '1px solid rgba(61, 43, 31, 0.1)'
+            }}>
+                <div style={{
+                    maxWidth: '1200px',
+                    margin: '0 auto',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    gap: '40px',
+                    textAlign: 'left'
+                }}>
+                    {/* Column 1: About */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <h3 style={{
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: '1.8rem',
+                            margin: 0
+                        }}>{businessName}</h3>
+                        <p style={{
+                            fontSize: '0.95rem',
+                            lineHeight: '1.6',
+                            opacity: 0.8,
+                            maxWidth: '300px'
+                        }}>
+                            {footerDescription}
+                        </p>
+                        <a href="#booking" style={{
+                            color: 'var(--primary-brown)',
+                            textDecoration: 'none',
+                            fontWeight: '700',
+                            fontSize: '0.85rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px',
+                            borderBottom: '1px solid var(--primary-brown)',
+                            width: 'fit-content',
+                            paddingBottom: '2px'
+                        }}>
+                            Book Online
+                        </a>
                     </div>
 
-                    {/* Copyright */}
-                    <div style={{ paddingTop: '20px', borderTop: '1px solid rgba(234, 224, 213, 0.1)', opacity: 0.6, fontSize: '0.9rem' }}>
-                        &copy; {new Date().getFullYear()} Hair Studio 938. All rights reserved.
+                    {/* Column 2: Links */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <h4 style={{
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: '1.4rem',
+                            margin: 0
+                        }}>Important Links</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <button
+                                onClick={() => setIsPrivacyModalOpen(true)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--primary-brown)',
+                                    fontSize: '0.95rem',
+                                    cursor: 'pointer',
+                                    textAlign: 'left',
+                                    padding: 0,
+                                    opacity: 0.8,
+                                    transition: 'opacity 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                            >
+                                Privacy Policy
+                            </button>
+                            <button
+                                onClick={() => setIsTermsModalOpen(true)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--primary-brown)',
+                                    fontSize: '0.95rem',
+                                    cursor: 'pointer',
+                                    textAlign: 'left',
+                                    padding: 0,
+                                    opacity: 0.8,
+                                    transition: 'opacity 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                            >
+                                Terms & Conditions
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Column 3: Contact */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <h4 style={{
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: '1.4rem',
+                            margin: 0
+                        }}>Contact Us</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.95rem', opacity: 0.8 }}>
+                            <p style={{ margin: 0 }}>{address}</p>
+                            <p style={{ margin: 0 }}>{email}</p>
+                            <p style={{ margin: 0 }}>{phone}</p>
+                            {settings.instagram_url && (
+                                <a
+                                    href={settings.instagram_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ color: 'var(--primary-brown)', marginTop: '5px', width: 'fit-content' }}
+                                >
+                                    <Instagram size={20} />
+                                </a>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Column 4: Hours */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <h4 style={{
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: '1.4rem',
+                            margin: 0
+                        }}>Opening Hours</h4>
+                        <div style={{ fontSize: '0.95rem', opacity: 0.8 }}>
+                            <p style={{ fontWeight: '700', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase' }}>Salon</p>
+                            <p style={{ margin: 0 }}>{settings.opening_hours || "Tue - Sat: 10:00am - 6:00pm"}</p>
+                        </div>
+                        {/* Payment Icons Placeholder/Static for now as per image */}
+                        <div style={{ display: 'flex', gap: '15px', marginTop: '10px', opacity: 0.6 }}>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" style={{ height: '20px' }} />
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style={{ height: '20px' }} />
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style={{ height: '20px' }} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Copyright */}
+                <div style={{
+                    maxWidth: '1200px',
+                    margin: '60px auto 0',
+                    paddingTop: '20px',
+                    borderTop: '1px solid rgba(61, 43, 31, 0.1)',
+                    textAlign: 'center',
+                    fontSize: '0.85rem',
+                    opacity: 0.5
+                }}>
+                    &copy; {new Date().getFullYear()} {businessName}. All Rights Reserved.
                 </div>
             </footer>
 
-            {/* Privacy Policy Modal */}
+            {/* Modals */}
             <PrivacyPolicyModal
                 isOpen={isPrivacyModalOpen}
                 onClose={() => setIsPrivacyModalOpen(false)}
                 content={settings.privacy_policy || ''}
+            />
+            <TermsAndConditionsModal
+                isOpen={isTermsModalOpen}
+                onClose={() => setIsTermsModalOpen(false)}
+                content={settings.terms_and_conditions || ''}
             />
         </>
     );

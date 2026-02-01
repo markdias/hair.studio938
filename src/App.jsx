@@ -175,7 +175,7 @@ const MainSite = () => {
                 });
               })()}
 
-              <Footer settings={siteData.settings} />
+              <Footer settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />
               <Analytics />
               <CookieConsent />
             </main>
