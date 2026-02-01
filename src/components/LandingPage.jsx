@@ -738,8 +738,8 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
                     gap: '30px',
                     marginTop: '60px'
                 }}>
-                    {contactCards.map(card => (
-                        <ContactCard key={card.key} {...card} textColor={textColor} />
+                    {contactCards.map(({ key, ...cardProps }) => (
+                        <ContactCard key={key} {...cardProps} textColor={textColor} />
                     ))}
                 </div>
 
