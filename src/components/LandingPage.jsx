@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2 } from 'lucide-react';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 
-const Navbar = ({ settings, customSections = [] }) => {
+const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -61,21 +61,9 @@ const Navbar = ({ settings, customSections = [] }) => {
             {/* Desktop Menu */}
             <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px', fontWeight: '500' }}>
                 <a href="#home">Home</a>
-                {(() => {
-                    const orderStr = settings.global_section_order;
-                    let order = [];
-                    try {
-                        order = orderStr ? JSON.parse(orderStr) : [
-                            'services', 'team', 'pricing', 'testimonials', 'gallery', 'contact'
-                        ];
-                    } catch (e) {
-                        order = ['services', 'team', 'pricing', 'testimonials', 'gallery', 'contact'];
-                    }
-
-                    // Ensure 'contact' is always present at the end if not in order
-                    if (!order.includes('contact')) order.push('contact');
-
-                    return order.map(id => {
+                {pageSections.length > 0 ? (
+                    pageSections.map(section => {
+                        const id = section.id;
                         if (id === 'services' && settings.show_services_section !== 'false')
                             return <a key="services" href="#services">{settings.services_menu_name || 'Services'}</a>;
                         if (id === 'team' && settings.show_team_section !== 'false')
@@ -88,14 +76,24 @@ const Navbar = ({ settings, customSections = [] }) => {
                             return <a key="testimonials" href="#testimonials">{settings.testimonials_menu_name || 'Testimonials'}</a>;
                         if (id === 'contact')
                             return <a key="contact" href="#contact">Contact</a>;
+                        if (id === 'booking') return null; // Booking usually in CTA
 
                         const custom = customSections.find(s => s.id === id);
                         if (custom && custom.enabled !== false) {
                             return <a key={custom.id} href={`#custom-section-${custom.id}`}>{custom.menu_name}</a>;
                         }
                         return null;
-                    });
-                })()}
+                    })
+                ) : (
+                    // Fallback
+                    <>
+                        <a href="#services">Services</a>
+                        <a href="#team">Team</a>
+                        <a href="#pricing">Pricing</a>
+                        <a href="#gallery">Gallery</a>
+                        <a href="#contact">Contact</a>
+                    </>
+                )}
                 <a href="#booking" className="btn-primary" style={{
                     padding: '10px 24px',
                     backgroundColor: 'var(--accent-cream)',
@@ -114,20 +112,9 @@ const Navbar = ({ settings, customSections = [] }) => {
             {/* Mobile Menu Overlay */}
             <div className="nav-links-mobile">
                 <a href="#home" onClick={toggleMenu}>Home</a>
-                {(() => {
-                    const orderStr = settings.global_section_order;
-                    let order = [];
-                    try {
-                        order = orderStr ? JSON.parse(orderStr) : [
-                            'services', 'team', 'pricing', 'testimonials', 'gallery', 'contact'
-                        ];
-                    } catch (e) {
-                        order = ['services', 'team', 'pricing', 'testimonials', 'gallery', 'contact'];
-                    }
-
-                    if (!order.includes('contact')) order.push('contact');
-
-                    return order.map(id => {
+                {pageSections.length > 0 ? (
+                    pageSections.map(section => {
+                        const id = section.id;
                         if (id === 'services' && settings.show_services_section !== 'false')
                             return <a key="services" href="#services" onClick={toggleMenu}>{settings.services_menu_name || 'Services'}</a>;
                         if (id === 'team' && settings.show_team_section !== 'false')
@@ -146,8 +133,16 @@ const Navbar = ({ settings, customSections = [] }) => {
                             return <a key={custom.id} href={`#custom-section-${custom.id}`} onClick={toggleMenu}>{custom.menu_name}</a>;
                         }
                         return null;
-                    });
-                })()}
+                    })
+                ) : (
+                    <>
+                        <a href="#services" onClick={toggleMenu}>Services</a>
+                        <a href="#team" onClick={toggleMenu}>Team</a>
+                        <a href="#pricing" onClick={toggleMenu}>Pricing</a>
+                        <a href="#gallery" onClick={toggleMenu}>Gallery</a>
+                        <a href="#contact" onClick={toggleMenu}>Contact</a>
+                    </>
+                )}
                 <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
             </div>
         </nav>

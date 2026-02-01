@@ -44,7 +44,7 @@ const MainSite = () => {
 
   // CMS Data States
   const [siteData, setSiteData] = useState({
-    settings: {}, services: [], pricing: [], team: [], gallery: [], testimonials: [], phoneNumbers: [], customSections: [], loading: true
+    settings: {}, services: [], pricing: [], team: [], gallery: [], testimonials: [], phoneNumbers: [], customSections: [], pageSections: [], loading: true
   });
 
   useEffect(() => {
@@ -70,7 +70,8 @@ const MainSite = () => {
         supabase.from('gallery_images').select('*').order('sort_order'),
         supabase.from('testimonials').select('*').order('sort_order'),
         supabase.from('phone_numbers').select('*').order('display_order'),
-        supabase.from('custom_sections').select('*, custom_section_elements(*)').eq('enabled', true).order('sort_order')
+        supabase.from('custom_sections').select('*, custom_section_elements(*)').eq('enabled', true).order('sort_order'),
+        supabase.from('site_page_sections').select('*').order('sort_order')
       ]);
 
       const settingsObj = {};
@@ -85,6 +86,7 @@ const MainSite = () => {
         testimonials: tests || [],
         phoneNumbers: phones || [],
         customSections: customSects || [],
+        pageSections: (sections || []).filter(s => s.enabled !== false),
         loading: false
       });
     } catch (err) {
@@ -111,21 +113,12 @@ const MainSite = () => {
 
           {(showMainSite || !siteData.settings.intro_video_url) && (
             <main className="main-content">
-              <Navbar settings={siteData.settings} customSections={siteData.customSections} />
+              <Navbar settings={siteData.settings} customSections={siteData.customSections} pageSections={siteData.pageSections} />
               <Hero settings={siteData.settings} />
 
-              {(() => {
-                const orderStr = siteData.settings.global_section_order;
-                let order = [];
-                try {
-                  order = orderStr ? JSON.parse(orderStr) : [
-                    'services', 'team', 'pricing', 'testimonials', 'booking', 'gallery', 'contact'
-                  ];
-                } catch (e) {
-                  order = ['services', 'team', 'pricing', 'testimonials', 'booking', 'gallery', 'contact'];
-                }
-
-                return order.map(id => {
+              {siteData.pageSections.length > 0 ? (
+                siteData.pageSections.map(section => {
+                  const id = section.id;
                   // Fixed Sections
                   if (id === 'services') return <Services key="services" services={siteData.services} settings={siteData.settings} />;
                   if (id === 'team') return <TeamSection key="team" team={siteData.team} settings={siteData.settings} />;
@@ -141,8 +134,22 @@ const MainSite = () => {
                     return <CustomSection key={customSection.id} data={customSection} />;
                   }
                   return null;
-                });
-              })()}
+                })
+              ) : (
+                // Fallback to default order if pageSections is empty
+                <>
+                  <Services services={siteData.services} settings={siteData.settings} />
+                  <TeamSection team={siteData.team} settings={siteData.settings} />
+                  <PriceList pricing={siteData.pricing} settings={siteData.settings} />
+                  <Testimonials testimonials={siteData.testimonials} settings={siteData.settings} />
+                  <BookingSystem />
+                  {siteData.customSections.map((section) => (
+                    <CustomSection key={section.id} data={section} />
+                  ))}
+                  <Gallery images={siteData.gallery} settings={siteData.settings} />
+                  <Contact settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />
+                </>
+              )}
 
               <Footer settings={siteData.settings} />
               <Analytics />

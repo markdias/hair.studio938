@@ -2,12 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Save, LogOut, Check, Info, Loader2,
-    Settings, Scissors, Tag, Image, Plus, Trash2,
-    MapPin, Phone, Mail, Clock, User, Calendar, Edit, X,
-    List, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Instagram, Facebook, Music2, Maximize2, Search, Palette, MessageCircle, Shield, AlertTriangle
-} from 'lucide-react';
+import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
 
@@ -25,6 +20,7 @@ const TABS = [
     { id: 'custom_sections', label: 'Custom Sections', icon: <List size={18} /> },
     { id: 'privacy', label: 'Privacy Policy', icon: <Shield size={18} /> },
     { id: 'messages', label: 'Messages', icon: <Mail size={18} /> },
+    { id: 'database', label: 'Database Settings', icon: <Database size={18} /> },
 ];
 
 const STYLIST_COLORS = {
@@ -262,6 +258,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'custom_sections': return <CustomSectionsTab customSections={data.customSections} setCustomSections={setData.setCustomSections} siteSettings={data.site_settings} refresh={refresh} showMessage={showMessage} />;
         case 'privacy': return <PrivacyPolicyEditor showMessage={showMessage} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} />;
+        case 'database': return <DatabaseSettingsTab customSections={data.customSections} showMessage={showMessage} />;
         default: return null;
     }
 };
@@ -4306,47 +4303,6 @@ const TestimonialsTab = ({ testimonials, settings, setSettings, refresh, showMes
 
 const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, refresh, showMessage }) => {
     const [editingSection, setEditingSection] = useState(null);
-    const [isManagingOrder, setIsManagingOrder] = useState(false);
-    const [globalOrder, setGlobalOrder] = useState([]);
-
-    const FIXED_SECTIONS = [
-        { id: 'services', label: 'Services', isFixed: true },
-        { id: 'team', label: 'Team', isFixed: true },
-        { id: 'pricing', label: 'Pricing', isFixed: true },
-        { id: 'testimonials', label: 'Testimonials', isFixed: true },
-        { id: 'booking', label: 'Booking System', isFixed: true },
-        { id: 'gallery', label: 'Gallery', isFixed: true },
-        { id: 'contact', label: 'Contact', isFixed: true }
-    ];
-
-    useEffect(() => {
-        const order = siteSettings?.find(s => s.key === 'global_section_order')?.value;
-        if (order) {
-            setGlobalOrder(JSON.parse(order));
-        } else {
-            // Default order
-            const defaultOrder = [...FIXED_SECTIONS.map(s => s.id), ...customSections.map(s => s.id)];
-            setGlobalOrder(defaultOrder);
-        }
-    }, [customSections, siteSettings]);
-
-    const handleSaveSectionOrder = async (newOrder) => {
-        try {
-            const { error } = await supabase
-                .from('site_settings')
-                .upsert({
-                    key: 'global_section_order',
-                    value: JSON.stringify(newOrder)
-                }, { onConflict: 'key' });
-
-            if (error) throw error;
-            setGlobalOrder(newOrder);
-            showMessage('success', 'Page flow order saved');
-        } catch (err) {
-            console.error('Error saving order:', err);
-            showMessage('error', 'Error saving page flow');
-        }
-    };
 
     const handleAddSection = async () => {
         try {
@@ -4438,13 +4394,6 @@ const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, re
                 </h2>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => setIsManagingOrder(true)}
-                        className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-all"
-                    >
-                        <List size={18} />
-                        Manage Page Flow
-                    </button>
-                    <button
                         onClick={handleAddSection}
                         className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all"
                         style={{ backgroundColor: 'var(--primary-brown)' }}
@@ -4491,36 +4440,6 @@ const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, re
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="flex flex-col gap-1 mr-2">
-                                        <button
-                                            onClick={() => {
-                                                const index = customSections.findIndex(s => s.id === section.id);
-                                                if (index > 0) {
-                                                    const newOrder = [...customSections];
-                                                    [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
-                                                    handleReorderSections(newOrder);
-                                                }
-                                            }}
-                                            disabled={customSections.findIndex(s => s.id === section.id) === 0}
-                                            className="p-1 hover:bg-gray-100 rounded disabled:opacity-30"
-                                        >
-                                            <ChevronUp size={16} />
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                const index = customSections.findIndex(s => s.id === section.id);
-                                                if (index < customSections.length - 1) {
-                                                    const newOrder = [...customSections];
-                                                    [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
-                                                    handleReorderSections(newOrder);
-                                                }
-                                            }}
-                                            disabled={customSections.findIndex(s => s.id === section.id) === customSections.length - 1}
-                                            className="p-1 hover:bg-gray-100 rounded disabled:opacity-30"
-                                        >
-                                            <ChevronDown size={16} />
-                                        </button>
-                                    </div>
                                     <button
                                         onClick={() => setEditingSection(section)}
                                         className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all"
@@ -4542,91 +4461,215 @@ const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, re
                     ))}
                 </div>
             )}
+        </motion.div>
+    );
+};
 
-            {isManagingOrder && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1100] p-4">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]"
-                    >
-                        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-stone-50">
-                            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                <List size={22} />
-                                Manage Page Flow
-                            </h3>
-                            <button onClick={() => setIsManagingOrder(false)} className="text-gray-500 hover:text-gray-700">
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="p-6 overflow-y-auto flex-grow bg-white">
-                            <p className="text-sm text-gray-600 mb-6" style={{ color: 'var(--text-dark)' }}>
-                                Drag and drop sections to change where they appear on your website. Custom sections can be intermixed with fixed sections.
-                            </p>
-                            <div className="space-y-2">
-                                {globalOrder.map((sectionId, index) => {
-                                    const fixed = FIXED_SECTIONS.find(s => s.id === sectionId);
-                                    const custom = customSections.find(s => s.id === sectionId);
-                                    if (!fixed && !custom) return null;
+// ============================================================
+// DATABASE SETTINGS TAB - Global Page Order Management
+// ============================================================
 
-                                    const label = fixed ? fixed.label : custom.title;
-                                    const isFixed = !!fixed;
+const DatabaseSettingsTab = ({ customSections, showMessage }) => {
+    const [pageSections, setPageSections] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-                                    return (
-                                        <div key={sectionId} className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg group">
-                                            <div className="flex flex-col gap-1">
-                                                <button
-                                                    onClick={() => {
-                                                        if (index > 0) {
-                                                            const newOrder = [...globalOrder];
-                                                            [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
-                                                            handleSaveSectionOrder(newOrder);
-                                                        }
-                                                    }}
-                                                    disabled={index === 0}
-                                                    className="p-1 hover:bg-gray-200 rounded disabled:opacity-20"
-                                                >
-                                                    <ChevronUp size={14} />
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        if (index < globalOrder.length - 1) {
-                                                            const newOrder = [...globalOrder];
-                                                            [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
-                                                            handleSaveSectionOrder(newOrder);
-                                                        }
-                                                    }}
-                                                    disabled={index === globalOrder.length - 1}
-                                                    className="p-1 hover:bg-gray-200 rounded disabled:opacity-20"
-                                                >
-                                                    <ChevronDown size={14} />
-                                                </button>
-                                            </div>
-                                            <div className="flex-grow flex items-center justify-between">
-                                                <span className={`font-medium ${isFixed ? 'text-gray-900' : 'text-stone-700'}`}>
-                                                    {label}
-                                                </span>
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${isFixed ? 'bg-blue-100 text-blue-700' : 'bg-stone-100 text-stone-700'}`}>
-                                                    {isFixed ? 'Fixed Section' : 'Custom Section'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+    useEffect(() => {
+        fetchPageSections();
+    }, [customSections]);
+
+    const fetchPageSections = async () => {
+        try {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('site_page_sections')
+                .select('*')
+                .order('sort_order', { ascending: true });
+
+            if (error) throw error;
+
+            // Merge with current custom sections to ensure all are present
+            let merged = [...(data || [])];
+            let changed = false;
+
+            customSections.forEach(cs => {
+                if (!merged.find(ps => ps.id === cs.id)) {
+                    merged.push({
+                        id: cs.id,
+                        label: cs.title,
+                        is_custom: true,
+                        sort_order: merged.length > 0 ? Math.max(...merged.map(m => m.sort_order)) + 10 : 10,
+                        enabled: cs.enabled
+                    });
+                    changed = true;
+                }
+            });
+
+            // Remove sections that no longer exist (custom sections only)
+            const activeIds = merged.filter(m => !m.is_custom || customSections.find(cs => cs.id === m.id));
+            if (activeIds.length !== merged.length) {
+                merged = activeIds;
+                changed = true;
+            }
+
+            if (changed) {
+                // Upsert back to keep it in sync
+                await supabase.from('site_page_sections').upsert(merged.map(m => ({
+                    id: m.id,
+                    label: m.label,
+                    is_custom: m.is_custom,
+                    sort_order: m.sort_order,
+                    enabled: m.enabled
+                })));
+            }
+
+            setPageSections(merged.sort((a, b) => a.sort_order - b.sort_order));
+        } catch (err) {
+            console.error('Error fetching page sections:', err);
+            showMessage('error', 'Error loading page configuration');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleToggleEnabled = async (id, currentStatus) => {
+        try {
+            const { error } = await supabase
+                .from('site_page_sections')
+                .update({ enabled: !currentStatus })
+                .eq('id', id);
+
+            if (error) throw error;
+            setPageSections(prev => prev.map(s => s.id === id ? { ...s, enabled: !currentStatus } : s));
+            showMessage('success', 'Section visibility updated');
+        } catch (err) {
+            showMessage('error', 'Error updating visibility');
+        }
+    };
+
+    const handleMove = async (index, direction) => {
+        const newSections = [...pageSections];
+        const newIndex = index + direction;
+
+        if (newIndex < 0 || newIndex >= newSections.length) return;
+
+        [newSections[index], newSections[newIndex]] = [newSections[newIndex], newSections[index]];
+
+        // Update sort_order for all to ensure uniqueness and clean sequencing
+        const updated = newSections.map((s, i) => ({
+            ...s,
+            sort_order: (i + 1) * 10
+        }));
+
+        setPageSections(updated);
+
+        try {
+            const { error } = await supabase.from('site_page_sections').upsert(updated.map(u => ({
+                id: u.id,
+                label: u.label,
+                is_custom: u.is_custom,
+                sort_order: u.sort_order,
+                enabled: u.enabled
+            })));
+            if (error) throw error;
+        } catch (err) {
+            showMessage('error', 'Error saving new order');
+            fetchPageSections(); // Revert on error
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center p-12">
+                <Loader2 size={40} className="animate-spin text-stone-800" />
+            </div>
+        );
+    }
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="flex items-center justify-between mb-6">
+                <div>
+                    <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                        <Database size={24} />
+                        Database Settings: Page Flow
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Control the global vertical order and visibility of all website sections.
+                    </p>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="bg-stone-50 border-b border-gray-100 p-4 grid grid-cols-12 text-xs font-bold uppercase tracking-wider text-gray-500">
+                    <div className="col-span-1 text-center">Order</div>
+                    <div className="col-span-6 ml-4">Section Name</div>
+                    <div className="col-span-3 text-center">Type</div>
+                    <div className="col-span-2 text-center">Visibility</div>
+                </div>
+
+                <div className="divide-y divide-gray-100">
+                    {pageSections.map((section, index) => (
+                        <div key={section.id} className="grid grid-cols-12 items-center p-4 hover:bg-stone-50 transition-colors group">
+                            <div className="col-span-1 flex flex-col items-center gap-1">
+                                <button
+                                    onClick={() => handleMove(index, -1)}
+                                    disabled={index === 0}
+                                    className="p-1 hover:bg-gray-200 rounded disabled:opacity-20 text-gray-400 hover:text-gray-600"
+                                >
+                                    <ChevronUp size={16} />
+                                </button>
+                                <button
+                                    onClick={() => handleMove(index, 1)}
+                                    disabled={index === pageSections.length - 1}
+                                    className="p-1 hover:bg-gray-200 rounded disabled:opacity-20 text-gray-400 hover:text-gray-600"
+                                >
+                                    <ChevronDown size={16} />
+                                </button>
+                            </div>
+
+                            <div className="col-span-6 flex items-center gap-3 ml-4">
+                                {section.is_custom ? <List size={16} className="text-stone-400" /> : <Layout size={16} className="text-blue-400" />}
+                                <span className={`font-medium ${section.enabled ? 'text-gray-900' : 'text-gray-400 line-through'}`}>
+                                    {section.label}
+                                </span>
+                            </div>
+
+                            <div className="col-span-3 flex justify-center">
+                                <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-widest ${section.is_custom ? 'bg-stone-100 text-stone-600' : 'bg-blue-100 text-blue-700'}`}>
+                                    {section.is_custom ? 'Custom' : 'System'}
+                                </span>
+                            </div>
+
+                            <div className="col-span-2 flex justify-center">
+                                <button
+                                    onClick={() => handleToggleEnabled(section.id, section.enabled)}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${section.enabled ? 'bg-stone-800' : 'bg-gray-200'}`}
+                                    style={section.enabled ? { backgroundColor: 'var(--primary-brown)' } : {}}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${section.enabled ? 'translate-x-6' : 'translate-x-1'}`}
+                                    />
+                                </button>
                             </div>
                         </div>
-                        <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
-                            <button
-                                onClick={() => setIsManagingOrder(false)}
-                                className="px-6 py-2 bg-stone-800 text-white rounded-lg font-medium hover:bg-opacity-90"
-                                style={{ backgroundColor: 'var(--primary-brown)' }}
-                            >
-                                Done
-                            </button>
-                        </div>
-                    </motion.div>
+                    ))}
                 </div>
-            )}
+            </div>
+
+            <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl flex gap-4">
+                <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                    <Info size={20} />
+                </div>
+                <div>
+                    <h4 className="font-bold text-blue-900">About Database Settings</h4>
+                    <p className="text-sm text-blue-800/80 mt-1 leading-relaxed">
+                        This table directly controls the <code>site_page_sections</code> database table.
+                        Moving items here will immediately change their position on the live website.
+                        System sections (like Services or Team) can be hidden but cannot be deleted.
+                        Custom sections can be edited in the "Custom Sections" tab.
+                    </p>
+                </div>
+            </div>
         </motion.div>
     );
 };
