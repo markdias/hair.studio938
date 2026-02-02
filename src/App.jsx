@@ -12,7 +12,35 @@ import { Analytics } from '@vercel/analytics/react'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import { supabase } from './lib/supabase'
+import { useLocation } from 'react-router-dom'
 import './App.css'
+
+const ScrollToTop = () => {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    // If no hash, scroll to top
+    if (!hash) {
+      window.scrollTo(0, 0);
+    }
+    // If hash exists, try to scroll to the element
+    else {
+      const id = hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // Fallback for home page anchors if they haven't rendered yet
+        setTimeout(() => {
+          const retryElement = document.getElementById(id);
+          if (retryElement) retryElement.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [pathname, hash]);
+
+  return null;
+};
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -210,6 +238,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <div className="app-container">
         <Routes>
           <Route path="/" element={<MainSite siteData={siteData} />} />
