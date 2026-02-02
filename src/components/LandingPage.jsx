@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2 } from 'lucide-react';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
@@ -17,6 +18,38 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
     }, []);
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+    const location = useLocation();
+    const isHomePage = location.pathname === '/';
+
+    const getLink = (id) => {
+        const section = pageSections.find(s => s.id === id);
+        const isSeparate = section?.is_separate_page;
+
+        if (isSeparate) {
+            return `/section/${id}`;
+        }
+        return isHomePage ? `#${id}` : `/#${id}`;
+    };
+
+    const handleNavClick = (e, id) => {
+        const section = pageSections.find(s => s.id === id);
+        const isSeparate = section?.is_separate_page;
+
+        if (isHomePage && !isSeparate) {
+            // Default behavior for anchor links on home page
+            return;
+        }
+
+        if (!isSeparate) {
+            // If we are on a separate page and clicking a home anchor, standard behavior (Link to /#id) handles it,
+            // but we might want to manually scroll if it doesn't work automatically. 
+            // React Router's HashLink or simple a tag usually works.
+        }
+
+        setIsMenuOpen(false);
+    };
+
+    const isCompact = isScrolled || !isHomePage;
 
     return (
         <nav className={isMenuOpen ? 'mobile-menu-active' : ''} style={{
@@ -24,12 +57,12 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
             top: 0,
             left: 0,
             width: '100%',
-            padding: isScrolled ? '15px 20px' : '30px 20px',
+            padding: isCompact ? '15px 20px' : '30px 20px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             zIndex: 1000,
-            backgroundColor: (isScrolled || isMenuOpen) ? 'rgba(var(--primary-brown-rgb), 0.98)' : 'rgba(var(--primary-brown-rgb), 0.8)',
+            backgroundColor: (isCompact || isMenuOpen) ? 'rgba(var(--primary-brown-rgb), 0.98)' : 'rgba(var(--primary-brown-rgb), 0.8)',
             backdropFilter: 'blur(10px)',
             transition: 'all 0.4s ease',
             color: 'var(--accent-cream)',
@@ -40,8 +73,8 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                     src={settings.logo_url || "/logo.png"}
                     alt="938 Logo"
                     style={{
-                        height: isScrolled ? `${(parseInt(settings.logo_size) || 85) * 0.7}px` : `${parseInt(settings.logo_size) || 85}px`,
-                        width: isScrolled ? `${(parseInt(settings.logo_size) || 85) * 0.7}px` : `${parseInt(settings.logo_size) || 85}px`,
+                        height: isCompact ? `${(parseInt(settings.logo_size) || 85) * 0.7}px` : `${parseInt(settings.logo_size) || 85}px`,
+                        width: isCompact ? `${(parseInt(settings.logo_size) || 85) * 0.7}px` : `${parseInt(settings.logo_size) || 85}px`,
                         borderRadius: '50%',
                         objectFit: 'cover',
                         border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -49,7 +82,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                     }}
                 />
                 <span style={{
-                    fontSize: isScrolled ? '1.2rem' : '1.5rem',
+                    fontSize: isCompact ? '1.2rem' : '1.5rem',
                     fontWeight: '700',
                     letterSpacing: '1px',
                     transition: 'all 0.4s ease',
@@ -61,7 +94,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
 
             {/* Desktop Menu */}
             <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px', fontWeight: '500' }}>
-                <a href="#home">Home</a>
+                <Link to="/">Home</Link>
                 {(() => {
                     const DEFAULT_ORDER = [
                         { id: 'services', label: 'Services', sort_order: 10 },
@@ -97,37 +130,50 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         const id = section.id;
                         if (section.enabled === false) return null;
 
-                        if (id === 'services' && settings.show_services_section !== 'false')
-                            return <a key="services" href="#services">{settings.services_menu_name || 'Services'}</a>;
-                        if (id === 'team' && settings.show_team_section !== 'false')
-                            return <a key="team" href="#team">{settings.team_menu_name || 'Team'}</a>;
-                        if (id === 'pricing' && settings.show_pricing_section !== 'false')
-                            return <a key="pricing" href="#pricing">{settings.pricing_menu_name || 'Pricing'}</a>;
-                        if (id === 'gallery' && settings.show_gallery_section !== 'false')
-                            return <a key="gallery" href="#gallery">{settings.gallery_menu_name || 'Gallery'}</a>;
-                        if (id === 'testimonials' && settings.show_testimonials_section === 'true')
-                            return <a key="testimonials" href="#testimonials">{settings.testimonials_menu_name || 'Testimonials'}</a>;
-                        if (id === 'contact')
-                            return <a key="contact" href="#contact">Contact</a>;
-                        if (id === 'booking') return null; // Booking usually in CTA
-
-                        const custom = customSections.find(s => s.id === id);
-                        if (custom && custom.enabled !== false) {
-                            return <a key={custom.id} href={`#custom-section-${custom.id}`}>{custom.menu_name}</a>;
+                        let label = '';
+                        if (id === 'services' && settings.show_services_section !== 'false') label = settings.services_menu_name || 'Services';
+                        else if (id === 'team' && settings.show_team_section !== 'false') label = settings.team_menu_name || 'Team';
+                        else if (id === 'pricing' && settings.show_pricing_section !== 'false') label = settings.pricing_menu_name || 'Pricing';
+                        else if (id === 'gallery' && settings.show_gallery_section !== 'false') label = settings.gallery_menu_name || 'Gallery';
+                        else if (id === 'testimonials' && settings.show_testimonials_section === 'true') label = settings.testimonials_menu_name || 'Testimonials';
+                        else if (id === 'contact') label = 'Contact';
+                        else if (id === 'booking') return null;
+                        else {
+                            const custom = customSections.find(s => s.id === id);
+                            if (custom && custom.enabled !== false) label = custom.menu_name;
                         }
-                        return null;
+
+                        if (!label) return null;
+
+                        const isSeparate = section.is_separate_page;
+                        const linkTarget = isSeparate ? `/section/${id}` : (isHomePage ? `#${id}` : `/#${id}`);
+
+                        // Using standard anchor for hash links on same page to ensure scrolling works, Link for routes
+                        if (isSeparate || !isHomePage) {
+                            return <Link key={id} to={linkTarget}>{label}</Link>;
+                        } else {
+                            return <a key={id} href={linkTarget}>{label}</a>;
+                        }
                     });
                 })()}
-                {pageSections.find(s => s.id === 'booking')?.enabled !== false && (
-                    <a href="#booking" className="btn-primary" style={{
-                        padding: '10px 24px',
-                        backgroundColor: 'var(--accent-cream)',
-                        color: 'var(--primary-brown)',
-                        textDecoration: 'none'
-                    }}>
-                        Book Now
-                    </a>
-                )}
+                {(() => {
+                    const bookingSection = pageSections.find(s => s.id === 'booking');
+                    if (bookingSection?.enabled !== false) {
+                        const isSeparate = bookingSection?.is_separate_page;
+                        const style = {
+                            padding: '10px 24px',
+                            backgroundColor: 'var(--accent-cream)',
+                            color: 'var(--primary-brown)',
+                            textDecoration: 'none'
+                        };
+
+                        if (isSeparate) {
+                            return <Link to="/section/booking" className="btn-primary" style={style}>Book Now</Link>;
+                        }
+                        return <a href="#booking" className="btn-primary" style={style}>Book Now</a>;
+                    }
+                    return null;
+                })()}
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -137,7 +183,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
 
             {/* Mobile Menu Overlay */}
             <div className="nav-links-mobile">
-                <a href="#home" onClick={toggleMenu}>Home</a>
+                <Link to="/" onClick={toggleMenu}>Home</Link>
                 {(() => {
                     const DEFAULT_ORDER = [
                         { id: 'services', label: 'Services', sort_order: 10 },
@@ -174,29 +220,43 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         const id = section.id;
                         if (section.enabled === false) return null;
 
-                        if (id === 'services' && settings.show_services_section !== 'false')
-                            return <a key="services" href="#services" onClick={toggleMenu}>{settings.services_menu_name || 'Services'}</a>;
-                        if (id === 'team' && settings.show_team_section !== 'false')
-                            return <a key="team" href="#team" onClick={toggleMenu}>{settings.team_menu_name || 'Team'}</a>;
-                        if (id === 'pricing' && settings.show_pricing_section !== 'false')
-                            return <a key="pricing" href="#pricing" onClick={toggleMenu}>{settings.pricing_menu_name || 'Pricing'}</a>;
-                        if (id === 'gallery' && settings.show_gallery_section !== 'false')
-                            return <a key="gallery" href="#gallery" onClick={toggleMenu}>{settings.gallery_menu_name || 'Gallery'}</a>;
-                        if (id === 'testimonials' && settings.show_testimonials_section === 'true')
-                            return <a key="testimonials" href="#testimonials" onClick={toggleMenu}>{settings.testimonials_menu_name || 'Testimonials'}</a>;
-                        if (id === 'contact')
-                            return <a key="contact" href="#contact" onClick={toggleMenu}>Contact</a>;
-
-                        const custom = customSections.find(s => s.id === id);
-                        if (custom && custom.enabled !== false) {
-                            return <a key={custom.id} href={`#custom-section-${custom.id}`} onClick={toggleMenu}>{custom.menu_name}</a>;
+                        let label = '';
+                        if (id === 'services' && settings.show_services_section !== 'false') label = settings.services_menu_name || 'Services';
+                        else if (id === 'team' && settings.show_team_section !== 'false') label = settings.team_menu_name || 'Team';
+                        else if (id === 'pricing' && settings.show_pricing_section !== 'false') label = settings.pricing_menu_name || 'Pricing';
+                        else if (id === 'gallery' && settings.show_gallery_section !== 'false') label = settings.gallery_menu_name || 'Gallery';
+                        else if (id === 'testimonials' && settings.show_testimonials_section === 'true') label = settings.testimonials_menu_name || 'Testimonials';
+                        else if (id === 'contact') label = 'Contact';
+                        else {
+                            const custom = customSections.find(s => s.id === id);
+                            if (custom && custom.enabled !== false) label = custom.menu_name;
                         }
-                        return null;
+
+                        if (!label) return null;
+
+                        const isSeparate = section.is_separate_page;
+                        const linkTarget = isSeparate ? `/section/${id}` : (isHomePage ? `#${id}` : `/#${id}`);
+
+                        // Using standard anchor for hash links on same page to ensure scrolling works, Link for routes
+                        if (isSeparate || !isHomePage) {
+                            return <Link key={id} to={linkTarget} onClick={toggleMenu}>{label}</Link>;
+                        } else {
+                            return <a key={id} href={linkTarget} onClick={toggleMenu}>{label}</a>;
+                        }
                     });
                 })()}
-                {pageSections.find(s => s.id === 'booking')?.enabled !== false && (
-                    <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
-                )}
+                {(() => {
+                    const bookingSection = pageSections.find(s => s.id === 'booking');
+                    if (bookingSection?.enabled !== false) {
+                        const isSeparate = bookingSection?.is_separate_page;
+                        if (isSeparate) {
+                            return <Link to="/section/booking" className="btn-primary" onClick={toggleMenu}>Book Now</Link>;
+                        } else {
+                            return <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>;
+                        }
+                    }
+                    return null;
+                })()}
             </div>
         </nav>
     );
@@ -278,21 +338,33 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     </div>
                 )}
                 <div className="hero-buttons" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', width: '100%', margin: '0 auto' }}>
-                    {isBookingEnabled && (
-                        <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</a>
-                    )}
-                    <a href="#services" style={{
-                        border: '1px solid #FFFFFF',
-                        color: '#FFFFFF',
-                        padding: '12px 32px',
-                        borderRadius: '4px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1px',
-                        fontWeight: '600',
-                        textDecoration: 'none'
-                    }}>
-                        Our Services
-                    </a>
+                    {isBookingEnabled && (() => {
+                        const bookingSection = pageSections.find(s => s.id === 'booking');
+                        const isSeparate = bookingSection?.is_separate_page;
+                        if (isSeparate) {
+                            return <Link to="/section/booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</Link>;
+                        }
+                        return <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</a>;
+                    })()}
+                    {(() => {
+                        const servicesSection = pageSections.find(s => s.id === 'services');
+                        const isSeparate = servicesSection?.is_separate_page;
+                        const style = {
+                            border: '1px solid #FFFFFF',
+                            color: '#FFFFFF',
+                            padding: '12px 32px',
+                            borderRadius: '4px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px',
+                            fontWeight: '600',
+                            textDecoration: 'none'
+                        };
+
+                        if (isSeparate) {
+                            return <Link to="/section/services" style={style}>Our Services</Link>;
+                        }
+                        return <a href="#services" style={style}>Our Services</a>;
+                    })()}
                 </div>
             </motion.div>
         </section>
@@ -935,7 +1007,7 @@ const Testimonials = ({ testimonials = [], settings = {} }) => {
     );
 };
 
-const Footer = ({ settings = {}, phoneNumbers = [] }) => {
+const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
     const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
     const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
@@ -976,19 +1048,26 @@ const Footer = ({ settings = {}, phoneNumbers = [] }) => {
                         }}>
                             {footerDescription}
                         </p>
-                        <a href="#booking" style={{
-                            color: 'var(--primary-brown)',
-                            textDecoration: 'none',
-                            fontWeight: '700',
-                            fontSize: '0.85rem',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            borderBottom: '1px solid var(--primary-brown)',
-                            width: 'fit-content',
-                            paddingBottom: '2px'
-                        }}>
-                            Book Online
-                        </a>
+                        {(() => {
+                            const bookingSection = pageSections.find(s => s.id === 'booking');
+                            const isSeparate = bookingSection?.is_separate_page;
+                            const style = {
+                                color: 'var(--primary-brown)',
+                                textDecoration: 'none',
+                                fontWeight: '700',
+                                fontSize: '0.85rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                borderBottom: '1px solid var(--primary-brown)',
+                                width: 'fit-content',
+                                paddingBottom: '2px'
+                            };
+
+                            if (isSeparate) {
+                                return <Link to="/section/booking" style={style}>Book Online</Link>;
+                            }
+                            return <a href="#booking" style={style}>Book Online</a>;
+                        })()}
                     </div>
 
                     {/* Column 2: Links */}
