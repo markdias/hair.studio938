@@ -1016,6 +1016,8 @@ const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false
 };
 
 const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
+    const location = useLocation();
+    const isHomePage = location.pathname === '/';
     const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
     const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
@@ -1074,7 +1076,11 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                             if (isSeparate) {
                                 return <Link to="/section/booking" style={style}>Book Online</Link>;
                             }
-                            return <a href="#booking" style={style}>Book Online</a>;
+                            return isHomePage ? (
+                                <a href="#booking" style={style}>Book Online</a>
+                            ) : (
+                                <Link to="/#booking" style={style}>Book Online</Link>
+                            );
                         })()}
                     </div>
 
