@@ -46,7 +46,7 @@ const DEFAULT_ORDER = [
   { id: 'testimonials', label: 'Testimonials', sort_order: 40 },
   { id: 'booking', label: 'Booking', sort_order: 50 },
   { id: 'gallery', label: 'Gallery', sort_order: 60 },
-  { id: 'contact', label: 'Contact', sort_order: 70 }
+  { id: 'contact', label: 'Contact', sort_order: 70, is_separate_page: true }
 ];
 
 // Custom Hook for fetching CMS data
@@ -85,10 +85,16 @@ const useSiteData = () => {
       // Merge fetched sections with defaults
       let mergedSections = sections || [];
 
-      // Ensure ALL default sections exist in the list
+      // Ensure ALL default sections exist in the list and have default properties
       DEFAULT_ORDER.forEach(def => {
-        if (!mergedSections.find(s => s.id === def.id)) {
+        const existing = mergedSections.find(s => s.id === def.id);
+        if (!existing) {
           mergedSections.push({ ...def, enabled: true });
+        } else {
+          // Merge properties from default that might be missing or should be enforced
+          if (existing.is_separate_page === undefined || existing.id === 'contact') {
+            existing.is_separate_page = def.is_separate_page;
+          }
         }
       });
 
