@@ -453,7 +453,7 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
     const textColor = settings.team_text_color;
 
     const sectionStyle = {
-        padding: '120px 50px',
+        padding: isSeparatePage ? '40px 50px' : '120px 50px',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
@@ -681,7 +681,7 @@ const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) =
     const address = settings.address || "938 High Road, London, N12 9RT";
 
     const sectionStyle = {
-        padding: '120px 20px',
+        padding: isSeparatePage ? '40px 20px' : '120px 20px',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--text-dark)',
         color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
         textAlign: 'center'
@@ -934,7 +934,7 @@ const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false
     const textColor = settings.testimonials_text_color;
 
     const sectionStyle = {
-        padding: '120px 20px',
+        padding: isSeparatePage ? '40px 20px' : '120px 20px',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
