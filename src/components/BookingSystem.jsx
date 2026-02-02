@@ -76,7 +76,7 @@ const parseOpeningHours = (text) => {
     return selectedSlots;
 };
 
-const BookingSystem = () => {
+const BookingSystem = ({ settings = {} }) => {
     const [stylists, setStylists] = useState([]);
     const [isLoadingStylists, setIsLoadingStylists] = useState(true);
     const [openingHours, setOpeningHours] = useState(null);
@@ -301,17 +301,35 @@ const BookingSystem = () => {
         visible: { opacity: 1, x: 0, transition: { duration: 0.5 } },
         exit: { opacity: 0, x: -20, transition: { duration: 0.5 } }
     };
+    const bgColor = settings.booking_bg_color;
+    const textColor = settings.booking_text_color;
+
+    const sectionStyle = {
+        padding: '120px 0',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
+        color: textColor && textColor !== 'auto' ? textColor : 'inherit',
+        minHeight: '800px'
+    };
+
+    const headingStyle = {
+        fontSize: 'clamp(2.5rem, 8vw, 4rem)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        marginBottom: '15px'
+    };
+
+    const lineStyle = {
+        width: '60px',
+        height: '2px',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        margin: '0 auto'
+    };
 
     return (
-        <section id="booking" style={{
-            padding: '120px 0',
-            backgroundColor: 'var(--soft-cream)',
-            minHeight: '800px'
-        }}>
+        <section id="booking" style={sectionStyle}>
             <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 20px' }}>
                 <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-                    <h2 style={{ fontSize: 'clamp(2.5rem, 8vw, 4rem)', color: 'var(--primary-brown)', marginBottom: '15px' }}>Book Your Visit</h2>
-                    <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--primary-brown)', margin: '0 auto' }}></div>
+                    <h2 style={headingStyle}>{settings.booking_heading_name || "Book Your Visit"}</h2>
+                    <div style={lineStyle}></div>
                 </div>
 
                 <div className="booking-card">

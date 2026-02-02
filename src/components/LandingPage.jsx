@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2 } from 'lucide-react';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
+import TermsAndConditionsModal from './TermsAndConditionsModal';
 
 const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -300,10 +301,32 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
 
 const Services = ({ services = [], settings = {} }) => {
     if (settings.show_services_section === 'false') return null;
+    const bgColor = settings.services_bg_color;
+    const textColor = settings.services_text_color;
+
+    const sectionStyle = {
+        padding: '120px 50px',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : '#FFFFFF',
+        color: textColor && textColor !== 'auto' ? textColor : 'inherit'
+    };
+
+    const headingStyle = {
+        fontSize: '3rem',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        marginBottom: '15px'
+    };
+
+    const lineStyle = {
+        width: '60px',
+        height: '2px',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        margin: '0 auto'
+    };
+
     const iconMap = {
-        Calendar: <Calendar style={{ color: 'var(--primary-brown)' }} />,
-        MapPin: <MapPin style={{ color: 'var(--primary-brown)' }} />,
-        Phone: <Phone style={{ color: 'var(--primary-brown)' }} />,
+        Calendar: <Calendar style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
+        MapPin: <MapPin style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
+        Phone: <Phone style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
     };
 
     const displayServices = services.length > 0 ? services : [
@@ -313,12 +336,12 @@ const Services = ({ services = [], settings = {} }) => {
     ];
 
     return (
-        <section id="services" style={{ padding: '120px 50px', backgroundColor: '#FFFFFF' }}>
+        <section id="services" style={sectionStyle}>
             <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-                <h2 style={{ fontSize: '3rem', color: 'var(--primary-brown)', marginBottom: '15px' }}>
+                <h2 style={headingStyle}>
                     {settings.services_heading_name || 'Our Services'}
                 </h2>
-                <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--primary-brown)', margin: '0 auto' }}></div>
+                <div style={lineStyle}></div>
             </div>
 
             <div style={{
@@ -343,8 +366,8 @@ const Services = ({ services = [], settings = {} }) => {
                         <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
                             {iconMap[service.icon_name] || iconMap.Calendar}
                         </div>
-                        <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: 'var(--primary-brown)' }}>{service.title}</h3>
-                        <p style={{ color: '#666', lineHeight: '1.8' }}>{service.description || service.desc}</p>
+                        <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }}>{service.title}</h3>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#666', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8' }}>{service.description || service.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -354,6 +377,28 @@ const Services = ({ services = [], settings = {} }) => {
 
 const TeamSection = ({ team = [], settings = {} }) => {
     if (settings.show_team_section === 'false') return null;
+    const bgColor = settings.team_bg_color;
+    const textColor = settings.team_text_color;
+
+    const sectionStyle = {
+        padding: '120px 50px',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
+        color: textColor && textColor !== 'auto' ? textColor : 'inherit'
+    };
+
+    const headingStyle = {
+        fontSize: '3rem',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        marginBottom: '15px'
+    };
+
+    const lineStyle = {
+        width: '60px',
+        height: '2px',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        margin: '0 auto'
+    };
+
     const defaultTeam = [
         { name: "Jo", role: "Owner & Creative Director", description: "Expert in bespoke coloring and luxury extensions.", image_url: "/jo.png" },
         { name: "Viktor", role: "Master Stylist", description: "Specializing in precision cuts and seamless balayage.", image_url: "/viktor.png" },
@@ -363,12 +408,12 @@ const TeamSection = ({ team = [], settings = {} }) => {
     const displayTeam = team.length > 0 ? team : defaultTeam;
 
     return (
-        <section id="team" style={{ padding: '120px 50px', backgroundColor: 'var(--soft-cream)' }}>
+        <section id="team" style={sectionStyle}>
             <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-                <h2 style={{ fontSize: '3rem', color: 'var(--primary-brown)', marginBottom: '15px' }}>
+                <h2 style={headingStyle}>
                     {settings.team_heading_name || 'Meet the Dream Team'}
                 </h2>
-                <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--primary-brown)', margin: '0 auto' }}></div>
+                <div style={lineStyle}></div>
             </div>
 
             <div className="responsive-grid" style={{
@@ -400,9 +445,9 @@ const TeamSection = ({ team = [], settings = {} }) => {
                         >
                             <img src={member.image_url || member.img} alt={member.stylist_name || member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </motion.div>
-                        <h3 style={{ fontSize: '2rem', color: 'var(--primary-brown)', marginBottom: '5px' }}>{member.stylist_name || member.name}</h3>
-                        <p style={{ color: 'var(--primary-brown)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.85rem', marginBottom: '20px', opacity: 0.8 }}>{member.role}</p>
-                        <p style={{ color: '#666', lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1.05rem' }}>{member.description || member.desc}</p>
+                        <h3 style={{ fontSize: '2rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', marginBottom: '5px' }}>{member.stylist_name || member.name}</h3>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.85rem', marginBottom: '20px', opacity: 0.8 }}>{member.role}</p>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#666', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1.05rem' }}>{member.description || member.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -412,6 +457,39 @@ const TeamSection = ({ team = [], settings = {} }) => {
 
 const PriceList = ({ pricing = [], settings = {} }) => {
     if (settings.show_pricing_section === 'false') return null;
+    const bgColor = settings.pricing_bg_color;
+    const textColor = settings.pricing_text_color;
+
+    const sectionStyle = {
+        padding: '120px 50px',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : '#FFFFFF',
+        color: textColor && textColor !== 'auto' ? textColor : 'inherit',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+    };
+
+    const cardStyle = {
+        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.05)' : '#EDE4DB',
+        maxWidth: '900px',
+        width: '100%',
+        padding: '60px 20px',
+        boxShadow: '0 20px 50px rgba(0,0,0,0.05)',
+        position: 'relative',
+        boxSizing: 'border-box',
+        border: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : 'none'
+    };
+
+    const headingStyle = {
+        fontFamily: 'var(--font-heading)',
+        fontSize: '6rem',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        textAlign: 'center',
+        marginBottom: '60px',
+        fontWeight: '400',
+        lineHeight: '1'
+    };
+
     // Transform flat pricing list into categories
     const categoriesMap = pricing.reduce((acc, item) => {
         if (!acc[item.category]) acc[item.category] = [];
@@ -471,36 +549,14 @@ const PriceList = ({ pricing = [], settings = {} }) => {
         ];
 
     return (
-        <section id="pricing" style={{
-            padding: '120px 50px',
-            backgroundColor: '#FFFFFF',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center'
-        }}>
+        <section id="pricing" style={sectionStyle}>
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1 }}
-                style={{
-                    backgroundColor: '#EDE4DB',
-                    maxWidth: '900px',
-                    width: '100%',
-                    padding: '60px 20px',
-                    boxShadow: '0 20px 50px rgba(0,0,0,0.05)',
-                    position: 'relative',
-                    boxSizing: 'border-box'
-                }}
+                style={cardStyle}
             >
-                <h2 className="price-list-title" style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: '6rem',
-                    color: 'var(--primary-brown)',
-                    textAlign: 'center',
-                    marginBottom: '60px',
-                    fontWeight: '400',
-                    lineHeight: '1'
-                }}>
+                <h2 className="price-list-title" style={headingStyle}>
                     {settings.pricing_heading_name || 'Price list'}
                 </h2>
 
@@ -516,10 +572,10 @@ const PriceList = ({ pricing = [], settings = {} }) => {
                                 fontFamily: 'var(--font-heading)',
                                 fontSize: 'clamp(1.1rem, 3vw, 1.4rem)',
                                 fontWeight: '700',
-                                color: 'var(--primary-brown)',
+                                color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
                                 letterSpacing: '2px',
                                 marginBottom: '20px',
-                                borderBottom: '1px solid rgba(61,43,31,0.1)',
+                                borderBottom: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(61,43,31,0.1)',
                                 paddingBottom: '10px'
                             }}>
                                 {cat.title}
@@ -532,8 +588,8 @@ const PriceList = ({ pricing = [], settings = {} }) => {
                                         alignItems: 'baseline',
                                         gap: '20px'
                                     }}>
-                                        <span style={{ fontSize: '1rem', color: 'var(--primary-brown)', opacity: 0.8 }}>{item.name}</span>
-                                        <span style={{ fontSize: '1rem', color: 'var(--primary-brown)', fontWeight: '600', whiteSpace: 'nowrap' }}>{item.price}</span>
+                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', opacity: 0.8 }}>{item.name}</span>
+                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', fontWeight: '600', whiteSpace: 'nowrap' }}>{item.price}</span>
                                     </div>
                                 ))}
                             </div>
@@ -546,8 +602,31 @@ const PriceList = ({ pricing = [], settings = {} }) => {
 };
 
 const Contact = ({ settings = {}, phoneNumbers = [] }) => {
+    const bgColor = settings.contact_bg_color;
+    const textColor = settings.contact_text_color;
+
     const email = settings.email || "hair.studio938@gmail.com";
     const address = settings.address || "938 High Road, London, N12 9RT";
+
+    const sectionStyle = {
+        padding: '120px 20px',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--text-dark)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+        textAlign: 'center'
+    };
+
+    const headingStyle = {
+        fontSize: 'clamp(2.5rem, 8vw, 4rem)',
+        color: textColor && textColor !== 'auto' ? textColor : '#FFF',
+        marginBottom: '15px'
+    };
+
+    const lineStyle = {
+        width: '60px',
+        height: '2px',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+        margin: '0 auto 40px'
+    };
 
     // Build contact cards array
     const contactCards = [];
@@ -559,7 +638,6 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
         const whatsappLink = `https://wa.me/44${number.replace(/\s|^0/g, '')}`;
 
         if (phoneItem.type === 'both') {
-            // Show dropdown with both options
             contactCards.push({
                 key: `phone-both-${index}`,
                 isCombined: true,
@@ -571,7 +649,6 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
                 ]
             });
         } else if (phoneItem.type === 'phone') {
-            // Direct call link
             contactCards.push({
                 key: `phone-${index}`,
                 icon: <Phone size={24} />,
@@ -580,7 +657,6 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
                 link: phoneLink
             });
         } else if (phoneItem.type === 'whatsapp') {
-            // Direct WhatsApp link
             contactCards.push({
                 key: `whatsapp-${index}`,
                 icon: <MessageCircle size={24} />,
@@ -591,7 +667,6 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
         }
     });
 
-    // Add email card
     contactCards.push({
         key: 'email',
         icon: <Mail size={24} />,
@@ -600,7 +675,6 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
         link: `mailto:${email}`
     });
 
-    // Add address card
     contactCards.push({
         key: 'address',
         icon: <MapPin size={24} />,
@@ -609,7 +683,6 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
         link: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
     });
 
-    // Add social media cards
     if (settings.instagram_url) {
         contactCards.push({
             key: 'instagram',
@@ -644,25 +717,20 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
     const totalCards = contactCards.length;
     let columns;
     if (totalCards <= 3) {
-        columns = totalCards; // 1-3 items: all in one row
+        columns = totalCards;
     } else if (totalCards === 4) {
-        columns = 2; // 4 items: 2x2 grid
-    } else if (totalCards <= 6) {
-        columns = 3; // 5-6 items: 3 columns
+        columns = 2; // 2x2 grid
+    } else if (totalCards === 5 || totalCards === 6) {
+        columns = 3; // 3+2 or 3+3
     } else {
-        columns = 4; // 7+ items: 4 columns
+        columns = 4;
     }
 
     return (
-        <section id="contact" style={{
-            padding: '120px 20px',
-            backgroundColor: 'var(--primary-brown)',
-            color: 'var(--accent-cream)',
-            textAlign: 'center'
-        }}>
-            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-                <h2 style={{ fontSize: 'clamp(2.5rem, 8vw, 4rem)', color: '#FFF', marginBottom: '15px' }}>Contact Us</h2>
-                <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--accent-cream)', margin: '0 auto 40px' }}></div>
+        <section id="contact" style={sectionStyle}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                <h2 style={headingStyle}>{settings.contact_heading_name || "Contact Us"}</h2>
+                <div style={lineStyle}></div>
 
                 <div className="contact-grid" style={{
                     display: 'grid',
@@ -670,23 +738,45 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
                     gap: '30px',
                     marginTop: '60px'
                 }}>
-                    {contactCards.map(card => (
-                        <ContactCard key={card.key} {...card} />
+                    {contactCards.map(({ key, ...cardProps }) => (
+                        <ContactCard key={key} {...cardProps} textColor={textColor} />
                     ))}
+                </div>
+
+                {/* Full Width Google Map */}
+                <div style={{
+                    width: '100%',
+                    height: '450px',
+                    marginTop: '80px',
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)',
+                    border: '1px solid rgba(234, 224, 213, 0.1)'
+                }}>
+                    <iframe
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title="Hair Studio 938 Location"
+                        src={`https://www.google.com/maps?q=${encodeURIComponent(address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    ></iframe>
                 </div>
             </div>
         </section>
     );
 };
 
-const ContactCard = ({ icon, label, value, link, isCombined, options }) => {
+const ContactCard = ({ icon, label, value, link, isCombined, options, textColor }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const cardStyle = {
         padding: '40px 30px',
-        backgroundColor: 'rgba(234, 224, 213, 0.05)',
+        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.05)' : 'rgba(234, 224, 213, 0.05)',
         borderRadius: '16px',
-        border: '1px solid rgba(234, 224, 213, 0.1)',
+        border: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(234, 224, 213, 0.1)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -708,7 +798,7 @@ const ContactCard = ({ icon, label, value, link, isCombined, options }) => {
                 <div style={{
                     display: 'flex',
                     gap: '15px',
-                    color: 'var(--accent-cream)',
+                    color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
                     marginBottom: '15px'
                 }}>
                     <Phone size={24} />
@@ -716,9 +806,9 @@ const ContactCard = ({ icon, label, value, link, isCombined, options }) => {
                 </div>
                 {!isExpanded ? (
                     <>
-                        <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.6, marginBottom: '5px' }}>{label}</div>
-                        <div style={{ color: '#FFF', fontSize: '1.2rem', fontWeight: '600' }}>{value}</div>
-                        <div style={{ fontSize: '0.7rem', marginTop: '10px', opacity: 0.4 }}>Click for options</div>
+                        <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.6, marginBottom: '5px', color: textColor && textColor !== 'auto' ? textColor : 'inherit' }}>{label}</div>
+                        <div style={{ color: textColor && textColor !== 'auto' ? textColor : '#FFF', fontSize: '1.2rem', fontWeight: '600' }}>{value}</div>
+                        <div style={{ fontSize: '0.7rem', marginTop: '10px', opacity: 0.4, color: textColor && textColor !== 'auto' ? textColor : 'inherit' }}>Click for options</div>
                     </>
                 ) : (
                     <motion.div
@@ -756,26 +846,47 @@ const ContactCard = ({ icon, label, value, link, isCombined, options }) => {
 
     return (
         <motion.div
-            whileHover={{ y: -5, backgroundColor: 'rgba(234, 224, 213, 0.08)' }}
+            whileHover={{ y: -5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.08)' : 'rgba(234, 224, 213, 0.08)' }}
             style={cardStyle}
         >
-            <div style={{ color: 'var(--accent-cream)', marginBottom: '15px' }}>{icon}</div>
-            <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.6, marginBottom: '5px' }}>{label}</div>
-            <a href={link} target={link.startsWith('http') ? "_blank" : "_self"} rel="noopener noreferrer" style={{ color: '#FFF', fontSize: '1.1rem', fontWeight: '600', textDecoration: 'none', wordBreak: 'break-word' }}>{value}</a>
+            <div style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)', marginBottom: '15px' }}>{icon}</div>
+            <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.6, marginBottom: '5px', color: textColor && textColor !== 'auto' ? textColor : 'inherit' }}>{label}</div>
+            <a href={link} target={link.startsWith('http') ? "_blank" : "_self"} rel="noopener noreferrer" style={{ color: textColor && textColor !== 'auto' ? textColor : '#FFF', fontSize: '1.1rem', fontWeight: '600', textDecoration: 'none', wordBreak: 'break-word' }}>{value}</a>
         </motion.div>
     );
 };
 
 const Testimonials = ({ testimonials = [], settings = {} }) => {
     if (settings.show_testimonials_section !== 'true' || testimonials.length === 0) return null;
+    const bgColor = settings.testimonials_bg_color;
+    const textColor = settings.testimonials_text_color;
+
+    const sectionStyle = {
+        padding: '120px 20px',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
+        color: textColor && textColor !== 'auto' ? textColor : 'inherit'
+    };
+
+    const headingStyle = {
+        fontSize: '3rem',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        marginBottom: '15px'
+    };
+
+    const lineStyle = {
+        width: '60px',
+        height: '2px',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        margin: '0 auto'
+    };
 
     return (
-        <section id="testimonials" style={{ padding: '120px 20px', backgroundColor: 'var(--soft-cream)' }}>
+        <section id="testimonials" style={sectionStyle}>
             <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-                <h2 style={{ fontSize: '3rem', color: 'var(--primary-brown)', marginBottom: '15px' }}>
-                    {settings.testimonials_section_name || 'Customer Testimonials'}
+                <h2 style={headingStyle}>
+                    {settings.testimonials_heading_name || 'Customer Testimonials'}
                 </h2>
-                <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--primary-brown)', margin: '0 auto' }}></div>
+                <div style={lineStyle}></div>
             </div>
 
             <div style={{
@@ -792,14 +903,14 @@ const Testimonials = ({ testimonials = [], settings = {} }) => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                         style={{
-                            backgroundColor: '#FFFFFF',
+                            backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.05)' : '#FFFFFF',
                             padding: '40px',
                             borderRadius: '16px',
                             boxShadow: '0 10px 30px rgba(0,0,0,0.03)',
                             display: 'flex',
                             flexDirection: 'column',
                             gap: '20px',
-                            border: '1px solid rgba(0,0,0,0.05)'
+                            border: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(0,0,0,0.05)'
                         }}
                     >
                         {t.image_url && (
@@ -808,12 +919,12 @@ const Testimonials = ({ testimonials = [], settings = {} }) => {
                             </div>
                         )}
                         <div style={{ flex: 1 }}>
-                            <p style={{ color: '#444', lineHeight: '1.8', fontStyle: 'italic', fontSize: '1.1rem', textAlign: 'center' }}>
+                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#444', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', fontStyle: 'italic', fontSize: '1.1rem', textAlign: 'center' }}>
                                 "{t.description}"
                             </p>
                         </div>
                         {t.name && (
-                            <p style={{ color: 'var(--primary-brown)', fontWeight: '700', textAlign: 'center', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', fontWeight: '700', textAlign: 'center', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                 - {t.name}
                             </p>
                         )}
@@ -824,46 +935,202 @@ const Testimonials = ({ testimonials = [], settings = {} }) => {
     );
 };
 
-const Footer = ({ settings = {} }) => {
+const Footer = ({ settings = {}, phoneNumbers = [] }) => {
     const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+    const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+
+    const businessName = settings.business_name || 'Hair Studio 938';
+    const footerDescription = settings.footer_description || "Our salon is a space created for deep connection, beauty, and confidence. From expert coloring to bespoke styling, each offering is designed to enhance your natural look.";
+    const email = settings.email || "hair.studio938@gmail.com";
+    const address = settings.address || "Unit 5, 938 High Road, London, N12 9RT";
+    const phone = phoneNumbers.length > 0 ? phoneNumbers[0].number : (settings.phone || "0208 113 112");
 
     return (
         <>
-            <footer style={{ padding: '60px 20px', backgroundColor: 'var(--primary-brown)', color: 'var(--accent-cream)', textAlign: 'center' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    {/* Privacy Policy Link */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <button
-                            onClick={() => setIsPrivacyModalOpen(true)}
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                color: 'var(--accent-cream)',
-                                fontSize: '0.9rem',
-                                cursor: 'pointer',
-                                textDecoration: 'underline',
-                                opacity: 0.8,
-                                transition: 'opacity 0.3s ease'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
-                        >
-                            Privacy Policy
-                        </button>
+            <footer style={{
+                padding: '80px 20px 40px',
+                backgroundColor: 'var(--soft-cream)',
+                color: 'var(--primary-brown)',
+                borderTop: '1px solid rgba(61, 43, 31, 0.1)'
+            }}>
+                <div style={{
+                    maxWidth: '1200px',
+                    margin: '0 auto',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    gap: '40px',
+                    textAlign: 'left'
+                }}>
+                    {/* Column 1: About */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <h3 style={{
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: '1.8rem',
+                            margin: 0
+                        }}>{businessName}</h3>
+                        <p style={{
+                            fontSize: '0.95rem',
+                            lineHeight: '1.6',
+                            opacity: 0.8,
+                            maxWidth: '300px'
+                        }}>
+                            {footerDescription}
+                        </p>
+                        <a href="#booking" style={{
+                            color: 'var(--primary-brown)',
+                            textDecoration: 'none',
+                            fontWeight: '700',
+                            fontSize: '0.85rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px',
+                            borderBottom: '1px solid var(--primary-brown)',
+                            width: 'fit-content',
+                            paddingBottom: '2px'
+                        }}>
+                            Book Online
+                        </a>
                     </div>
 
-                    {/* Copyright */}
-                    <div style={{ paddingTop: '20px', borderTop: '1px solid rgba(234, 224, 213, 0.1)', opacity: 0.6, fontSize: '0.9rem' }}>
-                        &copy; {new Date().getFullYear()} Hair Studio 938. All rights reserved.
+                    {/* Column 2: Links */}
+                    {(settings?.show_privacy_section !== 'false' || settings?.show_terms_section !== 'false') && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <h4 style={{
+                                fontFamily: 'var(--font-heading)',
+                                fontSize: '1.4rem',
+                                margin: 0
+                            }}>Important Links</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {settings?.show_privacy_section !== 'false' && (
+                                    <button
+                                        onClick={() => setIsPrivacyModalOpen(true)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'var(--primary-brown)',
+                                            fontSize: '0.95rem',
+                                            cursor: 'pointer',
+                                            textAlign: 'left',
+                                            padding: 0,
+                                            opacity: 0.8,
+                                            transition: 'opacity 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                                    >
+                                        {settings?.privacy_menu_name || "Privacy Policy"}
+                                    </button>
+                                )}
+                                {settings?.show_terms_section !== 'false' && (
+                                    <button
+                                        onClick={() => setIsTermsModalOpen(true)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'var(--primary-brown)',
+                                            fontSize: '0.95rem',
+                                            cursor: 'pointer',
+                                            textAlign: 'left',
+                                            padding: 0,
+                                            opacity: 0.8,
+                                            transition: 'opacity 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                                    >
+                                        {settings?.terms_menu_name || "Terms & Conditions"}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Column 3: Contact */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <h4 style={{
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: '1.4rem',
+                            margin: 0
+                        }}>Contact Us</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.95rem', opacity: 0.8 }}>
+                            <p style={{ margin: 0 }}>{address}</p>
+                            <p style={{ margin: 0 }}>{email}</p>
+                            <p style={{ margin: 0 }}>{phone}</p>
+                            {settings.instagram_url && (
+                                <a
+                                    href={settings.instagram_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ color: 'var(--primary-brown)', marginTop: '5px', width: 'fit-content' }}
+                                >
+                                    <Instagram size={20} />
+                                </a>
+                            )}
+                        </div>
                     </div>
+
+                    {/* Column 4: Hours */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <h4 style={{
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: '1.4rem',
+                            margin: 0
+                        }}>Opening Hours</h4>
+                        <div style={{ fontSize: '0.95rem', opacity: 0.8 }}>
+                            <p style={{ fontWeight: '700', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase' }}>Salon</p>
+                            <p style={{ margin: 0 }}>{settings.opening_hours || "Tue - Sat: 10:00am - 6:00pm"}</p>
+                        </div>
+                        {/* Dynamic Payment Icons */}
+                        <div style={{ display: 'flex', gap: '15px', marginTop: '10px', opacity: 0.6, flexWrap: 'wrap' }}>
+                            {(() => {
+                                const paymentLogos = {
+                                    'visa': 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg',
+                                    'mastercard': 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg',
+                                    'paypal': 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg',
+                                    'applepay': 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg',
+                                    'googlepay': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Pay_Logo_%282020%29.svg',
+                                    'amex': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg',
+                                };
+                                const methods = (settings.payment_methods || 'visa,mastercard,paypal').split(',').filter(Boolean);
+                                return methods.map(method => (
+                                    <img
+                                        key={method}
+                                        src={paymentLogos[method]}
+                                        alt={method}
+                                        style={{ height: '20px' }}
+                                        onError={(e) => e.target.style.display = 'none'}
+                                    />
+                                ));
+                            })()}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Copyright */}
+                <div style={{
+                    maxWidth: '1200px',
+                    margin: '60px auto 0',
+                    paddingTop: '20px',
+                    borderTop: '1px solid rgba(61, 43, 31, 0.1)',
+                    textAlign: 'center',
+                    fontSize: '0.85rem',
+                    opacity: 0.5
+                }}>
+                    &copy; {new Date().getFullYear()} {businessName}. All Rights Reserved.
                 </div>
             </footer>
 
-            {/* Privacy Policy Modal */}
+            {/* Modals */}
             <PrivacyPolicyModal
                 isOpen={isPrivacyModalOpen}
                 onClose={() => setIsPrivacyModalOpen(false)}
                 content={settings.privacy_policy || ''}
+                title={settings.privacy_heading_name}
+            />
+            <TermsAndConditionsModal
+                isOpen={isTermsModalOpen}
+                onClose={() => setIsTermsModalOpen(false)}
+                content={settings.terms_and_conditions || ''}
+                title={settings.terms_heading_name}
             />
         </>
     );

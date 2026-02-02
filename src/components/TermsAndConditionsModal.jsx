@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
-const PrivacyPolicyModal = ({ isOpen, onClose, content, title }) => {
+const TermsAndConditionsModal = ({ isOpen, onClose, content, title }) => {
     // Close on escape key
     React.useEffect(() => {
         const handleEscape = (e) => {
@@ -86,7 +86,7 @@ const PrivacyPolicyModal = ({ isOpen, onClose, content, title }) => {
                                     margin: 0,
                                     fontFamily: 'var(--font-heading)'
                                 }}>
-                                    {title || "Privacy Policy"}
+                                    {title || "Terms & Conditions"}
                                 </h2>
                                 <button
                                     onClick={onClose}
@@ -128,7 +128,7 @@ const PrivacyPolicyModal = ({ isOpen, onClose, content, title }) => {
                                         textAlign: 'center',
                                         padding: '40px 0'
                                     }}>
-                                        No privacy policy has been set yet. Please contact the administrator to add this content.
+                                        No terms & conditions have been set yet. Please contact the administrator to add this content.
                                     </p>
                                 )}
                             </div>
@@ -156,9 +156,9 @@ const PrivacyPolicyModal = ({ isOpen, onClose, content, title }) => {
                     {/* Mobile responsive styles */}
                     <style>{`
                         @media (max-width: 768px) {
-                            .privacy-modal-header,
-                            .privacy-modal-content,
-                            .privacy-modal-footer {
+                            .terms-modal-header,
+                            .terms-modal-content,
+                            .terms-modal-footer {
                                 padding-left: 20px !important;
                                 padding-right: 20px !important;
                             }
@@ -170,4 +170,4 @@ const PrivacyPolicyModal = ({ isOpen, onClose, content, title }) => {
     );
 };
 
-export default PrivacyPolicyModal;
+export default TermsAndConditionsModal;

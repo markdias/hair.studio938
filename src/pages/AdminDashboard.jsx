@@ -8,9 +8,11 @@ import { useTheme } from '../lib/ThemeContext';
 
 const TABS = [
     { id: 'general', label: 'General Settings', icon: <Settings size={18} /> },
+    { id: 'contact', label: 'Contact Us', icon: <MessageCircle size={18} /> },
     { id: 'theme', label: 'Themes', icon: <Palette size={18} /> },
     { id: 'messages', label: 'Messages', icon: <Mail size={18} /> },
     { id: 'privacy', label: 'Privacy Policy', icon: <Shield size={18} /> },
+    { id: 'terms', label: 'Terms & Conditions', icon: <Shield size={18} /> },
     { id: 'page_flow', label: 'Page Flow', icon: <ArrowRightLeft size={18} /> },
     { id: 'appointments', label: 'Appointments', icon: <Calendar size={18} /> },
     { id: 'hours', label: 'Opening Hours', icon: <Clock size={18} /> },
@@ -35,6 +37,10 @@ const TIME_SLOTS = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
 const GENERAL_FIELDS = [
     { key: 'hero_title', label: 'Hero Title', icon: <Info size={16} /> },
     { key: 'hero_subtitle', label: 'Hero Subtitle', icon: <Info size={16} /> },
+    { key: 'footer_description', label: 'Footer Description', icon: <Info size={16} /> },
+];
+
+const CONTACT_FIELDS = [
     { key: 'email', label: 'Email Address', icon: <Mail size={16} /> },
     { key: 'address', label: 'Salon Address', icon: <MapPin size={16} /> },
     { key: 'instagram_url', label: 'Instagram URL', icon: <Instagram size={16} /> },
@@ -79,7 +85,8 @@ const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('general');
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
-    const [sidebarOpen, setSidebarOpen] = useState(false); // Added sidebarOpen state
+    const sidebarOpen = false; // Placeholder if not used elsewhere, or keep state if exists
+    const { theme } = useTheme();
     const navigate = useNavigate();
 
     // Data States
@@ -240,6 +247,7 @@ const AdminDashboard = () => {
                         refresh={fetchAllData}
                         showMessage={showMessage}
                         fetchClients={fetchClients}
+                        theme={theme}
                     />
                 </div>
             </main>
@@ -247,21 +255,23 @@ const AdminDashboard = () => {
     );
 };
 
-const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClients }) => {
+const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClients, theme }) => {
     switch (activeTab) {
-        case 'general': return <GeneralTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} />;
-        case 'hours': return <OpeningHoursTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} />;
+        case 'general': return <GeneralTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} theme={theme} />;
+        case 'contact': return <ContactTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} theme={theme} />;
+        case 'hours': return <OpeningHoursTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} theme={theme} />;
         case 'theme': return <ThemeTab showMessage={showMessage} />;
-        case 'services': return <ServicesTab services={data.services} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
-        case 'pricing': return <PricingTab pricing={data.pricing} categories={data.priceCategories} refresh={refresh} showMessage={showMessage} settings={data.siteSettings} setSettings={setData.setSiteSettings} />;
-        case 'team': return <TeamTab stylists={data.stylists} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
-        case 'gallery': return <GalleryTab gallery={data.gallery} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
-        case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} setClients={setData.setClients} showMessage={showMessage} clients={data.clients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} defaultView={data.siteSettings?.default_appointment_view} />;
+        case 'services': return <ServicesTab services={data.services} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
+        case 'pricing': return <PricingTab pricing={data.pricing} categories={data.priceCategories} refresh={refresh} showMessage={showMessage} settings={data.siteSettings} setSettings={setData.setSiteSettings} theme={theme} />;
+        case 'team': return <TeamTab stylists={data.stylists} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
+        case 'gallery': return <GalleryTab gallery={data.gallery} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
+        case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} showMessage={showMessage} clients={data.clients} setClients={setData.setClients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} defaultView={data.siteSettings?.default_appointment_view} settings={data.siteSettings} setSettings={setData.setSiteSettings} theme={theme} />;
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
-        case 'testimonials': return <TestimonialsTab testimonials={data.testimonials} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} />;
-        case 'custom_sections': return <CustomSectionsTab customSections={data.customSections} setCustomSections={setData.setCustomSections} siteSettings={data.site_settings} refresh={refresh} showMessage={showMessage} />;
-        case 'privacy': return <PrivacyPolicyEditor showMessage={showMessage} />;
-        case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} />;
+        case 'testimonials': return <TestimonialsTab testimonials={data.testimonials} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
+        case 'custom_sections': return <CustomSectionsTab customSections={data.customSections} setCustomSections={setData.setCustomSections} siteSettings={data.siteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
+        case 'privacy': return <PrivacyPolicyEditor settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} theme={theme} />;
+        case 'terms': return <TermsAndConditionsEditor settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} theme={theme} />;
+        case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} theme={theme} />;
         case 'page_flow': return <PageFlowTab customSections={data.customSections} showMessage={showMessage} />;
         default: return null;
     }
@@ -376,14 +386,27 @@ const VideoUploader = ({ onUpload, folder = 'videos', showMessage }) => {
     );
 };
 
-const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultMenuName, defaultHeadingName, description }) => {
+const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultMenuName, defaultHeadingName, description, theme }) => {
     const [isCollapsed, setIsCollapsed] = useState(true);
     const showKey = `show_${sectionId}_section`;
     const menuNameKey = `${sectionId}_menu_name`;
     const headingNameKey = `${sectionId}_heading_name`;
-    const isVisible = settings?.[showKey] !== 'false'; // Default to true if not set
+    const bgColorKey = `${sectionId}_bg_color`;
+    const textColorKey = `${sectionId}_text_color`;
+
+    const isVisible = settings?.[showKey] !== 'false';
     const menuName = settings?.[menuNameKey] || defaultMenuName;
     const headingName = settings?.[headingNameKey] || defaultHeadingName;
+    const bgColor = settings?.[bgColorKey] || '';
+    const textColor = settings?.[textColorKey] || '';
+
+    const themeColors = [
+        { name: 'Primary', value: 'var(--primary-brown)', hex: theme?.['--primary-brown'] || '#3D2B1F' },
+        { name: 'Accent', value: 'var(--accent-cream)', hex: theme?.['--accent-cream'] || '#EAE0D5' },
+        { name: 'Soft Cream', value: 'var(--soft-cream)', hex: theme?.['--soft-cream'] || '#F5F1ED' },
+        { name: 'Dark Text', value: 'var(--text-dark)', hex: theme?.['--text-dark'] || '#2A1D15' },
+        { name: 'Light Text', value: 'var(--text-light)', hex: theme?.['--text-light'] || '#FFFFFF' },
+    ];
 
     const handleSaveSetting = async (key, value) => {
         try {
@@ -406,7 +429,10 @@ const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultM
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
             >
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Section Configuration</h3>
+                <div className="flex items-center gap-3">
+                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Section Configuration</h3>
+                    {!isVisible && <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] font-bold rounded uppercase">Hidden</span>}
+                </div>
                 <ChevronDown
                     size={20}
                     className={`text-gray-500 transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
@@ -414,7 +440,7 @@ const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultM
             </button>
 
             {!isCollapsed && (
-                <div className="px-6 pb-6 space-y-4">
+                <div className="px-6 pb-6 space-y-6">
                     {/* Toggle Section - Full Width */}
                     <div className="flex items-center justify-between p-4 bg-stone-50 rounded-lg border border-stone-100">
                         <div>
@@ -457,6 +483,52 @@ const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultM
                                 />
                             </div>
                             <p className="text-xs text-gray-400">Text shown as page section title</p>
+                        </div>
+                    </div>
+
+                    {/* Color Selection - Side by Side */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-gray-100 mt-2">
+                        <div className="space-y-3">
+                            <label className="text-xs font-medium text-gray-500 uppercase">Background Color</label>
+                            <div className="flex flex-wrap gap-2">
+                                {themeColors.map(color => (
+                                    <button
+                                        key={color.value}
+                                        onClick={() => handleSaveSetting(bgColorKey, color.value)}
+                                        className={`w-8 h-8 rounded-full border-2 transition-all ${bgColor === color.value ? 'border-primary ring-2 ring-primary ring-offset-2 scale-110' : 'border-gray-200 hover:scale-105'}`}
+                                        style={{ backgroundColor: color.hex }}
+                                        title={color.name}
+                                    />
+                                ))}
+                                <button
+                                    onClick={() => handleSaveSetting(bgColorKey, '')}
+                                    className={`px-3 h-8 rounded-full border-2 text-[10px] font-bold uppercase transition-all ${!bgColor ? 'border-primary bg-gray-50' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                                    title="Automatic"
+                                >
+                                    Auto
+                                </button>
+                            </div>
+                        </div>
+                        <div className="space-y-3">
+                            <label className="text-xs font-medium text-gray-500 uppercase">Text Color</label>
+                            <div className="flex flex-wrap gap-2">
+                                {themeColors.map(color => (
+                                    <button
+                                        key={color.value}
+                                        onClick={() => handleSaveSetting(textColorKey, color.value)}
+                                        className={`w-8 h-8 rounded-full border-2 transition-all ${textColor === color.value ? 'border-primary ring-2 ring-primary ring-offset-2 scale-110' : 'border-gray-200 hover:scale-105'}`}
+                                        style={{ backgroundColor: color.hex }}
+                                        title={color.name}
+                                    />
+                                ))}
+                                <button
+                                    onClick={() => handleSaveSetting(textColorKey, '')}
+                                    className={`px-3 h-8 rounded-full border-2 text-[10px] font-bold uppercase transition-all ${!textColor ? 'border-primary bg-gray-50' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                                    title="Automatic"
+                                >
+                                    Auto
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -947,7 +1019,7 @@ const PhoneNumbersEditor = ({ showMessage }) => {
     );
 };
 
-const PrivacyPolicyEditor = ({ showMessage }) => {
+const PrivacyPolicyEditor = ({ settings, setSettings, showMessage, theme }) => {
     const [content, setContent] = useState('');
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -1000,6 +1072,16 @@ const PrivacyPolicyEditor = ({ showMessage }) => {
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <SectionConfig
+                sectionId="privacy"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultMenuName="Privacy Policy"
+                defaultHeadingName="Privacy Policy"
+                description="Enable or disable the privacy policy link in the footer and customize its name."
+                theme={theme}
+            />
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
                     <Shield size={24} />
@@ -1039,6 +1121,128 @@ const PrivacyPolicyEditor = ({ showMessage }) => {
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="Enter your privacy policy content here..."
+                    className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none font-mono text-sm"
+                    style={{ fontFamily: 'monospace' }}
+                />
+
+                <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                    <span>{content.length} characters</span>
+                    <span>{content.split('\n').length} lines</span>
+                </div>
+
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-900">
+                        <Info size={16} className="inline mr-2" />
+                        <strong>Tip:</strong> Line breaks will be preserved when displayed to users.
+                    </p>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
+const TermsAndConditionsEditor = ({ settings, setSettings, showMessage, theme }) => {
+    const [content, setContent] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchTermsAndConditions();
+    }, []);
+
+    const fetchTermsAndConditions = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('site_settings')
+                .select('value')
+                .eq('key', 'terms_and_conditions')
+                .single();
+
+            if (error) throw error;
+            setContent(data?.value || '');
+        } catch (err) {
+            console.error('Error fetching terms and conditions:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
+        try {
+            setSaving(true);
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({ key: 'terms_and_conditions', value: content });
+
+            if (error) throw error;
+            showMessage('success', 'Terms and conditions updated successfully!');
+        } catch (err) {
+            console.error('Error saving terms and conditions:', err);
+            showMessage('error', 'Error saving terms and conditions: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center p-8">
+                <Loader2 size={40} className="animate-spin text-stone-800" />
+            </div>
+        );
+    }
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <SectionConfig
+                sectionId="terms"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultMenuName="Terms & Conditions"
+                defaultHeadingName="Terms & Conditions"
+                description="Enable or disable the terms and conditions link in the footer and customize its name."
+                theme={theme}
+            />
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
+                    <Shield size={24} />
+                    Terms & Conditions
+                </h2>
+                <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--primary-brown)' }}
+                >
+                    {saving ? (
+                        <>
+                            <Loader2 size={18} className="animate-spin" />
+                            Saving...
+                        </>
+                    ) : (
+                        <>
+                            <Save size={18} />
+                            Save Terms & Conditions
+                        </>
+                    )}
+                </button>
+            </div>
+
+            <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                <div className="mb-4">
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                        Terms & Conditions Content
+                    </label>
+                    <p className="text-xs text-gray-500 mb-3">
+                        Enter your terms and conditions here. This will be displayed in a modal when users click "Terms & Conditions" in the footer.
+                    </p>
+                </div>
+
+                <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Enter your terms and conditions content here..."
                     className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none font-mono text-sm"
                     style={{ fontFamily: 'monospace' }}
                 />
@@ -1288,7 +1492,67 @@ const ThemeTab = ({ showMessage }) => {
     );
 };
 
-const GeneralTab = ({ settings, setSettings, showMessage }) => {
+const PaymentMethodsEditor = ({ settings, onSave, showMessage }) => {
+    const availableMethods = [
+        { id: 'visa', label: 'Visa', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg' },
+        { id: 'mastercard', label: 'Mastercard', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg' },
+        { id: 'paypal', label: 'PayPal', logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg' },
+        { id: 'applepay', label: 'Apple Pay', logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg' },
+        { id: 'googlepay', label: 'Google Pay', logo: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Pay_Logo_%282020%29.svg' },
+        { id: 'amex', label: 'American Express', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg' },
+    ];
+
+    const currentMethods = (settings.payment_methods || '').split(',').filter(Boolean);
+
+    const toggleMethod = (id) => {
+        let newMethods;
+        if (currentMethods.includes(id)) {
+            newMethods = currentMethods.filter(m => m !== id);
+        } else {
+            newMethods = [...currentMethods, id];
+        }
+        onSave('payment_methods', newMethods.join(','));
+    };
+
+    return (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                <Database size={18} /> Accepted Payment Methods
+            </h3>
+            <p className="text-xs text-gray-500 mb-6">
+                Select the payment methods you accept. These icons will be displayed in the website footer.
+            </p>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                {availableMethods.map((method) => {
+                    const isActive = currentMethods.includes(method.id);
+                    return (
+                        <button
+                            key={method.id}
+                            onClick={() => toggleMethod(method.id)}
+                            className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all group ${isActive
+                                ? 'border-stone-800 bg-stone-50'
+                                : 'border-gray-100 hover:border-gray-200'
+                                }`}
+                        >
+                            <div className={`h-10 flex items-center justify-center transition-opacity ${isActive ? 'opacity-100' : 'opacity-40 grayscale group-hover:grayscale-0'}`}>
+                                <img src={method.logo} alt={method.label} className="max-h-full max-w-full" />
+                            </div>
+                            <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? 'text-stone-800' : 'text-gray-400'}`}>
+                                {method.label}
+                            </span>
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${isActive ? 'bg-stone-800 border-stone-800 text-white' : 'border-gray-300'}`}>
+                                {isActive && <Check size={12} />}
+                            </div>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
 
     const handleSave = async (key, value) => {
         try {
@@ -1301,10 +1565,6 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
         } catch (err) {
             showMessage('error', err.message);
         }
-    };
-
-    const handleSaveOpeningHours = async (formattedHours) => {
-        await handleSave('opening_hours', formattedHours);
     };
 
     return (
@@ -1511,11 +1771,7 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                 </div>
             </div>
 
-            {/* Phone Numbers Editor - Full Width */}
-            <div className="mb-6">
-                <PhoneNumbersEditor showMessage={showMessage} />
-            </div>
-
+            {/* General Fields Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {GENERAL_FIELDS.map(field => (
                     <div key={field.key} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
@@ -1528,28 +1784,104 @@ const GeneralTab = ({ settings, setSettings, showMessage }) => {
                                 type="text"
                                 value={settings[field.key] || ''}
                                 onChange={(e) => setSettings({ ...settings, [field.key]: e.target.value })}
-                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
                             />
                             <button
                                 onClick={() => handleSave(field.key, settings[field.key])}
-                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary-brown)" }}
+                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium flex items-center gap-2"
+                                style={{ backgroundColor: "var(--primary-brown)" }}
                             >
-                                <Save size={18} />
+                                <Save size={18} /> Save
                             </button>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {/* Payment Methods - Full Width */}
+            <div className="mb-6">
+                <PaymentMethodsEditor
+                    settings={settings}
+                    onSave={handleSave}
+                    showMessage={showMessage}
+                />
+            </div>
         </motion.div>
     );
 };
 
-const ServicesTab = ({ services, refresh, showMessage, settings, setSettings }) => {
+const ContactTab = ({ settings, setSettings, showMessage, theme }) => {
+    const handleSave = async (key, value) => {
+        try {
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({ key, value });
+            if (error) throw error;
+            showMessage('success', `${key.replace('_', ' ')} updated!`);
+            setSettings(prev => ({ ...prev, [key]: value }));
+        } catch (err) {
+            showMessage('error', err.message);
+        }
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Contact Settings</h2>
+
+            {/* Contact Section Configuration */}
+            <SectionConfig
+                sectionId="contact"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultMenuName="Contact"
+                defaultHeadingName="Contact Us"
+                description="Enable or disable the contact section and customize its heading."
+                theme={theme}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {CONTACT_FIELDS.map(field => (
+                    <div key={field.key} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+                            {field.icon}
+                            {field.label}
+                        </label>
+                        <div className="flex gap-3">
+                            <input
+                                type="text"
+                                value={settings[field.key] || ''}
+                                onChange={(e) => setSettings({ ...settings, [field.key]: e.target.value })}
+                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                            />
+                            <button
+                                onClick={() => handleSave(field.key, settings[field.key])}
+                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium flex items-center gap-2"
+                                style={{ backgroundColor: "var(--primary-brown)" }}
+                            >
+                                <Save size={18} /> Save
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Phone Numbers Editor - Full Width */}
+            <div className="mb-6">
+                <PhoneNumbersEditor showMessage={showMessage} />
+            </div>
+        </motion.div>
+    );
+};
+
+const ServicesTab = ({ services, refresh, showMessage, settings, setSettings, theme }) => {
     const [localServices, setLocalServices] = useState(services);
     const [showAddForm, setShowAddForm] = useState(false);
     const [newService, setNewService] = useState({ title: '', description: '' });
 
-    useEffect(() => { setLocalServices(services); }, [services]);
+    useEffect(() => {
+        setLocalServices(services);
+    }, [services]);
 
     const handleFieldChange = (idx, field, value) => {
         const updated = [...localServices];
@@ -1557,18 +1889,18 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings }) 
         setLocalServices(updated);
     };
 
-    const handleSave = async (s) => {
+    const handleSave = async (service) => {
         try {
-            const { error } = await supabase.from('services_overview').upsert(s);
+            const { error } = await supabase.from('services_overview').upsert(service);
             if (error) throw error;
             showMessage('success', 'Service updated!');
             refresh();
         } catch (err) { showMessage('error', err.message); }
     };
 
-    const handleAddService = async () => {
+    const handleAdd = async () => {
         if (!newService.title || !newService.description) {
-            showMessage('error', 'Please fill in all fields');
+            showMessage('error', 'Please fill in both title and description');
             return;
         }
         try {
@@ -1601,6 +1933,7 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings }) 
                 defaultMenuName="Services"
                 defaultHeadingName="Our Services"
                 description="Enable or disable the services section and customize its heading."
+                theme={theme}
             />
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold text-gray-900">Service Highlights</h2>
@@ -1628,7 +1961,7 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings }) 
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg h-32 resize-none focus:ring-2 focus:ring-stone-800 focus:border-transparent"
                     />
                     <button
-                        onClick={() => handleAddService()}
+                        onClick={() => handleAdd()}
                         className="w-full bg-stone-800 text-white font-medium py-3 rounded-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2" style={{ backgroundColor: "#3D2B1F" }}
                     >
                         <Plus size={16} /> Create Service
@@ -1677,7 +2010,7 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings }) 
     );
 };
 
-const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSettings }) => {
+const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSettings, theme }) => {
     const [localPricing, setLocalPricing] = useState(pricing);
     const [localCategories, setLocalCategories] = useState(categories);
     const [newItem, setNewItem] = useState({ category: categories[0]?.name || '', item_name: '', price: '', duration_minutes: 60 });
@@ -1934,7 +2267,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
     );
 };
 
-const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
+const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme }) => {
     const [localStylists, setLocalStylists] = useState(stylists);
     const [showHelp, setShowHelp] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
@@ -2010,6 +2343,7 @@ const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
                 defaultMenuName="Team"
                 defaultHeadingName="Meet the Dream Team"
                 description="Enable or disable the team section and customize its heading."
+                theme={theme}
             />
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -2153,11 +2487,12 @@ const TeamTab = ({ stylists, refresh, showMessage, settings, setSettings }) => {
     );
 };
 
-const GalleryTab = ({ gallery, refresh, showMessage, settings, setSettings }) => {
+const GalleryTab = ({ gallery, refresh, showMessage, settings, setSettings, theme }) => {
     const handleDelete = async (id) => {
         if (!confirm('Remove this image?')) return;
         try {
             await supabase.from('gallery_images').delete().eq('id', id);
+            if (error) throw error;
             refresh();
             showMessage('success', 'Image removed');
         } catch (err) { showMessage('error', err.message); }
@@ -2180,8 +2515,9 @@ const GalleryTab = ({ gallery, refresh, showMessage, settings, setSettings }) =>
                 setSettings={setSettings}
                 showMessage={showMessage}
                 defaultMenuName="Gallery"
-                defaultHeadingName="Gallery"
+                defaultHeadingName="Our Gallery"
                 description="Enable or disable the gallery section and customize its heading."
+                theme={theme}
             />
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold text-gray-900">Gallery</h2>
@@ -2192,14 +2528,7 @@ const GalleryTab = ({ gallery, refresh, showMessage, settings, setSettings }) =>
                 {gallery.map((img) => (
                     <div key={img.id} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm">
                         <img src={img.image_url} className="w-full h-full object-cover" alt="Gallery" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <button
-                                onClick={() => handleDelete(img.id)}
-                                className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all"
-                            >
-                                <Trash2 size={18} />
-                            </button>
-                        </div>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-colors" />
                     </div>
                 ))}
             </div>
@@ -2207,7 +2536,7 @@ const GalleryTab = ({ gallery, refresh, showMessage, settings, setSettings }) =>
     );
 };
 
-const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, setClients, services, stylists, pricing, openingHours, defaultView = 'list' }) => {
+const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, setClients, services, stylists, pricing, openingHours, defaultView = 'list', settings, setSettings, theme }) => {
     const [loading, setLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false); // Loading state for saving appointments
     const [editingAppt, setEditingAppt] = useState(null);
@@ -2568,10 +2897,6 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
 
                     if (clientError) throw clientError;
                 }
-
-                showMessage('success', 'Appointment updated');
-                setEditingAppt(null);
-                fetchAppointments();
             } else {
                 if (editForm.stylist !== editingAppt.stylist) {
                     // Stylist changed -> Delete from old calendar and create in new one
@@ -2634,9 +2959,9 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                         throw new Error(data.error || 'Update failed');
                     }
                 }
-                setEditingAppt(null);
-                fetchAppointments();
             }
+            setEditingAppt(null);
+            fetchAppointments();
         } catch (err) {
             console.error('Update error:', err);
             showMessage('error', err.message || 'Failed to update appointment');
@@ -4293,7 +4618,7 @@ const ClientsTab = ({ clients, setClients, showMessage, refreshClients }) => {
     );
 };
 
-const TestimonialsTab = ({ testimonials, settings, setSettings, refresh, showMessage }) => {
+const TestimonialsTab = ({ testimonials, refresh, showMessage, settings, setSettings, theme }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTestimonial, setEditingTestimonial] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -4372,8 +4697,9 @@ const TestimonialsTab = ({ testimonials, settings, setSettings, refresh, showMes
                 setSettings={setSettings}
                 showMessage={showMessage}
                 defaultMenuName="Testimonials"
-                defaultHeadingName="Customer Testimonials"
-                description="Enable or disable testimonials on the website and customize its heading."
+                defaultHeadingName="Client Testimonials"
+                description="Enable or disable the testimonials section and customize its heading."
+                theme={theme}
             />
 
             <div className="flex justify-between items-center">
