@@ -9,6 +9,7 @@ import MaintenanceScreen from './components/MaintenanceScreen'
 import CustomSection from './components/CustomSection'
 import SectionPage from './components/SectionPage'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from "@vercel/speed-insights/react"
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import { supabase } from './lib/supabase'
@@ -190,6 +191,7 @@ const MainSite = ({ siteData }) => {
 
               <Footer settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} pageSections={siteData.pageSections} />
               <Analytics />
+              <SpeedInsights />
               <CookieConsent />
             </main>
           )}
