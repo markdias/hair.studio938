@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Main CustomSection component that renders a dynamic section with elements
-const CustomSection = ({ data }) => {
+const CustomSection = ({ data, isSeparatePage = false }) => {
     const { id, heading_name, background_color, text_color, custom_section_elements } = data;
 
     if (!custom_section_elements || custom_section_elements.length === 0) {
@@ -15,8 +15,8 @@ const CustomSection = ({ data }) => {
 
     return (
         <section
-            id={`custom-section-${id}`}
-            className="py-16"
+            id={id}
+            className={isSeparatePage ? "pt-4 pb-16" : "py-16"}
             style={{ backgroundColor: background_color || 'transparent', color: textColor }}
         >
             <div className="container mx-auto px-4">

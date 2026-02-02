@@ -94,7 +94,7 @@ const SectionPage = ({ siteData }) => {
             default:
                 const custom = customSections.find(s => s.id === sectionId);
                 if (custom) {
-                    return <CustomSection data={custom} />;
+                    return <CustomSection data={custom} isSeparatePage={true} />;
                 }
                 return <div>Section not found</div>;
         }
