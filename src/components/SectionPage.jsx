@@ -78,23 +78,23 @@ const SectionPage = ({ siteData }) => {
     const renderSection = () => {
         switch (sectionId) {
             case 'services':
-                return <Services services={siteData.services} settings={settings} />;
+                return <Services services={siteData.services} settings={settings} isSeparatePage={true} />;
             case 'team':
-                return <TeamSection team={siteData.team} settings={settings} />;
+                return <TeamSection team={siteData.team} settings={settings} isSeparatePage={true} />;
             case 'pricing':
-                return <PriceList pricing={siteData.pricing} settings={settings} />;
+                return <PriceList pricing={siteData.pricing} settings={settings} isSeparatePage={true} />;
             case 'testimonials':
-                return <Testimonials testimonials={siteData.testimonials} settings={settings} />;
+                return <Testimonials testimonials={siteData.testimonials} settings={settings} isSeparatePage={true} />;
             case 'gallery':
-                return <Gallery images={siteData.gallery} settings={settings} />;
+                return <Gallery images={siteData.gallery} settings={settings} isSeparatePage={true} />;
             case 'booking':
-                return <BookingSystem settings={settings} />;
+                return <BookingSystem settings={settings} isSeparatePage={true} />;
             case 'contact':
-                return <Contact settings={settings} phoneNumbers={siteData.phoneNumbers} />;
+                return <Contact settings={settings} phoneNumbers={siteData.phoneNumbers} isSeparatePage={true} />;
             default:
                 const custom = customSections.find(s => s.id === sectionId);
                 if (custom) {
-                    return <CustomSection data={custom} />;
+                    return <CustomSection data={custom} isSeparatePage={true} />;
                 }
                 return <div>Section not found</div>;
         }

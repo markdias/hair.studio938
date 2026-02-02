@@ -170,7 +170,11 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         if (isSeparate) {
                             return <Link to="/section/booking" className="btn-primary" style={style}>Book Now</Link>;
                         }
-                        return <a href="#booking" className="btn-primary" style={style}>Book Now</a>;
+                        return isHomePage ? (
+                            <a href="#booking" className="btn-primary" style={style}>Book Now</a>
+                        ) : (
+                            <Link to="/#booking" className="btn-primary" style={style}>Book Now</Link>
+                        );
                     }
                     return null;
                 })()}
@@ -252,7 +256,11 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         if (isSeparate) {
                             return <Link to="/section/booking" className="btn-primary" onClick={toggleMenu}>Book Now</Link>;
                         } else {
-                            return <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>;
+                            return isHomePage ? (
+                                <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
+                            ) : (
+                                <Link to="/#booking" className="btn-primary" onClick={toggleMenu}>Book Now</Link>
+                            );
                         }
                     }
                     return null;
@@ -371,13 +379,13 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
     );
 };
 
-const Services = ({ services = [], settings = {} }) => {
+const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
     if (settings.show_services_section === 'false') return null;
     const bgColor = settings.services_bg_color;
     const textColor = settings.services_text_color;
 
     const sectionStyle = {
-        padding: '120px 50px',
+        padding: isSeparatePage ? '40px 50px' : '120px 50px',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : '#FFFFFF',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
@@ -447,13 +455,13 @@ const Services = ({ services = [], settings = {} }) => {
     );
 };
 
-const TeamSection = ({ team = [], settings = {} }) => {
+const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
     if (settings.show_team_section === 'false') return null;
     const bgColor = settings.team_bg_color;
     const textColor = settings.team_text_color;
 
     const sectionStyle = {
-        padding: '120px 50px',
+        padding: isSeparatePage ? '40px 50px' : '120px 50px',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
@@ -527,13 +535,13 @@ const TeamSection = ({ team = [], settings = {} }) => {
     );
 };
 
-const PriceList = ({ pricing = [], settings = {} }) => {
+const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
     if (settings.show_pricing_section === 'false') return null;
     const bgColor = settings.pricing_bg_color;
     const textColor = settings.pricing_text_color;
 
     const sectionStyle = {
-        padding: '120px 50px',
+        padding: isSeparatePage ? '40px 50px' : '120px 50px',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : '#FFFFFF',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit',
         display: 'flex',
@@ -673,7 +681,7 @@ const PriceList = ({ pricing = [], settings = {} }) => {
     );
 };
 
-const Contact = ({ settings = {}, phoneNumbers = [] }) => {
+const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) => {
     const bgColor = settings.contact_bg_color;
     const textColor = settings.contact_text_color;
 
@@ -681,7 +689,7 @@ const Contact = ({ settings = {}, phoneNumbers = [] }) => {
     const address = settings.address || "938 High Road, London, N12 9RT";
 
     const sectionStyle = {
-        padding: '120px 20px',
+        padding: isSeparatePage ? '40px 20px' : '120px 20px',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--text-dark)',
         color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
         textAlign: 'center'
@@ -928,13 +936,13 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
     );
 };
 
-const Testimonials = ({ testimonials = [], settings = {} }) => {
+const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false }) => {
     if (settings.show_testimonials_section !== 'true' || testimonials.length === 0) return null;
     const bgColor = settings.testimonials_bg_color;
     const textColor = settings.testimonials_text_color;
 
     const sectionStyle = {
-        padding: '120px 20px',
+        padding: isSeparatePage ? '40px 20px' : '120px 20px',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
@@ -1008,6 +1016,8 @@ const Testimonials = ({ testimonials = [], settings = {} }) => {
 };
 
 const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
+    const location = useLocation();
+    const isHomePage = location.pathname === '/';
     const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
     const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
@@ -1066,7 +1076,11 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                             if (isSeparate) {
                                 return <Link to="/section/booking" style={style}>Book Online</Link>;
                             }
-                            return <a href="#booking" style={style}>Book Online</a>;
+                            return isHomePage ? (
+                                <a href="#booking" style={style}>Book Online</a>
+                            ) : (
+                                <Link to="/#booking" style={style}>Book Online</Link>
+                            );
                         })()}
                     </div>
 

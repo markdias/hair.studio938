@@ -13,7 +13,35 @@ import { SpeedInsights } from "@vercel/speed-insights/react"
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import { supabase } from './lib/supabase'
+import { useLocation } from 'react-router-dom'
 import './App.css'
+
+const ScrollToTop = () => {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    // If no hash, scroll to top
+    if (!hash) {
+      window.scrollTo(0, 0);
+    }
+    // If hash exists, try to scroll to the element
+    else {
+      const id = hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // Fallback for home page anchors if they haven't rendered yet
+        setTimeout(() => {
+          const retryElement = document.getElementById(id);
+          if (retryElement) retryElement.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [pathname, hash]);
+
+  return null;
+};
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -47,7 +75,7 @@ const DEFAULT_ORDER = [
   { id: 'testimonials', label: 'Testimonials', sort_order: 40 },
   { id: 'booking', label: 'Booking', sort_order: 50 },
   { id: 'gallery', label: 'Gallery', sort_order: 60 },
-  { id: 'contact', label: 'Contact', sort_order: 70 }
+  { id: 'contact', label: 'Contact', sort_order: 70, is_separate_page: true }
 ];
 
 // Custom Hook for fetching CMS data
@@ -86,10 +114,16 @@ const useSiteData = () => {
       // Merge fetched sections with defaults
       let mergedSections = sections || [];
 
-      // Ensure ALL default sections exist in the list
+      // Ensure ALL default sections exist in the list and have default properties
       DEFAULT_ORDER.forEach(def => {
-        if (!mergedSections.find(s => s.id === def.id)) {
+        const existing = mergedSections.find(s => s.id === def.id);
+        if (!existing) {
           mergedSections.push({ ...def, enabled: true });
+        } else {
+          // Merge properties from default that might be missing or should be enforced
+          if (existing.is_separate_page === undefined || existing.id === 'contact') {
+            existing.is_separate_page = def.is_separate_page;
+          }
         }
       });
 
@@ -206,6 +240,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <div className="app-container">
         <Routes>
           <Route path="/" element={<MainSite siteData={siteData} />} />
