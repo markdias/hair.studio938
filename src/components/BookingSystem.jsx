@@ -76,7 +76,7 @@ const parseOpeningHours = (text) => {
     return selectedSlots;
 };
 
-const BookingSystem = ({ settings = {} }) => {
+const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
     const [stylists, setStylists] = useState([]);
     const [isLoadingStylists, setIsLoadingStylists] = useState(true);
     const [openingHours, setOpeningHours] = useState(null);
@@ -305,7 +305,7 @@ const BookingSystem = ({ settings = {} }) => {
     const textColor = settings.booking_text_color;
 
     const sectionStyle = {
-        padding: '120px 0',
+        padding: isSeparatePage ? '40px 0' : '120px 0',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit',
         minHeight: '800px'

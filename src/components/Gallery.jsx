@@ -11,7 +11,7 @@ const images = [
     '/instagram/img6.jpg',
 ];
 
-const Gallery = ({ images = [], settings = {} }) => {
+const Gallery = ({ images = [], settings = {}, isSeparatePage = false }) => {
     if (settings.show_gallery_section === 'false') return null;
     const defaultImages = [
         '/instagram/img7.jpg',
@@ -78,7 +78,7 @@ const Gallery = ({ images = [], settings = {} }) => {
     const textColor = settings.gallery_text_color;
 
     const sectionStyle = {
-        padding: '120px 0',
+        padding: isSeparatePage ? '40px 0' : '120px 0',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--primary-brown)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit',
         overflow: 'hidden',

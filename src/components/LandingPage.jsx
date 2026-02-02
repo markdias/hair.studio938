@@ -371,7 +371,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
     );
 };
 
-const Services = ({ services = [], settings = {} }) => {
+const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
     if (settings.show_services_section === 'false') return null;
     const bgColor = settings.services_bg_color;
     const textColor = settings.services_text_color;
@@ -447,7 +447,7 @@ const Services = ({ services = [], settings = {} }) => {
     );
 };
 
-const TeamSection = ({ team = [], settings = {} }) => {
+const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
     if (settings.show_team_section === 'false') return null;
     const bgColor = settings.team_bg_color;
     const textColor = settings.team_text_color;
@@ -527,7 +527,7 @@ const TeamSection = ({ team = [], settings = {} }) => {
     );
 };
 
-const PriceList = ({ pricing = [], settings = {} }) => {
+const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
     if (settings.show_pricing_section === 'false') return null;
     const bgColor = settings.pricing_bg_color;
     const textColor = settings.pricing_text_color;
@@ -673,7 +673,7 @@ const PriceList = ({ pricing = [], settings = {} }) => {
     );
 };
 
-const Contact = ({ settings = {}, phoneNumbers = [] }) => {
+const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) => {
     const bgColor = settings.contact_bg_color;
     const textColor = settings.contact_text_color;
 
@@ -928,7 +928,7 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
     );
 };
 
-const Testimonials = ({ testimonials = [], settings = {} }) => {
+const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false }) => {
     if (settings.show_testimonials_section !== 'true' || testimonials.length === 0) return null;
     const bgColor = settings.testimonials_bg_color;
     const textColor = settings.testimonials_text_color;
