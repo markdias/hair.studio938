@@ -170,7 +170,11 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         if (isSeparate) {
                             return <Link to="/section/booking" className="btn-primary" style={style}>Book Now</Link>;
                         }
-                        return <a href="#booking" className="btn-primary" style={style}>Book Now</a>;
+                        return isHomePage ? (
+                            <a href="#booking" className="btn-primary" style={style}>Book Now</a>
+                        ) : (
+                            <Link to="/#booking" className="btn-primary" style={style}>Book Now</Link>
+                        );
                     }
                     return null;
                 })()}
@@ -252,7 +256,11 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         if (isSeparate) {
                             return <Link to="/section/booking" className="btn-primary" onClick={toggleMenu}>Book Now</Link>;
                         } else {
-                            return <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>;
+                            return isHomePage ? (
+                                <a href="#booking" className="btn-primary" onClick={toggleMenu}>Book Now</a>
+                            ) : (
+                                <Link to="/#booking" className="btn-primary" onClick={toggleMenu}>Book Now</Link>
+                            );
                         }
                     }
                     return null;
