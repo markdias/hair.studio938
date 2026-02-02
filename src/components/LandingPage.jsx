@@ -377,7 +377,7 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
     const textColor = settings.services_text_color;
 
     const sectionStyle = {
-        padding: '120px 50px',
+        padding: isSeparatePage ? '40px 50px' : '120px 50px',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : '#FFFFFF',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
@@ -533,7 +533,7 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
     const textColor = settings.pricing_text_color;
 
     const sectionStyle = {
-        padding: '120px 50px',
+        padding: isSeparatePage ? '40px 50px' : '120px 50px',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : '#FFFFFF',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit',
         display: 'flex',
