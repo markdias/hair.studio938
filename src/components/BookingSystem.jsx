@@ -83,6 +83,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
     const [categories, setCategories] = useState([]);
     const [expandedCategories, setExpandedCategories] = useState({});
     const [serviceDurations, setServiceDurations] = useState({});
+    const [stylistServiceMaps, setStylistServiceMaps] = useState([]);
     const [step, setStep] = useState(1);
     const [booking, setBooking] = useState({
         stylist: null,
@@ -104,6 +105,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
             if (!error && data) {
                 // Transform to match previous structure
                 const formatted = data.map(s => ({
+                    id: s.id,
                     name: s.stylist_name,
                     role: s.role,
                     img: s.image_url || '',
@@ -139,6 +141,10 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                     });
                     setServiceDurations(durations);
 
+                    // Fetch stylist services mapping
+                    const { data: stlSrvs } = await supabase.from('stylist_services').select('*');
+                    if (stlSrvs) setStylistServiceMaps(stlSrvs);
+
                     // Group price_list by categories
                     const grouped = catsRes.data.map(cat => ({
                         title: cat.name,
@@ -154,12 +160,22 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
             }
         };
 
+        const fetchFullPriceList = async () => {
+            const { data } = await supabase.from('price_list').select('*');
+            if (data) {
+                setPriceList(data);
+                window._price_list = data; // Keep for now just in case
+            }
+        };
+
         fetchStylists();
         fetchOpeningHours();
         fetchServicesData();
+        fetchFullPriceList();
     }, []);
 
     const [timeSlots, setTimeSlots] = useState([]);
+    const [priceList, setPriceList] = useState([]);
     const [isLoadingSlots, setIsLoadingSlots] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -269,13 +285,18 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
             });
 
             if (!response.ok) {
-                // Fallback for local development
-                console.warn('API not found, simulating success');
-                setTimeout(() => {
-                    setIsSubmitting(false);
-                    setIsSuccess(true);
-                }, 1500);
-                return;
+                // For 404, we assume local dev without the backend function
+                if (response.status === 404) {
+                    console.warn('API not found (404), simulating success for local development');
+                    setTimeout(() => {
+                        setIsSubmitting(false);
+                        setIsSuccess(true);
+                    }, 1500);
+                    return;
+                }
+
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || errorData.details || `Booking failed: Server error ${response.status}`);
             }
 
             const data = await response.json();
@@ -285,11 +306,17 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                 setError(data.error || 'Failed to create booking');
             }
         } catch (err) {
-            console.warn('Booking error (likely local dev), simulating success');
-            setTimeout(() => {
-                setIsSubmitting(false);
-                setIsSuccess(true);
-            }, 1500);
+            console.error('Booking failure:', err);
+            // On network errors (failed to fetch), we assume local dev
+            if (err.message.includes('Failed to fetch') || err.name === 'TypeError') {
+                console.warn('Network error, simulating success for local development');
+                setTimeout(() => {
+                    setIsSubmitting(false);
+                    setIsSuccess(true);
+                }, 1500);
+            } else {
+                setError(err.message);
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -481,72 +508,94 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                         <div style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
                                             <h4 style={{ fontSize: '1.5rem', marginBottom: '30px' }}>Select a Service</h4>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                                {categories.map((cat) => (
-                                                    <div key={cat.title} style={{ borderBottom: '1px solid var(--accent-cream)', pb: '15px' }}>
-                                                        <button
-                                                            onClick={() => toggleCategory(cat.title)}
-                                                            style={{
-                                                                width: '100%',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'between',
-                                                                padding: '15px 0',
-                                                                background: 'none',
-                                                                border: 'none',
-                                                                cursor: 'pointer',
-                                                                textAlign: 'left'
-                                                            }}
-                                                        >
-                                                            <div style={{ fontSize: '0.8rem', letterSpacing: '2px', color: 'var(--primary-brown)', fontWeight: '700', textTransform: 'uppercase' }}>
-                                                                {cat.title}
-                                                            </div>
-                                                            <div style={{ marginLeft: 'auto', color: '#999' }}>
-                                                                {expandedCategories[cat.title] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                                            </div>
-                                                        </button>
+                                                {categories
+                                                    .map(cat => {
+                                                        const filteredItems = cat.items.filter(item => {
+                                                            if (!booking.stylist) return true;
+                                                            const stylistInfo = stylists.find(s => s.name === booking.stylist.name);
+                                                            if (!stylistInfo || !stylistInfo.id) {
+                                                                if (stylistServiceMaps.length === 0) return true;
+                                                                return true;
+                                                            }
 
-                                                        {expandedCategories[cat.title] && (
-                                                            <motion.div
-                                                                initial={{ height: 0, opacity: 0 }}
-                                                                animate={{ height: 'auto', opacity: 1 }}
-                                                                style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', paddingBottom: '20px' }}
+                                                            const assignedServiceIds = stylistServiceMaps
+                                                                .filter(m => m.stylist_id === stylistInfo.id)
+                                                                .map(m => m.service_id);
+
+                                                            if (assignedServiceIds.length === 0) return true;
+
+                                                            const priceListItem = priceList.find(p => p.item_name === item);
+                                                            return priceListItem && assignedServiceIds.includes(priceListItem.id);
+                                                        });
+                                                        return { ...cat, filteredItems };
+                                                    })
+                                                    .filter(cat => cat.filteredItems.length > 0)
+                                                    .map((cat) => (
+                                                        <div key={cat.title} style={{ borderBottom: '1px solid var(--accent-cream)', pb: '15px' }}>
+                                                            <button
+                                                                onClick={() => toggleCategory(cat.title)}
+                                                                style={{
+                                                                    width: '100%',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'between',
+                                                                    padding: '15px 0',
+                                                                    background: 'none',
+                                                                    border: 'none',
+                                                                    cursor: 'pointer',
+                                                                    textAlign: 'left'
+                                                                }}
                                                             >
-                                                                {cat.items.map(item => (
-                                                                    <button
-                                                                        key={item}
-                                                                        onClick={() => setBooking({
-                                                                            ...booking,
-                                                                            service: item,
-                                                                            duration_minutes: serviceDurations[item] || 60
-                                                                        })}
-                                                                        style={{
-                                                                            padding: '10px 20px',
-                                                                            borderRadius: '30px',
-                                                                            border: '1px solid var(--accent-cream)',
-                                                                            backgroundColor: booking.service === item ? 'var(--primary-brown)' : 'white',
-                                                                            color: booking.service === item ? '#FFF' : 'var(--primary-brown)',
-                                                                            fontSize: '0.9rem',
-                                                                            transition: 'all 0.2s ease',
-                                                                            cursor: 'pointer',
-                                                                            display: 'flex',
-                                                                            alignItems: 'center',
-                                                                            gap: '8px'
-                                                                        }}
-                                                                    >
-                                                                        {item}
-                                                                        {serviceDurations[item] && (
-                                                                            <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>
-                                                                                ({serviceDurations[item] >= 60
-                                                                                    ? `${serviceDurations[item] / 60}h`
-                                                                                    : `${serviceDurations[item]}m`})
-                                                                            </span>
-                                                                        )}
-                                                                    </button>
-                                                                ))}
-                                                            </motion.div>
-                                                        )}
-                                                    </div>
-                                                ))}
+                                                                <div style={{ fontSize: '0.8rem', letterSpacing: '2px', color: 'var(--primary-brown)', fontWeight: '700', textTransform: 'uppercase' }}>
+                                                                    {cat.title}
+                                                                </div>
+                                                                <div style={{ marginLeft: 'auto', color: '#999' }}>
+                                                                    {expandedCategories[cat.title] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                                                </div>
+                                                            </button>
+
+                                                            {expandedCategories[cat.title] && (
+                                                                <motion.div
+                                                                    initial={{ height: 0, opacity: 0 }}
+                                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                                    style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', paddingBottom: '20px' }}
+                                                                >
+                                                                    {cat.filteredItems.map(item => (
+                                                                        <button
+                                                                            key={item}
+                                                                            onClick={() => setBooking({
+                                                                                ...booking,
+                                                                                service: item,
+                                                                                duration_minutes: serviceDurations[item] || 60
+                                                                            })}
+                                                                            style={{
+                                                                                padding: '10px 20px',
+                                                                                borderRadius: '30px',
+                                                                                border: '1px solid var(--accent-cream)',
+                                                                                backgroundColor: booking.service === item ? 'var(--primary-brown)' : 'white',
+                                                                                color: booking.service === item ? '#FFF' : 'var(--primary-brown)',
+                                                                                fontSize: '0.9rem',
+                                                                                transition: 'all 0.2s ease',
+                                                                                cursor: 'pointer',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                gap: '8px'
+                                                                            }}
+                                                                        >
+                                                                            {item}
+                                                                            {serviceDurations[item] && (
+                                                                                <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>
+                                                                                    ({serviceDurations[item] >= 60
+                                                                                        ? `${serviceDurations[item] / 60}h`
+                                                                                        : `${serviceDurations[item]}m`})
+                                                                                </span>
+                                                                            )}
+                                                                        </button>
+                                                                    ))}
+                                                                </motion.div>
+                                                            )}
+                                                        </div>
+                                                    ))}
                                             </div>
                                         </div>
                                     )}
@@ -581,53 +630,55 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                     />
                                                 </div>
 
-                                                <div>
-                                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: 'var(--primary-brown)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                                        Available Time Slots
-                                                    </label>
-                                                    {isLoadingSlots ? (
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#666', padding: '20px 0' }}>
-                                                            <motion.div
-                                                                animate={{ rotate: 360 }}
-                                                                transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                                                            >
-                                                                <Loader2 size={20} />
-                                                            </motion.div>
-                                                            <span>Checking availability...</span>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="booking-time-grid" style={{
-                                                            display: 'grid',
-                                                            gap: '12px'
-                                                        }}>
-                                                            {timeSlots.length > 0 ? (
-                                                                timeSlots.map(t => (
-                                                                    <button
-                                                                        key={t}
-                                                                        onClick={() => setBooking({ ...booking, time: t })}
-                                                                        style={{
-                                                                            padding: '12px 0',
-                                                                            borderRadius: '10px',
-                                                                            border: booking.time === t ? '2px solid #3D2B1F' : '1px solid var(--accent-cream)',
-                                                                            backgroundColor: booking.time === t ? '#3D2B1F' : 'white',
-                                                                            color: booking.time === t ? '#FFFFFF' : '#3D2B1F',
-                                                                            fontWeight: booking.time === t ? '700' : '400',
-                                                                            fontSize: '0.9rem',
-                                                                            transition: 'all 0.2s ease',
-                                                                            cursor: 'pointer'
-                                                                        }}
-                                                                    >
-                                                                        {t}
-                                                                    </button>
-                                                                ))
-                                                            ) : (
-                                                                <div style={{ gridColumn: '1 / -1', padding: '20px', backgroundColor: '#F9F9F9', borderRadius: '10px', textAlign: 'center', color: '#999' }}>
-                                                                    {booking.date ? 'No slots available for this date.' : 'Please select a date first.'}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                {booking.date && (
+                                                    <div>
+                                                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: 'var(--primary-brown)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                                            Available Time Slots
+                                                        </label>
+                                                        {isLoadingSlots ? (
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#666', padding: '20px 0' }}>
+                                                                <motion.div
+                                                                    animate={{ rotate: 360 }}
+                                                                    transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                                                                >
+                                                                    <Loader2 size={20} />
+                                                                </motion.div>
+                                                                <span>Checking availability...</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="booking-time-grid" style={{
+                                                                display: 'grid',
+                                                                gap: '12px'
+                                                            }}>
+                                                                {timeSlots.length > 0 ? (
+                                                                    timeSlots.map(t => (
+                                                                        <button
+                                                                            key={t}
+                                                                            onClick={() => setBooking({ ...booking, time: t })}
+                                                                            style={{
+                                                                                padding: '12px 0',
+                                                                                borderRadius: '10px',
+                                                                                border: booking.time === t ? '2px solid #3D2B1F' : '1px solid var(--accent-cream)',
+                                                                                backgroundColor: booking.time === t ? '#3D2B1F' : 'white',
+                                                                                color: booking.time === t ? '#FFFFFF' : '#3D2B1F',
+                                                                                fontWeight: booking.time === t ? '700' : '400',
+                                                                                fontSize: '0.9rem',
+                                                                                transition: 'all 0.2s ease',
+                                                                                cursor: 'pointer'
+                                                                            }}
+                                                                        >
+                                                                            {t}
+                                                                        </button>
+                                                                    ))
+                                                                ) : (
+                                                                    <div style={{ gridColumn: '1 / -1', padding: '20px', backgroundColor: '#F9F9F9', borderRadius: '10px', textAlign: 'center', color: '#999' }}>
+                                                                        No slots available for this date.
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -661,6 +712,11 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                     />
                                                 </div>
                                             </div>
+                                            {error && (
+                                                <div style={{ marginTop: '20px', padding: '12px 15px', backgroundColor: '#FFF5F5', border: '1px solid #FC8181', borderRadius: '8px', color: '#C53030', fontSize: '0.85rem', fontWeight: '500' }}>
+                                                    {error}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 

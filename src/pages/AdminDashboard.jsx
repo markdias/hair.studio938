@@ -87,7 +87,7 @@ const AdminDashboard = ({ refreshSiteData }) => {
     const [activeTab, setActiveTab] = useState('general');
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
-    const sidebarOpen = false; // Placeholder if not used elsewhere, or keep state if exists
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const { theme } = useTheme();
     const navigate = useNavigate();
 
@@ -224,6 +224,20 @@ const AdminDashboard = ({ refreshSiteData }) => {
 
             {/* Main Content */}
             <main className="flex-grow overflow-y-auto">
+                {/* Top Bar for Mobile */}
+                <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200 sticky top-0 z-40">
+                    <button
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className="p-2 text-gray-500 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-stone-800 to-stone-600 bg-clip-text text-transparent">
+                        Admin Panel
+                    </h1>
+                    <div className="w-10"></div> {/* Placeholder for alignment */}
+                </div>
+
                 <div className="max-w-6xl mx-auto p-8">
                     <AnimatePresence mode="wait">
                         {message.text && (
@@ -269,7 +283,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'theme': return <ThemeTab showMessage={showMessage} />;
         case 'services': return <ServicesTab services={data.services} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
         case 'pricing': return <PricingTab pricing={data.pricing} categories={data.priceCategories} refresh={refresh} showMessage={showMessage} settings={data.siteSettings} setSettings={setData.setSiteSettings} theme={theme} />;
-        case 'team': return <TeamTab stylists={data.stylists} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
+        case 'team': return <TeamTab stylists={data.stylists} pricing={data.pricing} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
         case 'gallery': return <GalleryTab gallery={data.gallery} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
         case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} showMessage={showMessage} clients={data.clients} setClients={setData.setClients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} defaultView={data.siteSettings?.default_appointment_view} settings={data.siteSettings} setSettings={setData.setSiteSettings} theme={theme} />;
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
@@ -854,7 +868,7 @@ const OpeningHoursTab = ({ settings, setSettings, showMessage }) => {
     );
 };
 
-const PhoneNumbersEditor = ({ showMessage }) => {
+const PhoneNumbersEditor = ({ showMessage, settings, setSettings }) => {
     const [phoneNumbers, setPhoneNumbers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -902,6 +916,29 @@ const PhoneNumbersEditor = ({ showMessage }) => {
 
     const handleUpdate = async (id, field, value) => {
         try {
+            if (field === 'is_primary' && value === true) {
+                // Special handling for setting a new primary
+                const { error } = await supabase.from('phone_numbers').update({ is_primary: false }).not('id', 'eq', id);
+                if (error) throw error;
+
+                const { error: updateError } = await supabase.from('phone_numbers').update({ is_primary: true }).eq('id', id);
+                if (updateError) throw updateError;
+
+                // Sync to site_settings.phone for backward compatibility
+                const phoneObj = phoneNumbers.find(p => p.id === id);
+                if (phoneObj && phoneObj.number) {
+                    await supabase.from('site_settings').upsert({ key: 'phone', value: phoneObj.number });
+                    if (setSettings) setSettings(prev => ({ ...prev, phone: phoneObj.number }));
+                }
+
+                setPhoneNumbers(phoneNumbers.map(p => ({
+                    ...p,
+                    is_primary: p.id === id
+                })));
+                showMessage('success', 'Salon phone updated');
+                return;
+            }
+
             const { error } = await supabase
                 .from('phone_numbers')
                 .update({ [field]: value })
@@ -912,6 +949,14 @@ const PhoneNumbersEditor = ({ showMessage }) => {
             setPhoneNumbers(phoneNumbers.map(p =>
                 p.id === id ? { ...p, [field]: value } : p
             ));
+
+            // If updating number and it is primary, sync to site_settings
+            const updatedPhone = phoneNumbers.find(p => p.id === id);
+            if (field === 'number' && updatedPhone?.is_primary) {
+                await supabase.from('site_settings').upsert({ key: 'phone', value: value });
+                if (setSettings) setSettings(prev => ({ ...prev, phone: value }));
+            }
+
             showMessage('success', 'Phone number updated');
         } catch (err) {
             console.error('Error updating phone number:', err);
@@ -986,6 +1031,18 @@ const PhoneNumbersEditor = ({ showMessage }) => {
                                 placeholder="Enter phone number"
                                 className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
                             />
+                            <button
+                                onClick={() => handleUpdate(phone.id, 'is_primary', !phone.is_primary)}
+                                className={`px-3 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all ${phone.is_primary
+                                    ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200 border border-transparent'
+                                    }`}
+                                title={phone.is_primary ? "This is the primary salon number used in messages" : "Set as primary salon number"}
+                                disabled={phone.is_primary}
+                            >
+                                <Star size={14} className={phone.is_primary ? 'fill-amber-500' : ''} />
+                                {phone.is_primary ? 'Salon Phone' : 'Set as Salon'}
+                            </button>
 
                             <div className="flex gap-1">
                                 <button
@@ -1874,7 +1931,11 @@ const ContactTab = ({ settings, setSettings, showMessage, theme }) => {
 
             {/* Phone Numbers Editor - Full Width */}
             <div className="mb-6">
-                <PhoneNumbersEditor showMessage={showMessage} />
+                <PhoneNumbersEditor
+                    showMessage={showMessage}
+                    settings={settings}
+                    setSettings={setSettings}
+                />
             </div>
         </motion.div>
     );
@@ -2273,10 +2334,11 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
     );
 };
 
-const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme }) => {
+const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessage, theme }) => {
     const [localStylists, setLocalStylists] = useState(stylists);
     const [showHelp, setShowHelp] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
+    const [assigningServices, setAssigningServices] = useState(null);
     const [newStylist, setNewStylist] = useState({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0 });
 
     useEffect(() => { setLocalStylists(stylists); }, [stylists]);
@@ -2371,12 +2433,21 @@ const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme 
                     </button>
                     <button
                         onClick={() => setIsAdding(!isAdding)}
-                        className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}
+                        className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium" style={{ backgroundColor: "#3D2B1F" }}
                     >
                         <Plus size={18} /> Add Professional
                     </button>
                 </div>
             </div>
+
+            {/* Stylist Service Assignment Modal */}
+            <StylistServiceModal
+                isOpen={assigningServices !== null}
+                onClose={() => setAssigningServices(null)}
+                stylist={assigningServices}
+                pricing={pricing}
+                showMessage={showMessage}
+            />
 
             {showHelp && (
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-6">
@@ -2478,13 +2549,19 @@ const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme 
                         <input
                             value={s.calendar_id || ''}
                             onChange={(e) => handleFieldChange(idx, 'calendar_id', e.target.value)}
-                            placeholder="Calendar ID"
+                            placeholder="Google Calendar ID (e.g., example@group.calendar.google.com)"
                             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none font-mono text-gray-700"
                         />
                         <textarea value={s.description || ''} onChange={(e) => handleFieldChange(idx, 'description', e.target.value)} placeholder="Bio" className="w-full text-sm text-gray-600 h-20 resize-none border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
                         <div className="flex gap-2">
-                            <button onClick={() => handleSave(s)} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Save Details</button>
-                            <button onClick={() => handleDelete(s.id)} className="px-4 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all">Delete</button>
+                            <button onClick={() => handleSave(s)} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all font-medium" style={{ backgroundColor: "#3D2B1F" }}>Save Details</button>
+                            <button
+                                onClick={() => setAssigningServices(s)}
+                                className="px-4 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-all font-medium"
+                            >
+                                Services
+                            </button>
+                            <button onClick={() => handleDelete(s.id)} className="px-4 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all font-medium">Delete</button>
                         </div>
                     </Reorder.Item>
                 ))}
@@ -2493,11 +2570,171 @@ const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme 
     );
 };
 
+const StylistServiceModal = ({ isOpen, onClose, stylist, pricing, showMessage }) => {
+    const [assignedIds, setAssignedIds] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen && stylist) {
+            fetchAssignedServices();
+        }
+    }, [isOpen, stylist]);
+
+    const fetchAssignedServices = async () => {
+        setLoading(true);
+        const { data, error } = await supabase
+            .from('stylist_services')
+            .select('service_id')
+            .eq('stylist_id', stylist.id);
+
+        if (error) {
+            showMessage('error', 'Error fetching assigned services');
+        } else {
+            setAssignedIds(data.map(d => d.service_id));
+        }
+        setLoading(false);
+    };
+
+    const toggleService = async (serviceId) => {
+        try {
+            if (assignedIds.includes(serviceId)) {
+                await supabase
+                    .from('stylist_services')
+                    .delete()
+                    .eq('stylist_id', stylist.id)
+                    .eq('service_id', serviceId);
+                setAssignedIds(prev => prev.filter(id => id !== serviceId));
+            } else {
+                await supabase
+                    .from('stylist_services')
+                    .insert({ stylist_id: stylist.id, service_id: serviceId });
+                setAssignedIds(prev => [...prev, serviceId]);
+            }
+        } catch (err) {
+            showMessage('error', 'Update failed');
+        }
+    };
+
+    const handleSelectAll = async () => {
+        try {
+            setLoading(true);
+            // 1. Delete all existing for this stylist
+            await supabase.from('stylist_services').delete().eq('stylist_id', stylist.id);
+
+            // 2. Insert all service IDs
+            const allIds = pricing.map(p => p.id);
+            const inserts = allIds.map(id => ({ stylist_id: stylist.id, service_id: id }));
+
+            const { error } = await supabase.from('stylist_services').insert(inserts);
+            if (error) throw error;
+
+            setAssignedIds(allIds);
+            showMessage('success', 'All services assigned');
+        } catch (err) {
+            showMessage('error', 'Bulk assignment failed: ' + err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleClearAll = async () => {
+        try {
+            setLoading(true);
+            const { error } = await supabase.from('stylist_services').delete().eq('stylist_id', stylist.id);
+            if (error) throw error;
+            setAssignedIds([]);
+            showMessage('success', 'All services removed');
+        } catch (err) {
+            showMessage('error', 'Bulk removal failed: ' + err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden"
+            >
+                <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-stone-50">
+                    <div>
+                        <h3 className="text-xl font-bold text-gray-900">Assign Services</h3>
+                        <p className="text-sm text-gray-500">Managing services for <span className="font-semibold text-stone-800">{stylist.stylist_name}</span></p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleSelectAll}
+                            disabled={loading}
+                            className="text-xs font-bold text-stone-600 hover:text-stone-900 px-3 py-1.5 rounded-lg border border-stone-200 hover:bg-stone-100 transition-all uppercase tracking-wider"
+                        >
+                            Select All
+                        </button>
+                        <button
+                            onClick={handleClearAll}
+                            disabled={loading}
+                            className="text-xs font-bold text-red-600 hover:text-red-700 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-50 transition-all uppercase tracking-wider"
+                        >
+                            Clear All
+                        </button>
+                        <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors ml-2">
+                            <X size={24} />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="flex-grow overflow-y-auto p-6">
+                    {loading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <Loader2 className="animate-spin text-stone-600" size={32} />
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {pricing.map(service => (
+                                <button
+                                    key={service.id}
+                                    onClick={() => toggleService(service.id)}
+                                    className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left ${assignedIds.includes(service.id)
+                                        ? 'border-stone-800 bg-stone-50'
+                                        : 'border-gray-100 bg-white hover:border-gray-300'
+                                        }`}
+                                >
+                                    <div>
+                                        <div className="font-semibold text-gray-900">{service.item_name}</div>
+                                        <div className="text-xs text-gray-500 uppercase tracking-wider">{service.category}</div>
+                                    </div>
+                                    {assignedIds.includes(service.id) && (
+                                        <div className="w-6 h-6 bg-stone-800 rounded-full flex items-center justify-center text-white">
+                                            <Check size={14} strokeWidth={3} />
+                                        </div>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
+                    <button
+                        onClick={onClose}
+                        className="px-6 py-2.5 bg-stone-800 text-white rounded-xl font-bold hover:bg-stone-700 transition-all shadow-lg"
+                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                    >
+                        Done
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
 const GalleryTab = ({ gallery, refresh, showMessage, settings, setSettings, theme }) => {
     const handleDelete = async (id) => {
         if (!confirm('Remove this image?')) return;
         try {
-            await supabase.from('gallery_images').delete().eq('id', id);
+            const { error } = await supabase.from('gallery_images').delete().eq('id', id);
             if (error) throw error;
             refresh();
             showMessage('success', 'Image removed');
