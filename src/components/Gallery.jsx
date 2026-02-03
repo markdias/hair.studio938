@@ -89,7 +89,7 @@ const Gallery = ({ images = [], settings = {}, isSeparatePage = false }) => {
                     <h2 style={headingStyle}>{settings.gallery_heading_name || 'Gallery'}</h2>
                     <div style={lineStyle}></div>
                     <a
-                        href={settings.instagram_url || "https://www.instagram.com/hair.studio938/"}
+                        href={settings.instagram_url || ""}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
@@ -102,7 +102,7 @@ const Gallery = ({ images = [], settings = {}, isSeparatePage = false }) => {
                             letterSpacing: '1px'
                         }}
                     >
-                        <Instagram size={20} /> {settings.instagram_handle || '@hair.studio938'}
+                        <Instagram size={20} /> {settings.instagram_handle || ''}
                     </a>
                 </div>
 

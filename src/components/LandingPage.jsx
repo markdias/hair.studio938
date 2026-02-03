@@ -325,7 +325,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     marginBottom: '1.5rem',
                     lineHeight: '1.1',
                     width: '100%'
-                }}>{settings.hero_title || "Where Hair Dreams Come True"}</h1>
+                }}>{settings.hero_title || ""}</h1>
                 <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '1.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
                     {settings.hero_subtitle || "Premium services and bespoke treatments at 938 High Road."}
                 </p>
