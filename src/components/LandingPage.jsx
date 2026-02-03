@@ -1113,7 +1113,6 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                                 margin: 0
                             }}>Opening Hours</h4>
                             <div style={{ fontSize: '0.95rem', opacity: 0.8 }}>
-                                <p style={{ fontWeight: '700', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase' }}>Contact</p>
                                 <p style={{ margin: 0 }}>{settings.opening_hours || ""}</p>
                             </div>
                             {/* Dynamic Payment Icons */}
