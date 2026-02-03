@@ -44,6 +44,7 @@ const CONTACT_FIELDS = [
     { key: 'email', label: 'Email Address', icon: <Mail size={16} /> },
     { key: 'address', label: 'Business Address', icon: <MapPin size={16} /> },
     { key: 'instagram_url', label: 'Instagram URL', icon: <Instagram size={16} /> },
+    { key: 'instagram_handle', label: 'Instagram Handle', icon: <Instagram size={16} /> },
     { key: 'facebook_url', label: 'Facebook URL', icon: <Facebook size={16} /> },
     { key: 'tiktok_url', label: 'TikTok URL', icon: <Music2 size={16} /> },
 ];

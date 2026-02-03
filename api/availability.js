@@ -132,12 +132,9 @@ export default async function handler(req, res) {
     }
 
     if (!privateKey || !clientEmail || !calendarId) {
-        // Return dummy data if credentials are not configured yet, 
-        // but include a warning in the response
-        console.warn('Google Calendar credentials not configured. Returning dummy data.');
-        const dummySlots = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+        console.warn('Google Calendar credentials not configured. Returning empty slots.');
         return res.status(200).json({
-            slots: dummySlots,
+            slots: [],
             warning: 'Config required. Visit Vercel settings to add GOOGLE_PRIVATE_KEY, GOOGLE_SERVICE_ACCOUNT_EMAIL, and GOOGLE_CALENDAR_ID.'
         });
     }

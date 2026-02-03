@@ -136,7 +136,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         else if (id === 'pricing' && settings.show_pricing_section !== 'false') label = settings.pricing_menu_name || 'Pricing';
                         else if (id === 'gallery' && settings.show_gallery_section !== 'false') label = settings.gallery_menu_name || 'Gallery';
                         else if (id === 'testimonials' && settings.show_testimonials_section === 'true') label = settings.testimonials_menu_name || 'Testimonials';
-                        else if (id === 'contact') label = 'Contact';
+                        else if (id === 'contact') label = settings.contact_menu_name || 'Contact';
                         else if (id === 'booking') return null;
                         else {
                             const custom = customSections.find(s => s.id === id);
@@ -230,7 +230,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         else if (id === 'pricing' && settings.show_pricing_section !== 'false') label = settings.pricing_menu_name || 'Pricing';
                         else if (id === 'gallery' && settings.show_gallery_section !== 'false') label = settings.gallery_menu_name || 'Gallery';
                         else if (id === 'testimonials' && settings.show_testimonials_section === 'true') label = settings.testimonials_menu_name || 'Testimonials';
-                        else if (id === 'contact') label = 'Contact';
+                        else if (id === 'contact') label = settings.contact_menu_name || 'Contact';
                         else {
                             const custom = customSections.find(s => s.id === id);
                             if (custom && custom.enabled !== false) label = custom.menu_name;
@@ -409,11 +409,7 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
         Phone: <Phone style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
     };
 
-    const displayServices = services.length > 0 ? services : [
-        { title: "Bespoke Services", description: "Expert treatments and transformations tailored to you.", icon_name: "Calendar" },
-        { title: "Our Experience", description: "A premium experience in every detail of your visit.", icon_name: "MapPin" },
-        { title: "Personal Styling", description: "Crafting the perfect look for your unique identity.", icon_name: "Phone" }
-    ];
+    const displayServices = services.length > 0 ? services : [];
 
     return (
         <section id="services" style={sectionStyle}>
@@ -479,13 +475,7 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
         margin: '0 auto'
     };
 
-    const defaultTeam = [
-        { name: "Jo", role: "Owner & Creative Director", description: "Expert in bespoke coloring and luxury extensions.", image_url: "/jo.png" },
-        { name: "Viktor", role: "Specialist", description: "Specializing in precision services and bespoke transformations.", image_url: "/viktor.png" },
-        { name: "Nisha", role: "Senior Professional", description: "Crafting beautiful transformations and signature styles.", image_url: "/nisha.png" }
-    ];
-
-    const displayTeam = team.length > 0 ? team : defaultTeam;
+    const displayTeam = team.length > 0 ? team : [];
 
     return (
         <section id="team" style={sectionStyle}>
@@ -579,54 +569,7 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
 
     const displayCategories = pricing.length > 0
         ? Object.entries(categoriesMap).map(([title, items]) => ({ title, items }))
-        : [
-            {
-                title: "CUT & STYLING",
-                items: [
-                    { name: "Wash cut & blowdry", price: "£50" },
-                    { name: "Wash & cut", price: "£30-£35" },
-                    { name: "Wash & blowdry", price: "£25-35" },
-                    { name: "Styling (flat iron/curls)", price: "£20" },
-                    { name: "Hair Up", price: "From £60" }
-                ]
-            },
-            {
-                title: "COLOURING",
-                items: [
-                    { name: "T-section highlights", price: "£50" },
-                    { name: "Half head highlights", price: "£75" },
-                    { name: "Full head highlights", price: "£95" },
-                    { name: "Full head of baby lights", price: "£120" },
-                    { name: "Balyage", price: "£180-£225" },
-                    { name: "Full head tint", price: "From £70" },
-                    { name: "Root tint", price: "From £50" },
-                    { name: "Toner", price: "£25" }
-                ]
-            },
-            {
-                title: "HAIR TREATMENTS",
-                items: [
-                    { name: "Keratin blowdry", price: "£140-£150" },
-                    { name: "Hair Botox", price: "£35" },
-                    { name: "Olaplex", price: "£25" }
-                ]
-            },
-            {
-                title: "HAIR EXTENSIONS",
-                items: [
-                    { name: "Hair extensions on consultation", price: "£0" },
-                    { name: "Extensions maintenance", price: "£100-150" }
-                ]
-            },
-            {
-                title: "MAKE UP",
-                items: [
-                    { name: "Natural make up", price: "£55" },
-                    { name: "Full glam make up", price: "£65" },
-                    { name: "Wedding make up packages available", price: "" }
-                ]
-            }
-        ];
+        : [];
 
     return (
         <section id="pricing" style={sectionStyle}>
@@ -685,8 +628,8 @@ const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) =
     const bgColor = settings.contact_bg_color;
     const textColor = settings.contact_text_color;
 
-    const email = settings.email || "hair.studio938@gmail.com";
-    const address = settings.address || "938 High Road, London, N12 9RT";
+    const email = settings.email || "";
+    const address = settings.address || "";
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 20px' : '120px 20px',
@@ -1021,11 +964,11 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
     const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
     const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
-    const businessName = settings.business_name || 'Hair Studio 938';
-    const footerDescription = settings.footer_description || "Our studio is a space created for deep connection, beauty, and confidence. From expert services to bespoke styling, each offering is designed to enhance your natural look.";
-    const email = settings.email || "hair.studio938@gmail.com";
-    const address = settings.address || "Unit 5, 938 High Road, London, N12 9RT";
-    const phone = phoneNumbers.length > 0 ? phoneNumbers[0].number : (settings.phone || "0208 113 112");
+    const businessName = settings.business_name || '';
+    const footerDescription = settings.footer_description || "";
+    const email = settings.email || "";
+    const address = settings.address || "";
+    const phone = phoneNumbers.length > 0 ? phoneNumbers[0].number : (settings.phone || "");
 
     return (
         <>

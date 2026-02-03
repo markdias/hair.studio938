@@ -1,6 +1,6 @@
 # Business Management System - Complete Deployment Guide
 
-This guide provides everything needed to deploy a new instance of the Hair Studio website, from database setup to production deployment.
+This guide provides everything needed to deploy a new instance of Business Management System website, from database setup to production deployment.
 
 ---
 
@@ -103,7 +103,7 @@ Before starting, ensure you have:
 1. Go to **"APIs & Services"** → **"Credentials"**
 2. Click **"Create Credentials"** → **"Service Account"**
 3. Fill in:
-   - **Name**: `hairstudio-calendar-service`
+   - **Name**: `business-calendar-service`
    - **Description**: `Service account for booking appointments`
 4. Click **"Create and Continue"** → **"Done"**
 
@@ -236,7 +236,7 @@ Run this complete SQL script in Supabase SQL Editor:
 
 ```sql
 -- ============================================
--- Hair Studio 938 - Complete Database Setup
+-- Complete Database Setup
 -- ============================================
 
 -- SITE SETTINGS TABLE
