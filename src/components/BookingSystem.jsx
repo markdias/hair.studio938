@@ -108,7 +108,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                     id: s.id,
                     name: s.stylist_name,
                     role: s.role,
-                    img: s.image_url || '/placeholder.png',
+                    img: s.image_url || '',
                     calendar_id: s.calendar_id
                 }));
                 setStylists(formatted);
@@ -236,9 +236,8 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
             const response = await fetch(`/api/availability?date=${date}${stylistParam}`);
 
             if (!response.ok) {
-                // Fallback for local development where /api is not served by vite
-                console.warn('API not found, falling back to dummy data');
-                setTimeSlots(['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00']);
+                console.warn('API error');
+                setTimeSlots([]);
                 return;
             }
 
@@ -249,8 +248,8 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                 setError('Could not load time slots');
             }
         } catch (err) {
-            console.warn('Fetch error (likely local dev), using fallback slots:', err);
-            setTimeSlots(['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00']);
+            console.warn('Fetch error:', err);
+            setTimeSlots([]);
         } finally {
             setIsLoadingSlots(false);
         }

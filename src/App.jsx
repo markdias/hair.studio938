@@ -203,73 +203,70 @@ const MainSite = ({ siteData }) => {
 
   return (
     <>
-      <AnimatePresence>
-        {showIntro && introVideoUrl && (
-          <IntroVideo
-            videoUrl={introVideoUrl}
-            onComplete={handleIntroComplete}
-          />
-        )}
-      </AnimatePresence>
+      {/* Kill Switch Check - Show maintenance screen if site is disabled */}
+      {siteData.settings.site_enabled === 'false' ? (
+        <MaintenanceScreen />
+      ) : (
+        <>
+          {!showMainSite && siteData.settings.intro_video_url && (
+            <IntroVideo onComplete={handleIntroComplete} videoUrl={siteData.settings.intro_video_url} />
+          )}
 
-      <div className="flex flex-col min-h-screen transition-opacity duration-1000"
-        style={{ opacity: showIntro ? 0 : 1 }}>
-        <Navbar
-          settings={settings}
-          customSections={siteData.customSections}
-          pageSections={pageSections}
-        />
-        <Hero
-          settings={settings}
-          pageSections={pageSections}
-        />
+          {(showMainSite || !siteData.settings.intro_video_url) && (
+            <main className="main-content">
+              <Navbar settings={siteData.settings} customSections={siteData.customSections} pageSections={siteData.pageSections} />
+              <Hero settings={siteData.settings} pageSections={siteData.pageSections} />
 
-        <main>
-          {(() => {
-            // Sort page sections by sort_order
-            const sitePageSections = [...pageSections].sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
+              {(() => {
+                const sortedSections = [...siteData.pageSections].sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
 
-            return sitePageSections.map((section) => {
-              if (section.enabled === false) return null;
+                return sortedSections.map(section => {
+                  const id = section.id;
+                  // If explicit enabled field exists and is false, skip (unless it's custom and we handled it)
+                  if (section.enabled === false) return null;
 
-              // Skip sections that are set to be separate pages
-              if (section.is_separate_page) return null;
+                  // Skip sections that are set to be separate pages
+                  if (section.is_separate_page) return null;
 
-              const id = section.id;
-              if (id === 'services') return <Services key={id} services={siteData.services} settings={settings} />;
-              if (id === 'team') return <TeamSection key={id} team={siteData.team} settings={settings} />;
-              if (id === 'pricing') return <PriceList key={id} pricing={siteData.pricing} settings={settings} />;
-              if (id === 'gallery') return <Gallery key={id} images={siteData.gallery} settings={settings} />;
-              if (id === 'testimonials') return <Testimonials key={id} testimonials={siteData.testimonials} settings={settings} />;
-              if (id === 'contact') return <Contact key={id} settings={settings} phoneNumbers={siteData.phoneNumbers} />;
-              if (id === 'booking') return <BookingSystem key={id} settings={settings} />;
+                  // Fixed Sections
+                  if (id === 'services') return <Services key="services" services={siteData.services} settings={siteData.settings} />;
+                  if (id === 'team') return <TeamSection key="team" team={siteData.team} settings={siteData.settings} />;
+                  if (id === 'pricing') return <PriceList key="pricing" pricing={siteData.pricing} settings={siteData.settings} />;
+                  if (id === 'testimonials') return <Testimonials key="testimonials" testimonials={siteData.testimonials} settings={siteData.settings} />;
+                  if (id === 'booking') return <BookingSystem key="booking" settings={siteData.settings} />;
+                  if (id === 'gallery') return <Gallery key="gallery" images={siteData.gallery} settings={siteData.settings} />;
+                  if (id === 'contact') return <Contact key="contact" settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />;
 
-              if (section.is_custom) {
-                const custom = siteData.customSections.find(cs => cs.id === id);
-                if (custom && custom.enabled !== false) {
-                  return <CustomSection key={id} data={custom} />;
-                }
-              }
-              return null;
-            });
-          })()}
-        </main>
+                  // Custom Sections
+                  const customSection = siteData.customSections.find(s => s.id === id);
+                  if (customSection) {
+                    return <CustomSection key={customSection.id} data={customSection} />;
+                  }
+                  return null;
+                });
+              })()}
 
-        <Footer
-          settings={settings}
-          phoneNumbers={siteData.phoneNumbers}
-          pageSections={pageSections}
-        />
-        <Analytics />
-        <SpeedInsights />
-        <CookieConsent />
-      </div>
+              <Footer settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} pageSections={siteData.pageSections} />
+              <Analytics />
+              <SpeedInsights />
+            </main>
+          )}
+        </>
+      )}
     </>
   );
 };
 
 function App() {
   const siteData = useSiteData();
+
+  useEffect(() => {
+    if (siteData.settings.site_title) {
+      document.title = siteData.settings.site_title;
+    } else if (siteData.settings.business_name) {
+      document.title = siteData.settings.business_name;
+    }
+  }, [siteData.settings.site_title, siteData.settings.business_name]);
 
   return (
     <BrowserRouter>
@@ -288,6 +285,7 @@ function App() {
             }
           />
         </Routes>
+        <CookieConsent />
       </div>
     </BrowserRouter>
   );

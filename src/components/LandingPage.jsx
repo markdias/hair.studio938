@@ -136,7 +136,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         else if (id === 'pricing' && settings.show_pricing_section !== 'false') label = settings.pricing_menu_name || 'Pricing';
                         else if (id === 'gallery' && settings.show_gallery_section !== 'false') label = settings.gallery_menu_name || 'Gallery';
                         else if (id === 'testimonials' && settings.show_testimonials_section === 'true') label = settings.testimonials_menu_name || 'Testimonials';
-                        else if (id === 'contact') label = 'Contact';
+                        else if (id === 'contact') label = settings.contact_menu_name || 'Contact';
                         else if (id === 'booking') return null;
                         else {
                             const custom = customSections.find(s => s.id === id);
@@ -230,7 +230,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         else if (id === 'pricing' && settings.show_pricing_section !== 'false') label = settings.pricing_menu_name || 'Pricing';
                         else if (id === 'gallery' && settings.show_gallery_section !== 'false') label = settings.gallery_menu_name || 'Gallery';
                         else if (id === 'testimonials' && settings.show_testimonials_section === 'true') label = settings.testimonials_menu_name || 'Testimonials';
-                        else if (id === 'contact') label = 'Contact';
+                        else if (id === 'contact') label = settings.contact_menu_name || 'Contact';
                         else {
                             const custom = customSections.find(s => s.id === id);
                             if (custom && custom.enabled !== false) label = custom.menu_name;
@@ -325,7 +325,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     marginBottom: '1.5rem',
                     lineHeight: '1.1',
                     width: '100%'
-                }}>{settings.hero_title || "Where Hair Dreams Come True"}</h1>
+                }}>{settings.hero_title || ""}</h1>
                 <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '1.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
                     {settings.hero_subtitle || "Premium services and bespoke treatments at 938 High Road."}
                 </p>
@@ -409,11 +409,7 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
         Phone: <Phone style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
     };
 
-    const displayServices = services.length > 0 ? services : [
-        { title: "Bespoke Services", description: "Expert treatments and transformations tailored to you.", icon_name: "Calendar" },
-        { title: "Our Experience", description: "A premium experience in every detail of your visit.", icon_name: "MapPin" },
-        { title: "Personal Styling", description: "Crafting the perfect look for your unique identity.", icon_name: "Phone" }
-    ];
+    const displayServices = services.length > 0 ? services : [];
 
     return (
         <section id="services" style={sectionStyle}>
@@ -479,13 +475,7 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
         margin: '0 auto'
     };
 
-    const defaultTeam = [
-        { name: "Jo", role: "Owner & Creative Director", description: "Expert in bespoke coloring and luxury extensions.", image_url: "/jo.png" },
-        { name: "Viktor", role: "Specialist", description: "Specializing in precision services and bespoke transformations.", image_url: "/viktor.png" },
-        { name: "Nisha", role: "Senior Professional", description: "Crafting beautiful transformations and signature styles.", image_url: "/nisha.png" }
-    ];
-
-    const displayTeam = team.length > 0 ? team : defaultTeam;
+    const displayTeam = team.length > 0 ? team : [];
 
     return (
         <section id="team" style={sectionStyle}>
@@ -579,54 +569,7 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
 
     const displayCategories = pricing.length > 0
         ? Object.entries(categoriesMap).map(([title, items]) => ({ title, items }))
-        : [
-            {
-                title: "CUT & STYLING",
-                items: [
-                    { name: "Wash cut & blowdry", price: "£50" },
-                    { name: "Wash & cut", price: "£30-£35" },
-                    { name: "Wash & blowdry", price: "£25-35" },
-                    { name: "Styling (flat iron/curls)", price: "£20" },
-                    { name: "Hair Up", price: "From £60" }
-                ]
-            },
-            {
-                title: "COLOURING",
-                items: [
-                    { name: "T-section highlights", price: "£50" },
-                    { name: "Half head highlights", price: "£75" },
-                    { name: "Full head highlights", price: "£95" },
-                    { name: "Full head of baby lights", price: "£120" },
-                    { name: "Balyage", price: "£180-£225" },
-                    { name: "Full head tint", price: "From £70" },
-                    { name: "Root tint", price: "From £50" },
-                    { name: "Toner", price: "£25" }
-                ]
-            },
-            {
-                title: "HAIR TREATMENTS",
-                items: [
-                    { name: "Keratin blowdry", price: "£140-£150" },
-                    { name: "Hair Botox", price: "£35" },
-                    { name: "Olaplex", price: "£25" }
-                ]
-            },
-            {
-                title: "HAIR EXTENSIONS",
-                items: [
-                    { name: "Hair extensions on consultation", price: "£0" },
-                    { name: "Extensions maintenance", price: "£100-150" }
-                ]
-            },
-            {
-                title: "MAKE UP",
-                items: [
-                    { name: "Natural make up", price: "£55" },
-                    { name: "Full glam make up", price: "£65" },
-                    { name: "Wedding make up packages available", price: "" }
-                ]
-            }
-        ];
+        : [];
 
     return (
         <section id="pricing" style={sectionStyle}>
@@ -685,8 +628,8 @@ const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) =
     const bgColor = settings.contact_bg_color;
     const textColor = settings.contact_text_color;
 
-    const email = settings.email || "hair.studio938@gmail.com";
-    const address = settings.address || "938 High Road, London, N12 9RT";
+    const email = settings.email || "";
+    const address = settings.address || "";
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 20px' : '120px 20px',
@@ -840,7 +783,7 @@ const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) =
                         loading="lazy"
                         allowFullScreen
                         referrerPolicy="no-referrer-when-downgrade"
-                        title="Hair Studio 938 Location"
+                        title={`${settings.business_name || 'Business'} Location`}
                         src={`https://www.google.com/maps?q=${encodeURIComponent(address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                     ></iframe>
                 </div>
@@ -1021,11 +964,11 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
     const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
     const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
-    const businessName = settings.business_name || 'Hair Studio 938';
-    const footerDescription = settings.footer_description || "Our studio is a space created for deep connection, beauty, and confidence. From expert services to bespoke styling, each offering is designed to enhance your natural look.";
-    const email = settings.email || "hair.studio938@gmail.com";
-    const address = settings.address || "Unit 5, 938 High Road, London, N12 9RT";
-    const phone = phoneNumbers.length > 0 ? phoneNumbers[0].number : (settings.phone || "0208 113 112");
+    const businessName = settings.business_name || '';
+    const footerDescription = settings.footer_description || "";
+    const email = settings.email || "";
+    const address = settings.address || "";
+    const phone = phoneNumbers.length > 0 ? phoneNumbers[0].number : (settings.phone || "");
 
     return (
         <>
@@ -1162,40 +1105,41 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                     </div>
 
                     {/* Column 4: Hours */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <h4 style={{
-                            fontFamily: 'var(--font-heading)',
-                            fontSize: '1.4rem',
-                            margin: 0
-                        }}>Opening Hours</h4>
-                        <div style={{ fontSize: '0.95rem', opacity: 0.8 }}>
-                            <p style={{ fontWeight: '700', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase' }}>Contact</p>
-                            <p style={{ margin: 0 }}>{settings.opening_hours || "Tue - Sat: 10:00am - 6:00pm"}</p>
+                    {settings.show_opening_hours !== 'false' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <h4 style={{
+                                fontFamily: 'var(--font-heading)',
+                                fontSize: '1.4rem',
+                                margin: 0
+                            }}>Opening Hours</h4>
+                            <div style={{ fontSize: '0.95rem', opacity: 0.8 }}>
+                                <p style={{ margin: 0 }}>{settings.opening_hours || ""}</p>
+                            </div>
+                            {/* Dynamic Payment Icons */}
+                            <div style={{ display: 'flex', gap: '15px', marginTop: '10px', opacity: 0.6, flexWrap: 'wrap' }}>
+                                {(() => {
+                                    const paymentLogos = {
+                                        'visa': 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg',
+                                        'mastercard': 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg',
+                                        'paypal': 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg',
+                                        'applepay': 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg',
+                                        'googlepay': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Pay_Logo_%282020%29.svg',
+                                        'amex': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg',
+                                    };
+                                    const methods = (settings.payment_methods || 'visa,mastercard,paypal').split(',').filter(Boolean);
+                                    return methods.map(method => (
+                                        <img
+                                            key={method}
+                                            src={paymentLogos[method]}
+                                            alt={method}
+                                            style={{ height: '20px' }}
+                                            onError={(e) => e.target.style.display = 'none'}
+                                        />
+                                    ));
+                                })()}
+                            </div>
                         </div>
-                        {/* Dynamic Payment Icons */}
-                        <div style={{ display: 'flex', gap: '15px', marginTop: '10px', opacity: 0.6, flexWrap: 'wrap' }}>
-                            {(() => {
-                                const paymentLogos = {
-                                    'visa': 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg',
-                                    'mastercard': 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg',
-                                    'paypal': 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg',
-                                    'applepay': 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg',
-                                    'googlepay': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Pay_Logo_%282020%29.svg',
-                                    'amex': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg',
-                                };
-                                const methods = (settings.payment_methods || 'visa,mastercard,paypal').split(',').filter(Boolean);
-                                return methods.map(method => (
-                                    <img
-                                        key={method}
-                                        src={paymentLogos[method]}
-                                        alt={method}
-                                        style={{ height: '20px' }}
-                                        onError={(e) => e.target.style.display = 'none'}
-                                    />
-                                ));
-                            })()}
-                        </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Copyright */}

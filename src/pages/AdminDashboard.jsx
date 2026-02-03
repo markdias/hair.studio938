@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Users, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft, GripVertical } from 'lucide-react';
+import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Users, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft, GripVertical, Type } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
 
@@ -35,8 +35,9 @@ const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const TIME_SLOTS = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
 
 const GENERAL_FIELDS = [
-    { key: 'hero_title', label: 'Hero Title', icon: <Info size={16} /> },
-    { key: 'hero_subtitle', label: 'Hero Subtitle', icon: <Info size={16} /> },
+    { key: 'site_title', label: 'Website Browser Title', icon: <Layout size={16} /> },
+    { key: 'hero_title', label: 'Hero Section Title', icon: <Type size={16} /> },
+    { key: 'hero_subtitle', label: 'Hero Section Subtitle', icon: <Type size={16} /> },
     { key: 'footer_description', label: 'Footer Description', icon: <Info size={16} /> },
 ];
 
@@ -44,6 +45,7 @@ const CONTACT_FIELDS = [
     { key: 'email', label: 'Email Address', icon: <Mail size={16} /> },
     { key: 'address', label: 'Business Address', icon: <MapPin size={16} /> },
     { key: 'instagram_url', label: 'Instagram URL', icon: <Instagram size={16} /> },
+    { key: 'instagram_handle', label: 'Instagram Handle', icon: <Instagram size={16} /> },
     { key: 'facebook_url', label: 'Facebook URL', icon: <Facebook size={16} /> },
     { key: 'tiktok_url', label: 'TikTok URL', icon: <Music2 size={16} /> },
 ];
@@ -844,7 +846,7 @@ const OpeningHoursTab = ({ settings, setSettings, showMessage }) => {
                     <div>
                         <h3 className="text-lg font-medium text-gray-900">Show on Website</h3>
                         <p className="text-sm text-gray-500 text-pretty max-w-md mt-1">
-                            Toggle whether the opening hours are displayed in the hero section of the home page.
+                            Toggle whether the opening hours are displayed in the hero and footer sections.
                         </p>
                     </div>
                     <button

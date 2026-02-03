@@ -199,8 +199,8 @@ export default async function handler(req, res) {
                     '{{business_name}}': settings.business_name || 'Studio 938',
                     '{{date}}': formattedDate,
                     '{{time}}': time,
-                    '{{business_phone}}': settings.phone || '020 8445 1122',
-                    '{{business_address}}': settings.address || '938 High Road, London'
+                    '{{business_phone}}': settings.phone || '',
+                    '{{business_address}}': settings.address || ''
                 };
 
                 Object.keys(replacements).forEach(key => {
