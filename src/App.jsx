@@ -208,11 +208,11 @@ const MainSite = ({ siteData }) => {
         <MaintenanceScreen />
       ) : (
         <>
-          {!showMainSite && siteData.settings.intro_video_url && (
-            <IntroVideo onComplete={handleIntroComplete} videoUrl={siteData.settings.intro_video_url} />
+          {showIntro && introVideoUrl && (
+            <IntroVideo onComplete={handleIntroComplete} videoUrl={introVideoUrl} />
           )}
 
-          {(showMainSite || !siteData.settings.intro_video_url) && (
+          {(!showIntro || !introVideoUrl) && (
             <main className="main-content">
               <Navbar settings={siteData.settings} customSections={siteData.customSections} pageSections={siteData.pageSections} />
               <Hero settings={siteData.settings} pageSections={siteData.pageSections} />
