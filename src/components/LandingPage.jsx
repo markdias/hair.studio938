@@ -327,7 +327,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     width: '100%'
                 }}>{settings.hero_title || "Where Hair Dreams Come True"}</h1>
                 <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '1.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
-                    {settings.hero_subtitle || "Luxury hair styling and bespoke treatments at 938 High Road."}
+                    {settings.hero_subtitle || "Premium services and bespoke treatments at 938 High Road."}
                 </p>
                 {settings.show_opening_hours !== 'false' && (
                     <div style={{
@@ -410,9 +410,9 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
     };
 
     const displayServices = services.length > 0 ? services : [
-        { title: "Hair Magic", description: "Expert coloring and transformations tailored to you.", icon_name: "Calendar" },
-        { title: "Salon Life", description: "A premium experience in every detail of your visit.", icon_name: "MapPin" },
-        { title: "Bespoke Styling", description: "Crafting the perfect look for your unique identity.", icon_name: "Phone" }
+        { title: "Bespoke Services", description: "Expert treatments and transformations tailored to you.", icon_name: "Calendar" },
+        { title: "Our Experience", description: "A premium experience in every detail of your visit.", icon_name: "MapPin" },
+        { title: "Personal Styling", description: "Crafting the perfect look for your unique identity.", icon_name: "Phone" }
     ];
 
     return (
@@ -1022,7 +1022,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
     const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
     const businessName = settings.business_name || 'Hair Studio 938';
-    const footerDescription = settings.footer_description || "Our salon is a space created for deep connection, beauty, and confidence. From expert coloring to bespoke styling, each offering is designed to enhance your natural look.";
+    const footerDescription = settings.footer_description || "Our studio is a space created for deep connection, beauty, and confidence. From expert services to bespoke styling, each offering is designed to enhance your natural look.";
     const email = settings.email || "hair.studio938@gmail.com";
     const address = settings.address || "Unit 5, 938 High Road, London, N12 9RT";
     const phone = phoneNumbers.length > 0 ? phoneNumbers[0].number : (settings.phone || "0208 113 112");
@@ -1169,7 +1169,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                             margin: 0
                         }}>Opening Hours</h4>
                         <div style={{ fontSize: '0.95rem', opacity: 0.8 }}>
-                            <p style={{ fontWeight: '700', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase' }}>Salon</p>
+                            <p style={{ fontWeight: '700', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase' }}>Contact</p>
                             <p style={{ margin: 0 }}>{settings.opening_hours || "Tue - Sat: 10:00am - 6:00pm"}</p>
                         </div>
                         {/* Dynamic Payment Icons */}

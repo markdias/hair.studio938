@@ -42,7 +42,7 @@ const GENERAL_FIELDS = [
 
 const CONTACT_FIELDS = [
     { key: 'email', label: 'Email Address', icon: <Mail size={16} /> },
-    { key: 'address', label: 'Salon Address', icon: <MapPin size={16} /> },
+    { key: 'address', label: 'Business Address', icon: <MapPin size={16} /> },
     { key: 'instagram_url', label: 'Instagram URL', icon: <Instagram size={16} /> },
     { key: 'facebook_url', label: 'Facebook URL', icon: <Facebook size={16} /> },
     { key: 'tiktok_url', label: 'TikTok URL', icon: <Music2 size={16} /> },
@@ -51,22 +51,22 @@ const CONTACT_FIELDS = [
 const EMAIL_VARIABLES = [
     { tag: '{{name}}', desc: 'Customer Name' },
     { tag: '{{service}}', desc: 'Service Name' },
-    { tag: '{{stylist}}', desc: 'Stylist Name' },
+    { tag: '{{stylist}}', desc: 'Staff/Professional Name' },
     { tag: '{{date}}', desc: 'Date of Appointment' },
     { tag: '{{time}}', desc: 'Time of Appointment' },
-    { tag: '{{salon_phone}}', desc: 'Salon Phone Number' },
-    { tag: '{{salon_location}}', desc: 'Salon Address' },
+    { tag: '{{salon_phone}}', desc: 'Business Phone Number' },
+    { tag: '{{salon_location}}', desc: 'Business Address' },
 ];
 
 const DEFAULT_EMAIL_TEMPLATE = `
 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #EAE0D5; border-radius: 12px;">
     <h2 style="color: #3D2B1F; border-bottom: 2px solid #EAE0D5; padding-bottom: 10px;">Booking Confirmed!</h2>
     <p>Hi {{name}},</p>
-    <p>Thank you for choosing Studio 938. Your appointment is officially confirmed.</p>
+    <p>Thank you for choosing {{business_name}}. Your appointment is officially confirmed.</p>
 
     <div style="background-color: #FDFBF9; padding: 15px; border-radius: 8px; margin: 20px 0;">
         <p style="margin: 5px 0;"><strong>Service:</strong> {{service}}</p>
-        <p style="margin: 5px 0;"><strong>Stylist:</strong> {{stylist}}</p>
+        <p style="margin: 5px 0;"><strong>Professional:</strong> {{stylist}}</p>
         <p style="margin: 5px 0;"><strong>Date:</strong> {{date}}</p>
         <p style="margin: 5px 0;"><strong>Time:</strong> {{time}}</p>
     </div>
@@ -294,7 +294,7 @@ const ImageUploader = ({ onUpload, folder = 'general', showMessage }) => {
             const filePath = `${folder}/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
-                .from('salon-assets')
+                .from('salon-assets') // Bucket name stays the same for compatibility
                 .upload(filePath, file);
 
             if (uploadError) throw uploadError;
@@ -2592,7 +2592,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
     const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
     // Check if salon is closed on the selected date
-    const isSalonClosed = React.useMemo(() => {
+    const isClosed = React.useMemo(() => {
         if (!newAppt.date || !openingHours || openingHours === '') return false;
         const selectedDate = new Date(newAppt.date);
         const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][selectedDate.getDay()];
@@ -3321,9 +3321,9 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                 <div className="flex items-center justify-center gap-2 text-sm text-gray-500 py-4">
                                                     <Loader2 size={18} className="animate-spin" /> checking...
                                                 </div>
-                                            ) : isSalonClosed ? (
+                                            ) : isClosed ? (
                                                 <div className="col-span-full text-sm text-center text-red-600 py-4 font-medium bg-red-50 rounded-lg border border-red-200">
-                                                    Salon is closed on this day
+                                                    Business is closed on this day
                                                 </div>
                                             ) : (
                                                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-48 overflow-y-auto custom-scrollbar">
@@ -3851,7 +3851,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
         if (filteredWeek.length === 0) {
             return (
                 <div className="p-12 text-center bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-gray-500">The salon is closed on all days this week.</p>
+                    <p className="text-gray-500">We are closed on all days this week.</p>
                 </div>
             );
         }
@@ -3928,8 +3928,8 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
             return (
                 <div className="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-lg border border-gray-200">
                     <Clock size={48} className="text-gray-300 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900">Salon is Closed</h3>
-                    <p className="text-gray-500">The salon is not open on {currentDate.toLocaleDateString('en-GB', { weekday: 'long' })}.</p>
+                    <h3 className="text-lg font-medium text-gray-900">Closed</h3>
+                    <p className="text-gray-500">We are not open on {currentDate.toLocaleDateString('en-GB', { weekday: 'long' })}.</p>
                 </div>
             );
         }
@@ -4301,7 +4301,8 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
         .replace(/{{date}}/g, 'Friday, 30 January 2026')
         .replace(/{{time}}/g, '14:30')
         .replace(/{{salon_phone}}/g, settings.phone || '020 8445 1122')
-        .replace(/{{salon_location}}/g, settings.address || '938 High Road, London');
+        .replace(/{{salon_location}}/g, settings.address || '938 High Road, London')
+        .replace(/{{business_name}}/g, settings.business_name || 'Studio 938');
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

@@ -1,4 +1,4 @@
-# Hair Studio 938 - Complete Deployment Guide
+# Business Management System - Complete Deployment Guide
 
 This guide provides everything needed to deploy a new instance of the Hair Studio website, from database setup to production deployment.
 
@@ -20,9 +20,7 @@ This guide provides everything needed to deploy a new instance of the Hair Studi
 
 ---
 
-## Overview
-
-This Hair Studio website is built with:
+This management system is built with:
 - **Frontend**: React + Vite + TailwindCSS
 - **Backend**: Vercel Serverless Functions
 - **Database**: Supabase (PostgreSQL)
@@ -61,7 +59,7 @@ Before starting, ensure you have:
 1. Go to [supabase.com](https://supabase.com) and sign in
 2. Click **"New Project"**
 3. Configure:
-   - **Name**: `hair-studio-938` (or your choice)
+   - **Name**: `business-management-system` (or your choice)
    - **Database Password**: Create strong password (save it!)
    - **Region**: Choose closest to your users
    - **Plan**: Free tier is sufficient
@@ -90,7 +88,7 @@ Before starting, ensure you have:
 
 1. Go to [console.cloud.google.com](https://console.cloud.google.com/)
 2. Click **"Select a project"** → **"New Project"**
-3. Name: `Hair Studio Calendar`
+3. Name: `Business Calendar`
 4. Click **"Create"**
 
 ### Step 2: Enable Calendar API
@@ -148,7 +146,7 @@ Before starting, ensure you have:
 3. Scroll to **"App passwords"** → Click it
 4. Select:
    - App: **"Mail"**
-   - Device: **"Other"** → Type `Hair Studio`
+   - Device: **"Other"** → Type `Management System`
 5. Click **"Generate"**
 6. Copy the 16-character password (format: `xxxx xxxx xxxx xxxx`)
 7. Remove spaces → `SMTP_PASS`
@@ -500,9 +498,7 @@ VALUES
     ('theme_text_dark', '#2A1D15'),
     ('theme_text_light', '#FFFFFF'),
     ('intro_video_url', ''),
-    ('business_name', 'Hair Studio 938'),
-    ('opening_hours', 'Mon-Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM'),
-    ('footer_description', 'Your premium hair salon experience.'),
+    ('footer_description', 'Your premium experience.'),
     ('terms_and_conditions', ''),
     ('privacy_policy', ''),
     ('payment_methods', 'visa,mastercard,paypal'),
@@ -517,7 +513,7 @@ VALUES
     ('services_bg_color', ''),
     ('services_text_color', ''),
     ('team_menu_name', 'Team'),
-    ('team_heading_name', 'Meet Our Stylists'),
+    ('team_heading_name', 'Meet the Team'),
     ('team_bg_color', ''),
     ('team_text_color', ''),
     ('pricing_menu_name', 'Pricing'),
@@ -619,7 +615,7 @@ ON CONFLICT (id) DO NOTHING;
 1. Log into admin dashboard
 2. Navigate to email settings
 3. Edit template HTML
-4. Use placeholders: `{{name}}`, `{{service}}`, `{{stylist}}`, `{{date}}`, `{{time}}`, `{{salon_phone}}`, `{{salon_location}}`
+4. Use placeholders: `{{name}}`, `{{service}}`, `{{stylist}}`, `{{date}}`, `{{time}}`, `{{salon_phone}}`, `{{salon_location}}`, `{{business_name}}`
 
 ### Multiple Stylist Calendars
 To assign different calendars to stylists:
@@ -641,7 +637,7 @@ VALUES ('Sarah', 'sarah@gmail.com'),
 
 ## Summary
 
-This template provides a complete salon booking website with:
+This template provides a complete business management website with:
 - ✅ Customizable admin dashboard
 - ✅ Google Calendar integration
 - ✅ Automated email confirmations
