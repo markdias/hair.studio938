@@ -481,8 +481,8 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
 
     const defaultTeam = [
         { name: "Jo", role: "Owner & Creative Director", description: "Expert in bespoke coloring and luxury extensions.", image_url: "/jo.png" },
-        { name: "Viktor", role: "Master Stylist", description: "Specializing in precision cuts and seamless balayage.", image_url: "/viktor.png" },
-        { name: "Nisha", role: "Senior Stylist", description: "Crafting glam transformations and signature styles.", image_url: "/nisha.png" }
+        { name: "Viktor", role: "Specialist", description: "Specializing in precision services and bespoke transformations.", image_url: "/viktor.png" },
+        { name: "Nisha", role: "Senior Professional", description: "Crafting beautiful transformations and signature styles.", image_url: "/nisha.png" }
     ];
 
     const displayTeam = team.length > 0 ? team : defaultTeam;

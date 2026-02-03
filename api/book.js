@@ -183,7 +183,7 @@ export default async function handler(req, res) {
                 });
 
                 const mailOptions = {
-                    from: `"Studio 938" <${smtpUser}>`,
+                    from: `"${settings.business_name || 'Studio 938'}" <${smtpUser}>`,
                     to: email, // Customer
                     bcc: smtpUser, // Salon Copy
                     subject: emailSubject,

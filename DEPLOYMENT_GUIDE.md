@@ -292,7 +292,7 @@ CREATE TABLE IF NOT EXISTS public.appointments (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE NOT NULL,
-    stylist TEXT NOT NULL,
+    professional TEXT NOT NULL,
     service TEXT NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -315,7 +315,7 @@ CREATE POLICY "Enable update access for all users" ON public.appointments
 CREATE POLICY "Enable delete access for all users" ON public.appointments
     FOR DELETE USING (true);
 
-CREATE INDEX IF NOT EXISTS appointments_client_id_idx ON public.appointments (client_id);
+CREATE INDEX IF NOT EXISTS appointments_professional_idx ON public.appointments (professional);
 CREATE INDEX IF NOT EXISTS appointments_start_time_idx ON public.appointments (start_time);
 
 -- TESTIMONIALS TABLE
@@ -396,10 +396,10 @@ ALTER TABLE public.price_list ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read access" ON public.price_list FOR SELECT USING (true);
 CREATE POLICY "Auth write access" ON public.price_list FOR ALL USING (auth.role() = 'authenticated');
 
--- STYLIST CALENDARS TABLE
-CREATE TABLE IF NOT EXISTS public.stylist_calendars (
+-- TEAM CALENDARS TABLE
+CREATE TABLE IF NOT EXISTS public.staff_calendars (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    stylist_name TEXT NOT NULL UNIQUE,
+    member_name TEXT NOT NULL UNIQUE,
     calendar_id TEXT NOT NULL,
     image_url TEXT,
     role TEXT,
@@ -407,12 +407,12 @@ CREATE TABLE IF NOT EXISTS public.stylist_calendars (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-ALTER TABLE public.stylist_calendars ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.staff_calendars ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public can view stylist calendars" ON public.stylist_calendars
+CREATE POLICY "Public can view staff calendars" ON public.staff_calendars
     FOR SELECT USING (true);
 
-CREATE POLICY "Authenticated users can manage stylist calendars" ON public.stylist_calendars
+CREATE POLICY "Authenticated users can manage staff calendars" ON public.staff_calendars
     FOR ALL USING (auth.role() = 'authenticated');
 
 -- SERVICES OVERVIEW TABLE
@@ -556,7 +556,7 @@ ON CONFLICT (id) DO NOTHING;
 
 ### 1. Database Check
 - [ ] Go to Supabase → **Table Editor**
-- [ ] Verify tables exist: `site_settings`, `clients`, `appointments`, `testimonials`, `phone_numbers`, `services_overview`, `price_list`, `price_categories`, `stylist_calendars`, `gallery_images`, `custom_sections`, `custom_section_elements`
+- [ ] Verify tables exist: `site_settings`, `clients`, `appointments`, `testimonials`, `phone_numbers`, `services_overview`, `price_list`, `price_categories`, `staff_calendars`, `gallery_images`, `custom_sections`, `custom_section_elements`
 - [ ] Check `site_settings` has theme values
 
 ### 2. Website Check
@@ -615,14 +615,14 @@ ON CONFLICT (id) DO NOTHING;
 1. Log into admin dashboard
 2. Navigate to email settings
 3. Edit template HTML
-4. Use placeholders: `{{name}}`, `{{service}}`, `{{stylist}}`, `{{date}}`, `{{time}}`, `{{salon_phone}}`, `{{salon_location}}`, `{{business_name}}`
+4. Use placeholders: `{{name}}`, `{{service}}`, `{{professional}}`, `{{date}}`, `{{time}}`, `{{salon_phone}}`, `{{salon_location}}`, `{{business_name}}`
 
-### Multiple Stylist Calendars
-To assign different calendars to stylists:
-1. Uncomment the `stylist_calendars` table in setup SQL
-2. Insert stylist-calendar mappings:
+### Multiple Professional Calendars
+To assign different calendars to professionals:
+1. Uncomment the `staff_calendars` table in setup SQL
+2. Insert professional-calendar mappings:
 ```sql
-INSERT INTO stylist_calendars (stylist_name, calendar_id)
+INSERT INTO staff_calendars (member_name, calendar_id)
 VALUES ('Sarah', 'sarah@gmail.com'),
        ('Mike', 'mike@gmail.com');
 ```

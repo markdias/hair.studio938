@@ -17,7 +17,7 @@ const TABS = [
     { id: 'appointments', label: 'Appointments', icon: <Calendar size={18} /> },
     { id: 'hours', label: 'Opening Hours', icon: <Clock size={18} /> },
     { id: 'clients', label: 'Clients', icon: <User size={18} /> },
-    { id: 'team', label: 'Team', icon: <User size={18} /> },
+    { id: 'team', label: 'Our Team', icon: <Users size={20} /> },
     { id: 'testimonials', label: 'Testimonials', icon: <MessageCircle size={18} /> },
     { id: 'gallery', label: 'Gallery', icon: <Image size={18} /> },
     { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
@@ -2289,30 +2289,30 @@ const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme 
         try {
             const { error } = await supabase.from('stylist_calendars').upsert(s);
             if (error) throw error;
-            showMessage('success', `Stylist ${s.stylist_name} updated!`);
+            showMessage('success', `Professional ${s.stylist_name} updated!`);
             refresh();
         } catch (err) { showMessage('error', err.message); }
     };
 
     const handleAdd = async () => {
-        if (!newStylist.stylist_name) return showMessage('error', 'Stylist name is required');
+        if (!newStylist.stylist_name) return showMessage('error', 'Professional name is required');
         try {
             const { error } = await supabase.from('stylist_calendars').insert([newStylist]);
             if (error) throw error;
             setNewStylist({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0 });
             setIsAdding(false);
             refresh();
-            showMessage('success', 'New stylist added!');
+            showMessage('success', 'New staff member added!');
         } catch (err) { showMessage('error', err.message); }
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this stylist?')) return;
+        if (!confirm('Are you sure you want to delete this professional?')) return;
         try {
             const { error } = await supabase.from('stylist_calendars').delete().eq('id', id);
             if (error) throw error;
             refresh();
-            showMessage('success', 'Stylist removed');
+            showMessage('success', 'Professional removed');
         } catch (err) { showMessage('error', err.message); }
     };
 
@@ -2371,7 +2371,7 @@ const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme 
                         onClick={() => setIsAdding(!isAdding)}
                         className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}
                     >
-                        <Plus size={18} /> Add Stylist
+                        <Plus size={18} /> Add Professional
                     </button>
                 </div>
             </div>
@@ -2380,12 +2380,12 @@ const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme 
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-6">
                     <h3 className="font-semibold text-amber-900 mb-3 flex items-center gap-2">
                         <Info size={18} />
-                        How to Set Up Google Calendar for a Stylist
+                        How to Set Up Google Calendar for a Staff Member
                     </h3>
                     <div className="text-sm text-amber-900 space-y-3">
                         <div>
-                            <p className="font-medium mb-1">1. Create or Access the Stylist's Google Calendar</p>
-                            <p className="text-amber-800 ml-4">Go to <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer" className="underline">calendar.google.com</a> and create a new calendar for the stylist or use an existing one.</p>
+                            <p className="font-medium mb-1">1. Create or Access the Google Calendar</p>
+                            <p className="text-amber-800 ml-4">Go to <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer" className="underline">calendar.google.com</a> and create a new calendar or use an existing one.</p>
                         </div>
                         <div>
                             <p className="font-medium mb-1">2. Share the Calendar</p>
@@ -2414,7 +2414,7 @@ const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme 
 
             {isAdding && (
                 <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm space-y-4">
-                    <h3 className="text-sm font-medium text-gray-700">New Stylist</h3>
+                    <h3 className="text-sm font-medium text-gray-700">New Staff Member</h3>
                     <div className="flex items-center gap-4">
                         <ImageUploader
                             folder="team"
@@ -2440,7 +2440,7 @@ const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme 
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg h-20 resize-none focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
                     />
                     <div className="flex gap-4">
-                        <button onClick={handleAdd} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Create Stylist</button>
+                        <button onClick={handleAdd} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Create Professional</button>
                         <button onClick={() => setIsAdding(false)} className="px-8 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all">Cancel</button>
                     </div>
                 </div>
@@ -4065,7 +4065,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
 
             {/* Legend */}
             <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-4 md:mt-6 pt-3 md:pt-4 border-t border-gray-200">
-                <span className="text-xs md:text-sm text-gray-600">Stylists:</span>
+                <span className="text-xs md:text-sm text-gray-600">Team:</span>
                 {stylists?.map(stylist => {
                     const name = stylist.stylist_name || stylist.name || stylist;
                     const colorClass = STYLIST_COLORS[name] || STYLIST_COLORS.default;

@@ -70,7 +70,7 @@ const ProtectedRoute = ({ children }) => {
 // Default order for sections
 const DEFAULT_ORDER = [
   { id: 'services', label: 'Services', sort_order: 10 },
-  { id: 'team', label: 'Team', sort_order: 20 },
+  { id: 'team', label: 'Our Team', sort_order: 20 },
   { id: 'pricing', label: 'Pricing', sort_order: 30 },
   { id: 'testimonials', label: 'Testimonials', sort_order: 40 },
   { id: 'booking', label: 'Booking', sort_order: 50 },
