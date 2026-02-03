@@ -1428,7 +1428,7 @@ const ThemeTab = ({ showMessage }) => {
                                     minHeight: '100px'
                                 }}
                             >
-                                <p className="text-xl">The Art of Hair Styling</p>
+                                <p className="text-xl">Premium Services & Professional Experience</p>
                             </div>
                         </div>
                         <div className="flex flex-col gap-2">
@@ -1452,7 +1452,7 @@ const ThemeTab = ({ showMessage }) => {
                                     minHeight: '100px'
                                 }}
                             >
-                                <p className="text-sm leading-relaxed">Luxury hair styling and bespoke treatments at 938 High Road. We provide professional hair services tailored to your unique style.</p>
+                                <p className="text-sm leading-relaxed">Experience exceptional care and professional services tailored to your unique needs. We provide high-quality results in a premium and welcoming environment.</p>
                             </div>
                         </div>
                     </div>
