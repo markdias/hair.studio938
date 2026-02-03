@@ -226,7 +226,6 @@ const MainSite = ({ siteData }) => {
               <Footer settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} pageSections={siteData.pageSections} />
               <Analytics />
               <SpeedInsights />
-              <CookieConsent />
             </main>
           )}
         </>
@@ -237,6 +236,14 @@ const MainSite = ({ siteData }) => {
 
 function App() {
   const siteData = useSiteData();
+
+  useEffect(() => {
+    if (siteData.settings.site_title) {
+      document.title = siteData.settings.site_title;
+    } else if (siteData.settings.business_name) {
+      document.title = siteData.settings.business_name;
+    }
+  }, [siteData.settings.site_title, siteData.settings.business_name]);
 
   return (
     <BrowserRouter>
@@ -255,6 +262,7 @@ function App() {
             }
           />
         </Routes>
+        <CookieConsent />
       </div>
     </BrowserRouter>
   );

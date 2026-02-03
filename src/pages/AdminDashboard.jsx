@@ -35,9 +35,10 @@ const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const TIME_SLOTS = Array.from({ length: 13 }, (_, i) => i + 8); // 8 AM to 8 PM
 
 const GENERAL_FIELDS = [
-    { key: 'hero_title', label: 'Hero Title', icon: <Info size={16} /> },
-    { key: 'hero_subtitle', label: 'Hero Subtitle', icon: <Info size={16} /> },
-    { key: 'footer_description', label: 'Footer Description', icon: <Info size={16} /> },
+    { key: 'business_name', label: 'Business Name', icon: <Scissors size={16} /> },
+    { key: 'site_title', label: 'Website Browser Title', icon: <Layout size={16} /> },
+    { key: 'hero_title', label: 'Hero Section Title', icon: <Type size={16} /> },
+    { key: 'hero_subtitle', label: 'Hero Section Subtitle', icon: <Type size={16} /> },
 ];
 
 const CONTACT_FIELDS = [
