@@ -12,8 +12,8 @@ export default async function handler(req, res) {
     const { stylist, service, date, time, name, email, phone, duration_minutes, send_email = true } = req.body;
     const duration = parseInt(duration_minutes) || 60;
 
-    if (!date || !time || !name || !email) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    if (!date || !time || !name || (!email && !phone)) {
+        return res.status(400).json({ error: 'Missing required fields (name and either email or phone are required)' });
     }
 
     // Check for Google credentials
@@ -88,17 +88,43 @@ export default async function handler(req, res) {
         // 0. UPSERT CLIENT
         // Check if client exists, if not create, if yes update phone/name
         try {
-            const { error: clientError } = await supabase
-                .from('clients')
-                .upsert(
-                    { email, name, phone },
-                    { onConflict: 'email', ignoreDuplicates: false }
-                );
+            // Upsert based on email if provided, otherwise just insert or handle by phone
+            // Current 'clients' table has unique constraint on 'email'.
+            // If email is missing, we need to handle it differently.
+            if (email) {
+                const { error: clientError } = await supabase
+                    .from('clients')
+                    .upsert(
+                        { email, name, phone },
+                        { onConflict: 'email', ignoreDuplicates: false }
+                    );
 
-            if (clientError) {
-                console.warn('Error upserting client:', clientError.message);
+                if (clientError) {
+                    console.warn('Error upserting client by email:', clientError.message);
+                } else {
+                    console.log('Client record synced for email:', email);
+                }
             } else {
-                console.log('Client record synced for:', email);
+                // No email provided, search by phone first
+                const { data: existingClient } = await supabase
+                    .from('clients')
+                    .select('id')
+                    .eq('phone', phone)
+                    .is('email', null)
+                    .single();
+
+                if (existingClient) {
+                    await supabase
+                        .from('clients')
+                        .update({ name })
+                        .eq('id', existingClient.id);
+                    console.log('Client record updated for phone:', phone);
+                } else {
+                    await supabase
+                        .from('clients')
+                        .insert({ name, phone });
+                    console.log('New client created for phone:', phone);
+                }
             }
         } catch (clientErr) {
             console.warn('Client sync failed:', clientErr.message);
@@ -190,8 +216,12 @@ export default async function handler(req, res) {
                     html: html
                 };
 
-                await transporter.sendMail(mailOptions);
-                console.log('Confirmation email sent to:', email);
+                if (email) {
+                    await transporter.sendMail(mailOptions);
+                    console.log('Confirmation email sent to:', email);
+                } else {
+                    console.log('No customer email provided, skipping confirmation email.');
+                }
             } catch (emailError) {
                 console.error('Email Sending Error:', emailError.message);
             }
