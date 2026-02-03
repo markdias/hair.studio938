@@ -615,7 +615,7 @@ ON CONFLICT (id) DO NOTHING;
 1. Log into admin dashboard
 2. Navigate to email settings
 3. Edit template HTML
-4. Use placeholders: `{{name}}`, `{{service}}`, `{{professional}}`, `{{date}}`, `{{time}}`, `{{salon_phone}}`, `{{salon_location}}`, `{{business_name}}`
+4. Use placeholders: `{{name}}`, `{{service}}`, `{{professional}}`, `{{date}}`, `{{time}}`, `{{business_phone}}`, `{{business_address}}`, `{{business_name}}`
 
 ### Multiple Professional Calendars
 To assign different calendars to professionals:

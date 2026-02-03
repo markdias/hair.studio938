@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft, GripVertical } from 'lucide-react';
+import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Users, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft, GripVertical } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
 
@@ -51,11 +51,11 @@ const CONTACT_FIELDS = [
 const EMAIL_VARIABLES = [
     { tag: '{{name}}', desc: 'Customer Name' },
     { tag: '{{service}}', desc: 'Service Name' },
-    { tag: '{{stylist}}', desc: 'Staff/Professional Name' },
+    { tag: '{{professional}}', desc: 'Professional Name' },
     { tag: '{{date}}', desc: 'Date of Appointment' },
     { tag: '{{time}}', desc: 'Time of Appointment' },
-    { tag: '{{salon_phone}}', desc: 'Business Phone Number' },
-    { tag: '{{salon_location}}', desc: 'Business Address' },
+    { tag: '{{business_phone}}', desc: 'Business Phone Number' },
+    { tag: '{{business_address}}', desc: 'Business Address' },
 ];
 
 const DEFAULT_EMAIL_TEMPLATE = `
@@ -66,14 +66,14 @@ const DEFAULT_EMAIL_TEMPLATE = `
 
     <div style="background-color: #FDFBF9; padding: 15px; border-radius: 8px; margin: 20px 0;">
         <p style="margin: 5px 0;"><strong>Service:</strong> {{service}}</p>
-        <p style="margin: 5px 0;"><strong>Professional:</strong> {{stylist}}</p>
+        <p style="margin: 5px 0;"><strong>Professional:</strong> {{professional}}</p>
         <p style="margin: 5px 0;"><strong>Date:</strong> {{date}}</p>
         <p style="margin: 5px 0;"><strong>Time:</strong> {{time}}</p>
     </div>
 
     <p style="font-size: 0.9rem; color: #666;">
-        📍 <strong>Location:</strong> {{salon_location}}<br>
-        📞 <strong>Phone:</strong> {{salon_phone}}
+        📍 <strong>Location:</strong> {{business_address}}<br>
+        📞 <strong>Phone:</strong> {{business_phone}}
     </p>
 
     <p style="margin-top: 30px; font-size: 0.8rem; color: #999;">
@@ -2120,7 +2120,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
 
                     <div className="flex gap-4 mb-6">
                         <input
-                            placeholder="New Category Name (e.g. NAILS)"
+                            placeholder="New Category Name"
                             value={newCategoryName}
                             onChange={(e) => setNewCategoryName(e.target.value)}
                             className="flex-grow px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
@@ -2910,7 +2910,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                         body: JSON.stringify({ eventId: editingAppt.id, calendarId: editingAppt.calendarId })
                     });
 
-                    if (!delRes.ok) throw new Error('Failed to remove old appointment when switching stylist');
+                    if (!delRes.ok) throw new Error('Failed to remove old appointment when switching professional');
 
                     const res = await fetch('/api/book', {
                         method: 'POST',
@@ -2930,10 +2930,10 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
 
                     if (!res.ok) {
                         const data = await res.json();
-                        throw new Error(data.error || 'Failed to create new appointment for the new stylist');
+                        throw new Error(data.error || 'Failed to create new appointment for the new professional');
                     }
 
-                    showMessage('success', 'Appointment moved to new stylist');
+                    showMessage('success', 'Appointment moved to new professional');
                 } else {
                     const updatedData = {
                         startTime: startDateTime,
@@ -3048,13 +3048,13 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
             <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 mb-4 md:mb-6 space-y-3 md:space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     <div className="flex-1">
-                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Filter by Stylist</label>
+                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Filter by Professional</label>
                         <select
                             value={filterStylist}
                             onChange={(e) => setFilterStylist(e.target.value)}
                             className="w-full px-3 md:px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none h-[42px]"
                         >
-                            <option value="all">All Stylists</option>
+                            <option value="all">All Professionals</option>
                             {uniqueStylists.map(s => (
                                 <option key={s} value={s}>{s}</option>
                             ))}
@@ -3086,7 +3086,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                     <th className="px-6 py-3">Date & Time</th>
                                     <th className="px-6 py-3">Customer</th>
                                     <th className="px-6 py-3">Service</th>
-                                    <th className="px-6 py-3">Stylist</th>
+                                    <th className="px-6 py-3">Professional</th>
                                     <th className="px-6 py-3 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -3220,9 +3220,9 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                 <form onSubmit={handleAddAppointment} className="flex-1 overflow-y-auto p-6 space-y-5">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Stylist</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Professional</label>
                                             <select className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.stylist} onChange={e => setNewAppt({ ...newAppt, stylist: e.target.value })}>
-                                                <option value="">-- Stylist --</option>
+                                                <option value="">-- Professional --</option>
                                                 {stylists?.map(s => <option key={s.id || s} value={s.stylist_name || s.name || s}>{s.stylist_name || s.name || s}</option>)}
                                             </select>
                                         </div>
@@ -3404,7 +3404,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Time</th>
                                                                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Customer</th>
                                                                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Service</th>
-                                                                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Stylist</th>
+                                                                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Professional</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-100">
@@ -3486,14 +3486,14 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                         />
                                     </div>
                                     <div className="col-span-2 sm:col-span-1">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Stylist</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Professional</label>
                                         <select
                                             value={editForm.stylist}
                                             onChange={e => setEditForm({ ...editForm, stylist: e.target.value })}
                                             className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none text-base bg-white"
                                             required
                                         >
-                                            <option value="">-- Select Stylist --</option>
+                                            <option value="">-- Select Professional --</option>
                                             {stylists?.map(s => (
                                                 <option key={s.id || s} value={s.stylist_name || s.name || s}>
                                                     {s.stylist_name || s.name || s}
@@ -4297,11 +4297,11 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
     const previewHtml = template
         .replace(/{{name}}/g, 'Jane Doe')
         .replace(/{{service}}/g, 'Full Balayage')
-        .replace(/{{stylist}}/g, 'Jo')
+        .replace(/{{professional}}/g, 'Jo')
         .replace(/{{date}}/g, 'Friday, 30 January 2026')
         .replace(/{{time}}/g, '14:30')
-        .replace(/{{salon_phone}}/g, settings.phone || '020 8445 1122')
-        .replace(/{{salon_location}}/g, settings.address || '938 High Road, London')
+        .replace(/{{business_phone}}/g, settings.phone || '020 8445 1122')
+        .replace(/{{business_address}}/g, settings.address || '938 High Road, London')
         .replace(/{{business_name}}/g, settings.business_name || 'Studio 938');
 
     return (

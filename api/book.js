@@ -144,14 +144,14 @@ export default async function handler(req, res) {
     
     <div style="background-color: #FDFBF9; padding: 15px; border-radius: 8px; margin: 20px 0;">
         <p style="margin: 5px 0;"><strong>Service:</strong> {{service}}</p>
-        <p style="margin: 5px 0;"><strong>Professional:</strong> {{stylist}}</p>
+        <p style="margin: 5px 0;"><strong>Professional:</strong> {{professional}}</p>
         <p style="margin: 5px 0;"><strong>Date:</strong> {{date}}</p>
         <p style="margin: 5px 0;"><strong>Time:</strong> {{time}}</p>
     </div>
     
     <p style="font-size: 0.9rem; color: #666;">
-        📍 <strong>Location:</strong> {{salon_location}}<br>
-        📞 <strong>Phone:</strong> {{salon_phone}}
+        📍 <strong>Location:</strong> {{business_address}}<br>
+        📞 <strong>Phone:</strong> {{business_phone}}
     </p>
     
     <p style="margin-top: 30px; font-size: 0.8rem; color: #999;">
@@ -169,12 +169,12 @@ export default async function handler(req, res) {
                 const replacements = {
                     '{{name}}': name,
                     '{{service}}': service,
-                    '{{stylist}}': stylistName,
+                    '{{professional}}': stylistName,
                     '{{business_name}}': settings.business_name || 'Studio 938',
                     '{{date}}': formattedDate,
                     '{{time}}': time,
-                    '{{salon_phone}}': settings.phone || '020 8445 1122',
-                    '{{salon_location}}': settings.address || '938 High Road, London'
+                    '{{business_phone}}': settings.phone || '020 8445 1122',
+                    '{{business_address}}': settings.address || '938 High Road, London'
                 };
 
                 Object.keys(replacements).forEach(key => {
