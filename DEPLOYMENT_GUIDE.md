@@ -1,4 +1,4 @@
-# Hair Studio 938 - Complete Deployment Guide
+# Business Management System - Complete Deployment Guide
 
 This guide provides everything needed to deploy a new instance of the Hair Studio website, from database setup to production deployment.
 
@@ -20,9 +20,7 @@ This guide provides everything needed to deploy a new instance of the Hair Studi
 
 ---
 
-## Overview
-
-This Hair Studio website is built with:
+This management system is built with:
 - **Frontend**: React + Vite + TailwindCSS
 - **Backend**: Vercel Serverless Functions
 - **Database**: Supabase (PostgreSQL)
@@ -61,7 +59,7 @@ Before starting, ensure you have:
 1. Go to [supabase.com](https://supabase.com) and sign in
 2. Click **"New Project"**
 3. Configure:
-   - **Name**: `hair-studio-938` (or your choice)
+   - **Name**: `business-management-system` (or your choice)
    - **Database Password**: Create strong password (save it!)
    - **Region**: Choose closest to your users
    - **Plan**: Free tier is sufficient
@@ -90,7 +88,7 @@ Before starting, ensure you have:
 
 1. Go to [console.cloud.google.com](https://console.cloud.google.com/)
 2. Click **"Select a project"** → **"New Project"**
-3. Name: `Hair Studio Calendar`
+3. Name: `Business Calendar`
 4. Click **"Create"**
 
 ### Step 2: Enable Calendar API
@@ -148,7 +146,7 @@ Before starting, ensure you have:
 3. Scroll to **"App passwords"** → Click it
 4. Select:
    - App: **"Mail"**
-   - Device: **"Other"** → Type `Hair Studio`
+   - Device: **"Other"** → Type `Management System`
 5. Click **"Generate"**
 6. Copy the 16-character password (format: `xxxx xxxx xxxx xxxx`)
 7. Remove spaces → `SMTP_PASS`
@@ -294,7 +292,7 @@ CREATE TABLE IF NOT EXISTS public.appointments (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE NOT NULL,
-    stylist TEXT NOT NULL,
+    professional TEXT NOT NULL,
     service TEXT NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -317,7 +315,7 @@ CREATE POLICY "Enable update access for all users" ON public.appointments
 CREATE POLICY "Enable delete access for all users" ON public.appointments
     FOR DELETE USING (true);
 
-CREATE INDEX IF NOT EXISTS appointments_client_id_idx ON public.appointments (client_id);
+CREATE INDEX IF NOT EXISTS appointments_professional_idx ON public.appointments (professional);
 CREATE INDEX IF NOT EXISTS appointments_start_time_idx ON public.appointments (start_time);
 
 -- TESTIMONIALS TABLE
@@ -398,10 +396,10 @@ ALTER TABLE public.price_list ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read access" ON public.price_list FOR SELECT USING (true);
 CREATE POLICY "Auth write access" ON public.price_list FOR ALL USING (auth.role() = 'authenticated');
 
--- STYLIST CALENDARS TABLE
-CREATE TABLE IF NOT EXISTS public.stylist_calendars (
+-- TEAM CALENDARS TABLE
+CREATE TABLE IF NOT EXISTS public.staff_calendars (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    stylist_name TEXT NOT NULL UNIQUE,
+    member_name TEXT NOT NULL UNIQUE,
     calendar_id TEXT NOT NULL,
     image_url TEXT,
     role TEXT,
@@ -409,12 +407,12 @@ CREATE TABLE IF NOT EXISTS public.stylist_calendars (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-ALTER TABLE public.stylist_calendars ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.staff_calendars ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public can view stylist calendars" ON public.stylist_calendars
+CREATE POLICY "Public can view staff calendars" ON public.staff_calendars
     FOR SELECT USING (true);
 
-CREATE POLICY "Authenticated users can manage stylist calendars" ON public.stylist_calendars
+CREATE POLICY "Authenticated users can manage staff calendars" ON public.staff_calendars
     FOR ALL USING (auth.role() = 'authenticated');
 
 -- SERVICES OVERVIEW TABLE
@@ -500,9 +498,7 @@ VALUES
     ('theme_text_dark', '#2A1D15'),
     ('theme_text_light', '#FFFFFF'),
     ('intro_video_url', ''),
-    ('business_name', 'Hair Studio 938'),
-    ('opening_hours', 'Mon-Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM'),
-    ('footer_description', 'Your premium hair salon experience.'),
+    ('footer_description', 'Your premium experience.'),
     ('terms_and_conditions', ''),
     ('privacy_policy', ''),
     ('payment_methods', 'visa,mastercard,paypal'),
@@ -517,7 +513,7 @@ VALUES
     ('services_bg_color', ''),
     ('services_text_color', ''),
     ('team_menu_name', 'Team'),
-    ('team_heading_name', 'Meet Our Stylists'),
+    ('team_heading_name', 'Meet the Team'),
     ('team_bg_color', ''),
     ('team_text_color', ''),
     ('pricing_menu_name', 'Pricing'),
@@ -560,7 +556,7 @@ ON CONFLICT (id) DO NOTHING;
 
 ### 1. Database Check
 - [ ] Go to Supabase → **Table Editor**
-- [ ] Verify tables exist: `site_settings`, `clients`, `appointments`, `testimonials`, `phone_numbers`, `services_overview`, `price_list`, `price_categories`, `stylist_calendars`, `gallery_images`, `custom_sections`, `custom_section_elements`
+- [ ] Verify tables exist: `site_settings`, `clients`, `appointments`, `testimonials`, `phone_numbers`, `services_overview`, `price_list`, `price_categories`, `staff_calendars`, `gallery_images`, `custom_sections`, `custom_section_elements`
 - [ ] Check `site_settings` has theme values
 
 ### 2. Website Check
@@ -619,14 +615,14 @@ ON CONFLICT (id) DO NOTHING;
 1. Log into admin dashboard
 2. Navigate to email settings
 3. Edit template HTML
-4. Use placeholders: `{{name}}`, `{{service}}`, `{{stylist}}`, `{{date}}`, `{{time}}`, `{{salon_phone}}`, `{{salon_location}}`
+4. Use placeholders: `{{name}}`, `{{service}}`, `{{professional}}`, `{{date}}`, `{{time}}`, `{{business_phone}}`, `{{business_address}}`, `{{business_name}}`
 
-### Multiple Stylist Calendars
-To assign different calendars to stylists:
-1. Uncomment the `stylist_calendars` table in setup SQL
-2. Insert stylist-calendar mappings:
+### Multiple Professional Calendars
+To assign different calendars to professionals:
+1. Uncomment the `staff_calendars` table in setup SQL
+2. Insert professional-calendar mappings:
 ```sql
-INSERT INTO stylist_calendars (stylist_name, calendar_id)
+INSERT INTO staff_calendars (member_name, calendar_id)
 VALUES ('Sarah', 'sarah@gmail.com'),
        ('Mike', 'mike@gmail.com');
 ```
@@ -641,7 +637,7 @@ VALUES ('Sarah', 'sarah@gmail.com'),
 
 ## Summary
 
-This template provides a complete salon booking website with:
+This template provides a complete business management website with:
 - ✅ Customizable admin dashboard
 - ✅ Google Calendar integration
 - ✅ Automated email confirmations

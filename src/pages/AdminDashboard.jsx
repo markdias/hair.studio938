@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft, GripVertical, Star } from 'lucide-react';
+import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Users, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft, GripVertical } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
 
@@ -17,7 +17,7 @@ const TABS = [
     { id: 'appointments', label: 'Appointments', icon: <Calendar size={18} /> },
     { id: 'hours', label: 'Opening Hours', icon: <Clock size={18} /> },
     { id: 'clients', label: 'Clients', icon: <User size={18} /> },
-    { id: 'team', label: 'Team', icon: <User size={18} /> },
+    { id: 'team', label: 'Our Team', icon: <Users size={20} /> },
     { id: 'testimonials', label: 'Testimonials', icon: <MessageCircle size={18} /> },
     { id: 'gallery', label: 'Gallery', icon: <Image size={18} /> },
     { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
@@ -42,7 +42,7 @@ const GENERAL_FIELDS = [
 
 const CONTACT_FIELDS = [
     { key: 'email', label: 'Email Address', icon: <Mail size={16} /> },
-    { key: 'address', label: 'Salon Address', icon: <MapPin size={16} /> },
+    { key: 'address', label: 'Business Address', icon: <MapPin size={16} /> },
     { key: 'instagram_url', label: 'Instagram URL', icon: <Instagram size={16} /> },
     { key: 'facebook_url', label: 'Facebook URL', icon: <Facebook size={16} /> },
     { key: 'tiktok_url', label: 'TikTok URL', icon: <Music2 size={16} /> },
@@ -51,29 +51,29 @@ const CONTACT_FIELDS = [
 const EMAIL_VARIABLES = [
     { tag: '{{name}}', desc: 'Customer Name' },
     { tag: '{{service}}', desc: 'Service Name' },
-    { tag: '{{stylist}}', desc: 'Stylist Name' },
+    { tag: '{{professional}}', desc: 'Professional Name' },
     { tag: '{{date}}', desc: 'Date of Appointment' },
     { tag: '{{time}}', desc: 'Time of Appointment' },
-    { tag: '{{salon_phone}}', desc: 'Salon Phone Number' },
-    { tag: '{{salon_location}}', desc: 'Salon Address' },
+    { tag: '{{business_phone}}', desc: 'Business Phone Number' },
+    { tag: '{{business_address}}', desc: 'Business Address' },
 ];
 
 const DEFAULT_EMAIL_TEMPLATE = `
 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #EAE0D5; border-radius: 12px;">
     <h2 style="color: #3D2B1F; border-bottom: 2px solid #EAE0D5; padding-bottom: 10px;">Booking Confirmed!</h2>
     <p>Hi {{name}},</p>
-    <p>Thank you for choosing Studio 938. Your appointment is officially confirmed.</p>
+    <p>Thank you for choosing {{business_name}}. Your appointment is officially confirmed.</p>
 
     <div style="background-color: #FDFBF9; padding: 15px; border-radius: 8px; margin: 20px 0;">
         <p style="margin: 5px 0;"><strong>Service:</strong> {{service}}</p>
-        <p style="margin: 5px 0;"><strong>Stylist:</strong> {{stylist}}</p>
+        <p style="margin: 5px 0;"><strong>Professional:</strong> {{professional}}</p>
         <p style="margin: 5px 0;"><strong>Date:</strong> {{date}}</p>
         <p style="margin: 5px 0;"><strong>Time:</strong> {{time}}</p>
     </div>
 
     <p style="font-size: 0.9rem; color: #666;">
-        📍 <strong>Location:</strong> {{salon_location}}<br>
-        📞 <strong>Phone:</strong> {{salon_phone}}
+        📍 <strong>Location:</strong> {{business_address}}<br>
+        📞 <strong>Phone:</strong> {{business_phone}}
     </p>
 
     <p style="margin-top: 30px; font-size: 0.8rem; color: #999;">
@@ -308,7 +308,7 @@ const ImageUploader = ({ onUpload, folder = 'general', showMessage }) => {
             const filePath = `${folder}/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
-                .from('salon-assets')
+                .from('salon-assets') // Bucket name stays the same for compatibility
                 .upload(filePath, file);
 
             if (uploadError) throw uploadError;
@@ -1485,7 +1485,7 @@ const ThemeTab = ({ showMessage }) => {
                                     minHeight: '100px'
                                 }}
                             >
-                                <p className="text-xl">The Art of Hair Styling</p>
+                                <p className="text-xl">Premium Services & Professional Experience</p>
                             </div>
                         </div>
                         <div className="flex flex-col gap-2">
@@ -1509,7 +1509,7 @@ const ThemeTab = ({ showMessage }) => {
                                     minHeight: '100px'
                                 }}
                             >
-                                <p className="text-sm leading-relaxed">Luxury hair styling and bespoke treatments at 938 High Road. We provide professional hair services tailored to your unique style.</p>
+                                <p className="text-sm leading-relaxed">Experience exceptional care and professional services tailored to your unique needs. We provide high-quality results in a premium and welcoming environment.</p>
                             </div>
                         </div>
                     </div>
@@ -2181,7 +2181,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
 
                     <div className="flex gap-4 mb-6">
                         <input
-                            placeholder="New Category Name (e.g. NAILS)"
+                            placeholder="New Category Name"
                             value={newCategoryName}
                             onChange={(e) => setNewCategoryName(e.target.value)}
                             className="flex-grow px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
@@ -2351,29 +2351,30 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
         try {
             const { error } = await supabase.from('stylist_calendars').upsert(s);
             if (error) throw error;
-            showMessage('success', `Stylist ${s.stylist_name} updated!`);
+            showMessage('success', `Professional ${s.stylist_name} updated!`);
             refresh();
         } catch (err) { showMessage('error', err.message); }
     };
 
     const handleAdd = async () => {
-        if (!newStylist.stylist_name) return showMessage('error', 'Stylist name is required');
+        if (!newStylist.stylist_name) return showMessage('error', 'Professional name is required');
         try {
             const { error } = await supabase.from('stylist_calendars').insert([newStylist]);
             if (error) throw error;
             setNewStylist({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0 });
             setIsAdding(false);
             refresh();
-            showMessage('success', 'New stylist added!');
+            showMessage('success', 'New staff member added!');
         } catch (err) { showMessage('error', err.message); }
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this stylist?')) return;
+        if (!confirm('Are you sure you want to delete this professional?')) return;
         try {
             const { error } = await supabase.from('stylist_calendars').delete().eq('id', id);
             if (error) throw error;
-            showMessage('success', 'Stylist removed');
+            refresh();
+            showMessage('success', 'Professional removed');
         } catch (err) { showMessage('error', err.message); }
     };
 
@@ -2432,7 +2433,7 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
                         onClick={() => setIsAdding(!isAdding)}
                         className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium" style={{ backgroundColor: "#3D2B1F" }}
                     >
-                        <Plus size={18} /> Add Stylist
+                        <Plus size={18} /> Add Professional
                     </button>
                 </div>
             </div>
@@ -2450,12 +2451,12 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-6">
                     <h3 className="font-semibold text-amber-900 mb-3 flex items-center gap-2">
                         <Info size={18} />
-                        How to Set Up Google Calendar for a Stylist
+                        How to Set Up Google Calendar for a Staff Member
                     </h3>
                     <div className="text-sm text-amber-900 space-y-3">
                         <div>
-                            <p className="font-medium mb-1">1. Create or Access the Stylist's Google Calendar</p>
-                            <p className="text-amber-800 ml-4">Go to <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer" className="underline">calendar.google.com</a> and create a new calendar for the stylist or use an existing one.</p>
+                            <p className="font-medium mb-1">1. Create or Access the Google Calendar</p>
+                            <p className="text-amber-800 ml-4">Go to <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer" className="underline">calendar.google.com</a> and create a new calendar or use an existing one.</p>
                         </div>
                         <div>
                             <p className="font-medium mb-1">2. Share the Calendar</p>
@@ -2484,7 +2485,7 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
 
             {isAdding && (
                 <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm space-y-4">
-                    <h3 className="text-sm font-medium text-gray-700">New Stylist</h3>
+                    <h3 className="text-sm font-medium text-gray-700">New Staff Member</h3>
                     <div className="flex items-center gap-4">
                         <ImageUploader
                             folder="team"
@@ -2510,7 +2511,7 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg h-20 resize-none focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
                     />
                     <div className="flex gap-4">
-                        <button onClick={handleAdd} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Create Stylist</button>
+                        <button onClick={handleAdd} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Create Professional</button>
                         <button onClick={() => setIsAdding(false)} className="px-8 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all">Cancel</button>
                     </div>
                 </div>
@@ -2828,7 +2829,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
     const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
     // Check if salon is closed on the selected date
-    const isSalonClosed = React.useMemo(() => {
+    const isClosed = React.useMemo(() => {
         if (!newAppt.date || !openingHours || openingHours === '') return false;
         const selectedDate = new Date(newAppt.date);
         const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][selectedDate.getDay()];
@@ -3146,7 +3147,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                         body: JSON.stringify({ eventId: editingAppt.id, calendarId: editingAppt.calendarId })
                     });
 
-                    if (!delRes.ok) throw new Error('Failed to remove old appointment when switching stylist');
+                    if (!delRes.ok) throw new Error('Failed to remove old appointment when switching professional');
 
                     const res = await fetch('/api/book', {
                         method: 'POST',
@@ -3166,10 +3167,10 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
 
                     if (!res.ok) {
                         const data = await res.json();
-                        throw new Error(data.error || 'Failed to create new appointment for the new stylist');
+                        throw new Error(data.error || 'Failed to create new appointment for the new professional');
                     }
 
-                    showMessage('success', 'Appointment moved to new stylist');
+                    showMessage('success', 'Appointment moved to new professional');
                 } else {
                     const updatedData = {
                         startTime: startDateTime,
@@ -3284,13 +3285,13 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
             <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 mb-4 md:mb-6 space-y-3 md:space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     <div className="flex-1">
-                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Filter by Stylist</label>
+                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Filter by Professional</label>
                         <select
                             value={filterStylist}
                             onChange={(e) => setFilterStylist(e.target.value)}
                             className="w-full px-3 md:px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none h-[42px]"
                         >
-                            <option value="all">All Stylists</option>
+                            <option value="all">All Professionals</option>
                             {uniqueStylists.map(s => (
                                 <option key={s} value={s}>{s}</option>
                             ))}
@@ -3322,7 +3323,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                     <th className="px-6 py-3">Date & Time</th>
                                     <th className="px-6 py-3">Customer</th>
                                     <th className="px-6 py-3">Service</th>
-                                    <th className="px-6 py-3">Stylist</th>
+                                    <th className="px-6 py-3">Professional</th>
                                     <th className="px-6 py-3 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -3456,9 +3457,9 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                 <form onSubmit={handleAddAppointment} className="flex-1 overflow-y-auto p-6 space-y-5">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Stylist</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Professional</label>
                                             <select className="w-full p-2 border border-gray-300 rounded-lg" required value={newAppt.stylist} onChange={e => setNewAppt({ ...newAppt, stylist: e.target.value })}>
-                                                <option value="">-- Stylist --</option>
+                                                <option value="">-- Professional --</option>
                                                 {stylists?.map(s => <option key={s.id || s} value={s.stylist_name || s.name || s}>{s.stylist_name || s.name || s}</option>)}
                                             </select>
                                         </div>
@@ -3557,9 +3558,9 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                 <div className="flex items-center justify-center gap-2 text-sm text-gray-500 py-4">
                                                     <Loader2 size={18} className="animate-spin" /> checking...
                                                 </div>
-                                            ) : isSalonClosed ? (
+                                            ) : isClosed ? (
                                                 <div className="col-span-full text-sm text-center text-red-600 py-4 font-medium bg-red-50 rounded-lg border border-red-200">
-                                                    Salon is closed on this day
+                                                    Business is closed on this day
                                                 </div>
                                             ) : (
                                                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-48 overflow-y-auto custom-scrollbar">
@@ -3640,7 +3641,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Time</th>
                                                                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Customer</th>
                                                                 <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Service</th>
-                                                                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Stylist</th>
+                                                                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">Professional</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-100">
@@ -3722,14 +3723,14 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                         />
                                     </div>
                                     <div className="col-span-2 sm:col-span-1">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Stylist</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Professional</label>
                                         <select
                                             value={editForm.stylist}
                                             onChange={e => setEditForm({ ...editForm, stylist: e.target.value })}
                                             className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none text-base bg-white"
                                             required
                                         >
-                                            <option value="">-- Select Stylist --</option>
+                                            <option value="">-- Select Professional --</option>
                                             {stylists?.map(s => (
                                                 <option key={s.id || s} value={s.stylist_name || s.name || s}>
                                                     {s.stylist_name || s.name || s}
@@ -4087,7 +4088,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
         if (filteredWeek.length === 0) {
             return (
                 <div className="p-12 text-center bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-gray-500">The salon is closed on all days this week.</p>
+                    <p className="text-gray-500">We are closed on all days this week.</p>
                 </div>
             );
         }
@@ -4164,8 +4165,8 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
             return (
                 <div className="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-lg border border-gray-200">
                     <Clock size={48} className="text-gray-300 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900">Salon is Closed</h3>
-                    <p className="text-gray-500">The salon is not open on {currentDate.toLocaleDateString('en-GB', { weekday: 'long' })}.</p>
+                    <h3 className="text-lg font-medium text-gray-900">Closed</h3>
+                    <p className="text-gray-500">We are not open on {currentDate.toLocaleDateString('en-GB', { weekday: 'long' })}.</p>
                 </div>
             );
         }
@@ -4301,7 +4302,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
 
             {/* Legend */}
             <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-4 md:mt-6 pt-3 md:pt-4 border-t border-gray-200">
-                <span className="text-xs md:text-sm text-gray-600">Stylists:</span>
+                <span className="text-xs md:text-sm text-gray-600">Team:</span>
                 {stylists?.map(stylist => {
                     const name = stylist.stylist_name || stylist.name || stylist;
                     const colorClass = STYLIST_COLORS[name] || STYLIST_COLORS.default;
@@ -4533,11 +4534,12 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
     const previewHtml = template
         .replace(/{{name}}/g, 'Jane Doe')
         .replace(/{{service}}/g, 'Full Balayage')
-        .replace(/{{stylist}}/g, 'Jo')
+        .replace(/{{professional}}/g, 'Jo')
         .replace(/{{date}}/g, 'Friday, 30 January 2026')
         .replace(/{{time}}/g, '14:30')
-        .replace(/{{salon_phone}}/g, settings.phone || '020 8445 1122')
-        .replace(/{{salon_location}}/g, settings.address || '938 High Road, London');
+        .replace(/{{business_phone}}/g, settings.phone || '020 8445 1122')
+        .replace(/{{business_address}}/g, settings.address || '938 High Road, London')
+        .replace(/{{business_name}}/g, settings.business_name || 'Studio 938');
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

@@ -135,7 +135,7 @@ export default async function handler(req, res) {
             calendarId: calendarId,
             resource: {
                 summary: `[938] ${service} - ${name}`,
-                description: `Stylist: ${stylistName}\nService: ${service}\nPhone: ${phone}\nEmail: ${email || 'Not provided'}`,
+                description: `Professional: ${stylistName}\nService: ${service}\nPhone: ${phone}\nEmail: ${email}`,
                 start: { dateTime: startDateTime, timeZone: 'Europe/London' },
                 end: { dateTime: endDateTime, timeZone: 'Europe/London' },
                 reminders: { useDefault: true },
@@ -166,18 +166,18 @@ export default async function handler(req, res) {
 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #EAE0D5; border-radius: 12px;">
     <h2 style="color: #3D2B1F; border-bottom: 2px solid #EAE0D5; padding-bottom: 10px;">Booking Confirmed!</h2>
     <p>Hi {{name}},</p>
-    <p>Thank you for choosing Studio 938. Your appointment is officially confirmed.</p>
+    <p>Thank you for choosing {{business_name}}. Your appointment is officially confirmed.</p>
     
     <div style="background-color: #FDFBF9; padding: 15px; border-radius: 8px; margin: 20px 0;">
         <p style="margin: 5px 0;"><strong>Service:</strong> {{service}}</p>
-        <p style="margin: 5px 0;"><strong>Stylist:</strong> {{stylist}}</p>
+        <p style="margin: 5px 0;"><strong>Professional:</strong> {{professional}}</p>
         <p style="margin: 5px 0;"><strong>Date:</strong> {{date}}</p>
         <p style="margin: 5px 0;"><strong>Time:</strong> {{time}}</p>
     </div>
     
     <p style="font-size: 0.9rem; color: #666;">
-        📍 <strong>Location:</strong> {{salon_location}}<br>
-        📞 <strong>Phone:</strong> {{salon_phone}}
+        📍 <strong>Location:</strong> {{business_address}}<br>
+        📞 <strong>Phone:</strong> {{business_phone}}
     </p>
     
     <p style="margin-top: 30px; font-size: 0.8rem; color: #999;">
@@ -195,11 +195,12 @@ export default async function handler(req, res) {
                 const replacements = {
                     '{{name}}': name,
                     '{{service}}': service,
-                    '{{stylist}}': stylistName,
+                    '{{professional}}': stylistName,
+                    '{{business_name}}': settings.business_name || 'Studio 938',
                     '{{date}}': formattedDate,
                     '{{time}}': time,
-                    '{{salon_phone}}': settings.phone || '020 8445 1122',
-                    '{{salon_location}}': settings.address || '938 High Road, London'
+                    '{{business_phone}}': settings.phone || '020 8445 1122',
+                    '{{business_address}}': settings.address || '938 High Road, London'
                 };
 
                 Object.keys(replacements).forEach(key => {
@@ -208,8 +209,8 @@ export default async function handler(req, res) {
                 });
 
                 const mailOptions = {
-                    from: `"Studio 938" <${smtpUser}>`,
-                    to: email || smtpUser, // Customer or Salon if no email
+                    from: `"${settings.business_name || 'Studio 938'}" <${smtpUser}>`,
+                    to: email, // Customer
                     bcc: smtpUser, // Salon Copy
                     subject: emailSubject,
                     html: html

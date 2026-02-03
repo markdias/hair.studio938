@@ -3,6 +3,6 @@
 
 INSERT INTO site_settings (key, value)
 VALUES 
-  ('footer_description', 'Our salon is a space created for deep connection, beauty, and confidence. From expert coloring to bespoke styling, each offering is designed to enhance your natural look.'),
+  ('footer_description', 'Our studio is a space created for deep connection, beauty, and confidence. From expert services to bespoke styling, each offering is designed to enhance your natural look.'),
   ('terms_and_conditions', '')
 ON CONFLICT (key) DO NOTHING;
