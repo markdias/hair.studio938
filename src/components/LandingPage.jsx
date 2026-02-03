@@ -783,7 +783,7 @@ const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) =
                         loading="lazy"
                         allowFullScreen
                         referrerPolicy="no-referrer-when-downgrade"
-                        title="Hair Studio 938 Location"
+                        title={`${settings.business_name || 'Business'} Location`}
                         src={`https://www.google.com/maps?q=${encodeURIComponent(address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                     ></iframe>
                 </div>
