@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft, GripVertical } from 'lucide-react';
+import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft, GripVertical, Star } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
 
@@ -866,7 +866,7 @@ const OpeningHoursTab = ({ settings, setSettings, showMessage }) => {
     );
 };
 
-const PhoneNumbersEditor = ({ showMessage }) => {
+const PhoneNumbersEditor = ({ showMessage, settings, setSettings }) => {
     const [phoneNumbers, setPhoneNumbers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -914,6 +914,29 @@ const PhoneNumbersEditor = ({ showMessage }) => {
 
     const handleUpdate = async (id, field, value) => {
         try {
+            if (field === 'is_primary' && value === true) {
+                // Special handling for setting a new primary
+                const { error } = await supabase.from('phone_numbers').update({ is_primary: false }).not('id', 'eq', id);
+                if (error) throw error;
+
+                const { error: updateError } = await supabase.from('phone_numbers').update({ is_primary: true }).eq('id', id);
+                if (updateError) throw updateError;
+
+                // Sync to site_settings.phone for backward compatibility
+                const phoneObj = phoneNumbers.find(p => p.id === id);
+                if (phoneObj && phoneObj.number) {
+                    await supabase.from('site_settings').upsert({ key: 'phone', value: phoneObj.number });
+                    if (setSettings) setSettings(prev => ({ ...prev, phone: phoneObj.number }));
+                }
+
+                setPhoneNumbers(phoneNumbers.map(p => ({
+                    ...p,
+                    is_primary: p.id === id
+                })));
+                showMessage('success', 'Salon phone updated');
+                return;
+            }
+
             const { error } = await supabase
                 .from('phone_numbers')
                 .update({ [field]: value })
@@ -924,6 +947,14 @@ const PhoneNumbersEditor = ({ showMessage }) => {
             setPhoneNumbers(phoneNumbers.map(p =>
                 p.id === id ? { ...p, [field]: value } : p
             ));
+
+            // If updating number and it is primary, sync to site_settings
+            const updatedPhone = phoneNumbers.find(p => p.id === id);
+            if (field === 'number' && updatedPhone?.is_primary) {
+                await supabase.from('site_settings').upsert({ key: 'phone', value: value });
+                if (setSettings) setSettings(prev => ({ ...prev, phone: value }));
+            }
+
             showMessage('success', 'Phone number updated');
         } catch (err) {
             console.error('Error updating phone number:', err);
@@ -998,6 +1029,18 @@ const PhoneNumbersEditor = ({ showMessage }) => {
                                 placeholder="Enter phone number"
                                 className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
                             />
+                            <button
+                                onClick={() => handleUpdate(phone.id, 'is_primary', !phone.is_primary)}
+                                className={`px-3 py-2 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all ${phone.is_primary
+                                    ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200 border border-transparent'
+                                    }`}
+                                title={phone.is_primary ? "This is the primary salon number used in messages" : "Set as primary salon number"}
+                                disabled={phone.is_primary}
+                            >
+                                <Star size={14} className={phone.is_primary ? 'fill-amber-500' : ''} />
+                                {phone.is_primary ? 'Salon Phone' : 'Set as Salon'}
+                            </button>
 
                             <div className="flex gap-1">
                                 <button
@@ -1886,7 +1929,11 @@ const ContactTab = ({ settings, setSettings, showMessage, theme }) => {
 
             {/* Phone Numbers Editor - Full Width */}
             <div className="mb-6">
-                <PhoneNumbersEditor showMessage={showMessage} />
+                <PhoneNumbersEditor
+                    showMessage={showMessage}
+                    settings={settings}
+                    setSettings={setSettings}
+                />
             </div>
         </motion.div>
     );
