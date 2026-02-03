@@ -14,6 +14,8 @@ import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import { supabase } from './lib/supabase'
 import { useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Loader2 } from 'lucide-react'
 import './App.css'
 
 const ScrollToTop = () => {
@@ -95,7 +97,7 @@ const useSiteData = () => {
         { data: tests },
         { data: phones },
         { data: customSects },
-        { data: sections }
+        { data: fetchedSections }
       ] = await Promise.all([
         supabase.from('site_settings').select('*'),
         supabase.from('services_overview').select('*'),
@@ -112,13 +114,13 @@ const useSiteData = () => {
       if (settings) settings.forEach(s => settingsObj[s.key] = s.value);
 
       // Merge fetched sections with defaults
-      let mergedSections = sections || [];
+      let finalSections = fetchedSections || [];
 
       // Ensure ALL default sections exist in the list and have default properties
       DEFAULT_ORDER.forEach(def => {
-        const existing = mergedSections.find(s => s.id === def.id);
+        const existing = finalSections.find(s => s.id === def.id);
         if (!existing) {
-          mergedSections.push({ ...def, enabled: true });
+          finalSections.push({ ...def, enabled: true });
         } else {
           // Merge properties from default that might be missing or should be enforced
           if (existing.is_separate_page === undefined || existing.id === 'contact') {
@@ -130,8 +132,8 @@ const useSiteData = () => {
       // Add any custom sections that aren't in the list yet
       if (customSects) {
         customSects.forEach(cs => {
-          if (cs.enabled !== false && !mergedSections.find(ps => ps.id === cs.id)) {
-            mergedSections.push({
+          if (cs.enabled !== false && !finalSections.find(ps => ps.id === cs.id)) {
+            finalSections.push({
               id: cs.id,
               is_custom: true,
               enabled: true,
@@ -150,7 +152,7 @@ const useSiteData = () => {
         testimonials: tests || [],
         phoneNumbers: phones || [],
         customSections: customSects || [],
-        pageSections: mergedSections,
+        pageSections: finalSections,
         loading: false
       });
     } catch (err) {
@@ -167,73 +169,104 @@ const useSiteData = () => {
 };
 
 const MainSite = ({ siteData }) => {
-  const [showMainSite, setShowMainSite] = useState(() => {
-    return localStorage.getItem('hasSeenIntro') === 'true';
-  })
+  const { settings, pageSections, loading } = siteData;
+  const [showIntro, setShowIntro] = useState(false);
+
+  useEffect(() => {
+    // Only show intro if it's the first time and an intro video/url exists
+    const hasSeenIntro = localStorage.getItem('hasSeenIntro');
+    if (hasSeenIntro !== 'true' && (settings.intro_video_url || settings.intro_video_custom_url)) {
+      setShowIntro(true);
+    }
+  }, [settings.intro_video_url, settings.intro_video_custom_url]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[var(--primary-brown)]">
+        <Loader2 size={40} className="animate-spin text-[var(--accent-cream)]" />
+      </div>
+    );
+  }
+
+  // Kill Switch Check - Show maintenance screen if site is disabled
+  if (settings.site_enabled === 'false') {
+    return <MaintenanceScreen />;
+  }
 
   const handleIntroComplete = () => {
     localStorage.setItem('hasSeenIntro', 'true');
-    setShowMainSite(true);
-  }
+    setShowIntro(false);
+  };
 
-  if (siteData.loading) return null;
+  // Determine intro video URL (prefer custom URL if provided)
+  const introVideoUrl = settings.intro_video_custom_url || settings.intro_video_url;
 
   return (
     <>
-      {/* Kill Switch Check - Show maintenance screen if site is disabled */}
-      {siteData.settings.site_enabled === 'false' ? (
-        <MaintenanceScreen />
-      ) : (
-        <>
-          {!showMainSite && siteData.settings.intro_video_url && (
-            <IntroVideo onComplete={handleIntroComplete} videoUrl={siteData.settings.intro_video_url} />
-          )}
+      <AnimatePresence>
+        {showIntro && introVideoUrl && (
+          <IntroVideo
+            videoUrl={introVideoUrl}
+            onComplete={handleIntroComplete}
+          />
+        )}
+      </AnimatePresence>
 
-          {(showMainSite || !siteData.settings.intro_video_url) && (
-            <main className="main-content">
-              <Navbar settings={siteData.settings} customSections={siteData.customSections} pageSections={siteData.pageSections} />
-              <Hero settings={siteData.settings} pageSections={siteData.pageSections} />
+      <div className="flex flex-col min-h-screen transition-opacity duration-1000"
+        style={{ opacity: showIntro ? 0 : 1 }}>
+        <Navbar
+          settings={settings}
+          customSections={siteData.customSections}
+          pageSections={pageSections}
+        />
+        <Hero
+          settings={settings}
+          pageSections={pageSections}
+        />
 
-              {(() => {
-                const sortedSections = [...siteData.pageSections].sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
+        <main>
+          {(() => {
+            // Sort page sections by sort_order
+            const sitePageSections = [...pageSections].sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
 
-                return sortedSections.map(section => {
-                  const id = section.id;
-                  // If explicit enabled field exists and is false, skip (unless it's custom and we handled it)
-                  if (section.enabled === false) return null;
+            return sitePageSections.map((section) => {
+              if (section.enabled === false) return null;
 
-                  // Skip sections that are set to be separate pages
-                  if (section.is_separate_page) return null;
+              // Skip sections that are set to be separate pages
+              if (section.is_separate_page) return null;
 
-                  // Fixed Sections
-                  if (id === 'services') return <Services key="services" services={siteData.services} settings={siteData.settings} />;
-                  if (id === 'team') return <TeamSection key="team" team={siteData.team} settings={siteData.settings} />;
-                  if (id === 'pricing') return <PriceList key="pricing" pricing={siteData.pricing} settings={siteData.settings} />;
-                  if (id === 'testimonials') return <Testimonials key="testimonials" testimonials={siteData.testimonials} settings={siteData.settings} />;
-                  if (id === 'booking') return <BookingSystem key="booking" settings={siteData.settings} />;
-                  if (id === 'gallery') return <Gallery key="gallery" images={siteData.gallery} settings={siteData.settings} />;
-                  if (id === 'contact') return <Contact key="contact" settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />;
+              const id = section.id;
+              if (id === 'services') return <Services key={id} services={siteData.services} settings={settings} />;
+              if (id === 'team') return <TeamSection key={id} team={siteData.team} settings={settings} />;
+              if (id === 'pricing') return <PriceList key={id} pricing={siteData.pricing} settings={settings} />;
+              if (id === 'gallery') return <Gallery key={id} images={siteData.gallery} settings={settings} />;
+              if (id === 'testimonials') return <Testimonials key={id} testimonials={siteData.testimonials} settings={settings} />;
+              if (id === 'contact') return <Contact key={id} settings={settings} phoneNumbers={siteData.phoneNumbers} />;
+              if (id === 'booking') return <BookingSystem key={id} settings={settings} />;
 
-                  // Custom Sections
-                  const customSection = siteData.customSections.find(s => s.id === id);
-                  if (customSection) {
-                    return <CustomSection key={customSection.id} data={customSection} />;
-                  }
-                  return null;
-                });
-              })()}
+              if (section.is_custom) {
+                const custom = siteData.customSections.find(cs => cs.id === id);
+                if (custom && custom.enabled !== false) {
+                  return <CustomSection key={id} data={custom} />;
+                }
+              }
+              return null;
+            });
+          })()}
+        </main>
 
-              <Footer settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} pageSections={siteData.pageSections} />
-              <Analytics />
-              <SpeedInsights />
-              <CookieConsent />
-            </main>
-          )}
-        </>
-      )}
+        <Footer
+          settings={settings}
+          phoneNumbers={siteData.phoneNumbers}
+          pageSections={pageSections}
+        />
+        <Analytics />
+        <SpeedInsights />
+        <CookieConsent />
+      </div>
     </>
-  )
-}
+  );
+};
 
 function App() {
   const siteData = useSiteData();
