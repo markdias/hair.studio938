@@ -832,7 +832,7 @@ const OpeningHoursTab = ({ settings, setSettings, showMessage }) => {
                     <div>
                         <h3 className="text-lg font-medium text-gray-900">Show on Website</h3>
                         <p className="text-sm text-gray-500 text-pretty max-w-md mt-1">
-                            Toggle whether the opening hours are displayed in the hero section of the home page.
+                            Toggle whether the opening hours are displayed in the hero and footer sections.
                         </p>
                     </div>
                     <button
