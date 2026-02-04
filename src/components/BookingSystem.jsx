@@ -653,6 +653,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                                 return newBooking;
                                                                             });
                                                                             setTimeout(() => setStep(4), 100);
+                                                                        }}
                                                                         style={{
                                                                             padding: '12px 0',
                                                                             borderRadius: '10px',
