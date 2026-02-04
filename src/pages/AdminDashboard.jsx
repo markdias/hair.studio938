@@ -1402,6 +1402,13 @@ const ThemeTab = ({ showMessage }) => {
         { label: 'Background Color', var: '--soft-cream' },
         { label: 'Headings & Dark Text', var: '--text-dark' },
         { label: 'Light Text', var: '--text-light' },
+        { label: 'White', var: '--white' },
+        { label: 'Black', var: '--black' },
+        { label: 'Success Green', var: '--success-green' },
+        { label: 'Error Red', var: '--error-red' },
+        { label: 'Booking Card Background', var: '--booking-card-bg' },
+        { label: 'Pricing Card Background', var: '--pricing-card-bg' },
+        { label: 'Input Background', var: '--input-bg' },
     ];
 
     const handleChange = (cssVar, value) => {

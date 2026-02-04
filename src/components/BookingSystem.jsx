@@ -409,7 +409,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                         justifyContent: 'space-between'
                     }}>
                         <div>
-                            <h3 style={{ fontSize: '1.8rem', marginBottom: '30px', color: '#FFF' }}>Your Selection</h3>
+                            <h3 style={{ fontSize: '1.8rem', marginBottom: '30px', color: 'var(--white)' }}>Your Selection</h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
                                 <SelectionItem icon={<User size={20} />} label="Professional" value={booking.professional?.name || 'Not selected'} />
                                 <SelectionItem icon={<Scissors size={20} />} label="Service" value={booking.service || 'Not selected'} />
@@ -436,7 +436,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
 
                                     {/* Booking Details */}
                                     <div style={{
-                                        backgroundColor: '#F9F9F9',
+                                        backgroundColor: 'var(--input-bg)',
                                         borderRadius: '10px',
                                         padding: '20px',
                                         margin: '20px 0',
@@ -445,19 +445,19 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                     }}>
                                         <h4 style={{ fontSize: '1rem', color: 'var(--primary-brown)', marginBottom: '15px', fontWeight: '700' }}>Your Appointment</h4>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--accent-cream)' }}>
                                                 <span style={{ color: '#666', fontSize: '0.85rem' }}>Professional:</span>
                                                 <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.professional?.name}</span>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--accent-cream)' }}>
                                                 <span style={{ color: '#666', fontSize: '0.85rem' }}>Service:</span>
                                                 <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.service}</span>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--accent-cream)' }}>
                                                 <span style={{ color: '#666', fontSize: '0.85rem' }}>Date:</span>
                                                 <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.date}</span>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--accent-cream)' }}>
                                                 <span style={{ color: '#666', fontSize: '0.85rem' }}>Time:</span>
                                                 <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.time}</span>
                                             </div>
@@ -512,7 +512,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                             padding: '20px',
                                                             borderRadius: '12px',
                                                             border: booking.professional?.name === s.name ? '2px solid var(--primary-brown)' : '2px solid transparent',
-                                                            backgroundColor: booking.professional?.name === s.name ? 'var(--soft-cream)' : '#F9F9F9',
+                                                            backgroundColor: booking.professional?.name === s.name ? 'var(--soft-cream)' : 'var(--input-bg)',
                                                             transition: 'all 0.3s ease',
                                                             textAlign: 'center',
                                                             cursor: 'pointer'
@@ -621,8 +621,8 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                                 padding: '10px 20px',
                                                                                 borderRadius: '30px',
                                                                                 border: '1px solid var(--accent-cream)',
-                                                                                backgroundColor: booking.service === item ? 'var(--primary-brown)' : 'white',
-                                                                                color: booking.service === item ? '#FFF' : 'var(--primary-brown)',
+                                                                                backgroundColor: booking.service === item ? 'var(--primary-brown)' : 'var(--white)',
+                                                                                color: booking.service === item ? 'var(--white)' : 'var(--primary-brown)',
                                                                                 fontSize: '0.9rem',
                                                                                 transition: 'all 0.2s ease',
                                                                                 cursor: 'pointer',
@@ -722,8 +722,8 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                             padding: '12px 0',
                                                                             borderRadius: '10px',
                                                                             border: booking.time === t ? '2px solid #3D2B1F' : '1px solid var(--accent-cream)',
-                                                                            backgroundColor: booking.time === t ? '#3D2B1F' : 'white',
-                                                                            color: booking.time === t ? '#FFFFFF' : '#3D2B1F',
+                                                                            backgroundColor: booking.time === t ? 'var(--primary-brown)' : 'var(--white)',
+                                                                            color: booking.time === t ? 'var(--white)' : 'var(--primary-brown)',
                                                                             fontWeight: booking.time === t ? '700' : '400',
                                                                             fontSize: '0.9rem',
                                                                             transition: 'all 0.2s ease',
@@ -734,7 +734,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                     </button>
                                                                 ))
                                                             ) : (
-                                                                <div style={{ gridColumn: '1 / -1', padding: '20px', backgroundColor: '#F9F9F9', borderRadius: '10px', textAlign: 'center', color: '#999' }}>
+                                                                <div style={{ gridColumn: '1 / -1', padding: '20px', backgroundColor: 'var(--input-bg)', borderRadius: '10px', textAlign: 'center', color: '#999' }}>
                                                                     {booking.date ? 'No slots available for this date.' : 'Please select a date first.'}
                                                                 </div>
                                                             )}
