@@ -1001,33 +1001,36 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                     maxWidth: '1200px',
                     margin: '0 auto',
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
                     gap: '40px',
                     paddingBottom: '60px',
                     borderBottom: '1px solid rgba(var(--primary-rgb), 0.1)'
                 }}>
+                    {/* Column 1: Brand */}
                     <div style={{ textAlign: 'left' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
-                            <img src={settings.logo_url || "/logo.png"} alt="938 Logo" style={{ height: '50px', width: '50px', borderRadius: '50%', objectFit: 'cover' }} />
-                            <span style={{ fontSize: '1.5rem', fontWeight: '700', fontFamily: 'var(--font-heading)', color: 'var(--primary)' }}>{settings.business_name || 'STUDIO 938'}</span>
-                        </div>
-                        <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.8', maxWidth: '350px' }}>
-                            {settings.footer_description || "Premium hair styling and aesthetic treatments in a relaxing, boutique environment."}
+                        <h3 style={{ fontSize: '2rem', fontWeight: '400', fontFamily: 'var(--font-heading)', color: 'var(--primary)', margin: '0 0 20px 0' }}>
+                            {settings.business_name || 'Hair Studio 938'}
+                        </h3>
+                        <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.6', maxWidth: '250px', marginBottom: '25px' }}>
+                            {settings.footer_description || "Premium hair styling and aesthetic treatments."}
                         </p>
+                        <a href="#booking" style={{
+                            color: 'var(--text-main)',
+                            fontWeight: '700',
+                            textDecoration: 'none',
+                            borderBottom: '2px solid var(--text-main)',
+                            paddingBottom: '2px',
+                            fontSize: '0.9rem',
+                            letterSpacing: '1px',
+                            textTransform: 'uppercase'
+                        }}>
+                            Book Online
+                        </a>
                     </div>
 
+                    {/* Column 2: Important Links */}
                     <div>
-                        <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '25px', textTransform: 'uppercase', letterSpacing: '1px' }}>Quick Links</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <a href="#services" style={{ color: 'var(--text-main)', opacity: 0.8, textDecoration: 'none' }}>Services</a>
-                            <a href="#booking" style={{ color: 'var(--text-main)', opacity: 0.8, textDecoration: 'none' }}>Book Now</a>
-                            <a href="#pricing" style={{ color: 'var(--text-main)', opacity: 0.8, textDecoration: 'none' }}>Price List</a>
-                            <a href="#contact" style={{ color: 'var(--text-main)', opacity: 0.8, textDecoration: 'none' }}>Contact Us</a>
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '25px', textTransform: 'uppercase', letterSpacing: '1px' }}>Legal</h4>
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)' }}>Important Links</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {settings?.show_privacy_section !== 'false' && (
                                 <button
@@ -1040,7 +1043,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                                         cursor: 'pointer',
                                         textAlign: 'left',
                                         padding: 0,
-                                        opacity: 0.8,
+                                        opacity: 0.7,
                                     }}
                                 >
                                     {settings?.privacy_menu_name || "Privacy Policy"}
@@ -1057,7 +1060,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                                         cursor: 'pointer',
                                         textAlign: 'left',
                                         padding: 0,
-                                        opacity: 0.8,
+                                        opacity: 0.7,
                                     }}
                                 >
                                     {settings?.terms_menu_name || "Terms & Conditions"}
@@ -1066,14 +1069,43 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                         </div>
                     </div>
 
+                    {/* Column 3: Contact Us */}
+                    <div>
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)' }}>Contact Us</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', color: 'var(--text-main)', opacity: 0.7, fontSize: '0.95rem', lineHeight: '1.6' }}>
+                            {settings.business_address && (
+                                <p style={{ margin: 0, maxWidth: '200px' }}>{settings.business_address}</p>
+                            )}
+                            {settings.business_email && (
+                                <a href={`mailto:${settings.business_email}`} style={{ color: 'inherit', textDecoration: 'none' }}>{settings.business_email}</a>
+                            )}
+                            {settings.business_phone && (
+                                <a href={`tel:${settings.business_phone}`} style={{ color: 'inherit', textDecoration: 'none' }}>{settings.business_phone}</a>
+                            )}
+                            {/* Additional Phones */}
+                            {phoneNumbers.map((phone) => (
+                                <a key={phone.id} href={phone.type === 'whatsapp' ? `https://wa.me/${phone.number.replace(/\+/g, '')}` : `tel:${phone.number}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                    {phone.number}
+                                </a>
+                            ))}
+
+                            {settings.instagram_url && (
+                                <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-main)', display: 'inline-block', marginTop: '5px' }}>
+                                    <Instagram size={24} strokeWidth={1.5} />
+                                </a>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Column 4: Opening Hours */}
                     {settings.show_opening_hours !== 'false' && (
                         <div>
-                            <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '25px', textTransform: 'uppercase', letterSpacing: '1px' }}>Opening Hours</h4>
-                            <p style={{ color: 'var(--text-main)', opacity: 0.8, lineHeight: '1.8' }}>
-                                {settings.opening_hours || ""}
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)' }}>Opening Hours</h4>
+                            <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.6', fontSize: '0.95rem' }}>
+                                {settings.opening_hours || "Tue-Sat: 9 AM - 6 PM"}
                             </p>
                             {/* Dynamic Payment Icons */}
-                            <div style={{ display: 'flex', gap: '15px', marginTop: '10px', opacity: 0.6, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px', opacity: 0.8, flexWrap: 'wrap' }}>
                                 {(() => {
                                     const paymentLogos = {
                                         'visa': 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg',
@@ -1089,7 +1121,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                                             key={method}
                                             src={paymentLogos[method]}
                                             alt={method}
-                                            style={{ height: '20px' }}
+                                            style={{ height: '24px' }}
                                             onError={(e) => e.target.style.display = 'none'}
                                         />
                                     ));
