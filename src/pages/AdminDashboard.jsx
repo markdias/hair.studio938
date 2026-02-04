@@ -211,7 +211,16 @@ const AdminDashboard = ({ refreshSiteData }) => {
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-gray-200">
+                <div className="p-4 border-t border-gray-200 space-y-1">
+                    <a
+                        href="/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center gap-2 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-all text-sm"
+                    >
+                        <Monitor size={18} />
+                        Go to Website
+                    </a>
                     <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-2 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg transition-all text-sm"
@@ -1658,6 +1667,23 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                         </p>
                     </div>
                 )}
+            </div>
+
+            {/* Hidden Admin Link Info */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 shadow-sm mb-6">
+                <div className="flex items-start gap-3">
+                    <div className="mt-1 text-blue-600">
+                        <Info size={20} />
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-blue-900 text-lg">Hidden Admin Access</h3>
+                        <p className="text-blue-800 text-sm mt-1 leading-relaxed">
+                            For security and aesthetics, the link to this Admin Dashboard is hidden on the main website.
+                            <br />
+                            <strong>To access the dashboard:</strong> Double-click on the copyright text ("© 2024 ...") in the footer of the website.
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Dedicated Business Name Editor */}
