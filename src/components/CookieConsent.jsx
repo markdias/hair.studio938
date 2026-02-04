@@ -41,8 +41,8 @@ const CookieConsent = () => {
                         right: 0,
                         zIndex: 9999,
                         padding: '20px',
-                        backgroundColor: 'var(--primary-brown)',
-                        color: 'var(--accent-cream)',
+                        backgroundColor: 'var(--primary)',
+                        color: 'var(--accent)',
                         boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.3)',
                         borderTop: '1px solid rgba(234, 224, 213, 0.2)'
                     }}
@@ -77,7 +77,7 @@ const CookieConsent = () => {
                                     {/* <a 
                                         href="/privacy-policy" 
                                         style={{ 
-                                            color: 'var(--accent-cream)', 
+                                            color: 'var(--accent)', 
                                             textDecoration: 'underline',
                                             marginLeft: '5px'
                                         }}
@@ -101,8 +101,8 @@ const CookieConsent = () => {
                                 style={{
                                     padding: '10px 24px',
                                     backgroundColor: 'transparent',
-                                    color: 'var(--accent-cream)',
-                                    border: '1px solid var(--accent-cream)',
+                                    color: 'var(--accent)',
+                                    border: '1px solid var(--accent)',
                                     borderRadius: '4px',
                                     fontSize: '0.9rem',
                                     fontWeight: '600',
@@ -120,9 +120,9 @@ const CookieConsent = () => {
                                 onClick={handleAccept}
                                 style={{
                                     padding: '10px 24px',
-                                    backgroundColor: 'var(--accent-cream)',
-                                    color: 'var(--primary-brown)',
-                                    border: '1px solid var(--accent-cream)',
+                                    backgroundColor: 'var(--accent)',
+                                    color: 'var(--primary)',
+                                    border: '1px solid var(--accent)',
                                     borderRadius: '4px',
                                     fontSize: '0.9rem',
                                     fontWeight: '600',

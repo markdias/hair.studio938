@@ -62,10 +62,10 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
             justifyContent: 'space-between',
             alignItems: 'center',
             zIndex: 1000,
-            backgroundColor: (isCompact || isMenuOpen) ? 'rgba(var(--primary-brown-rgb), 0.98)' : 'rgba(var(--primary-brown-rgb), 0.8)',
+            backgroundColor: (isCompact || isMenuOpen) ? 'rgba(var(--primary-rgb), 0.98)' : 'rgba(var(--primary-rgb), 0.8)',
             backdropFilter: 'blur(10px)',
             transition: 'all 0.4s ease',
-            color: 'var(--accent-cream)',
+            color: 'var(--accent)',
             boxSizing: 'border-box'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -88,7 +88,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                     transition: 'all 0.4s ease',
                     fontFamily: 'var(--font-heading)'
                 }}>
-                    {settings.business_name || 'STUDIO 938'}
+                    {settings.business_name}
                 </span>
             </div>
 
@@ -162,8 +162,8 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         const isSeparate = bookingSection?.is_separate_page;
                         const style = {
                             padding: '10px 24px',
-                            backgroundColor: 'var(--accent-cream)',
-                            color: 'var(--primary-brown)',
+                            backgroundColor: 'var(--accent)',
+                            color: 'var(--primary)',
                             textDecoration: 'none'
                         };
 
@@ -316,9 +316,9 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     marginBottom: '1rem',
                     opacity: 0.8,
                     fontWeight: '600',
-                    color: 'var(--accent-cream)'
+                    color: 'var(--accent)'
                 }}>
-                    {settings.business_name || 'STUDIO 938'}
+                    {settings.business_name}
                 </div>
                 <h1 className="responsive-title" style={{
                     fontSize: 'clamp(3.5rem, 8vw, 5.5rem)',
@@ -327,7 +327,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     width: '100%'
                 }}>{settings.hero_title || ""}</h1>
                 <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '1.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
-                    {settings.hero_subtitle || "Premium services and bespoke treatments at 938 High Road."}
+                    {settings.hero_subtitle}
                 </p>
                 {settings.show_opening_hours !== 'false' && (
                     <div style={{
@@ -342,7 +342,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                         letterSpacing: '1px'
                     }}>
                         <Calendar size={18} />
-                        <span>{settings.opening_hours || "Tuesday - Saturday: 9:00 AM - 6:00 PM"}</span>
+                        <span>{settings.opening_hours}</span>
                     </div>
                 )}
                 <div className="hero-buttons" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', width: '100%', margin: '0 auto' }}>
@@ -392,21 +392,21 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
 
     const headingStyle = {
         fontSize: '3rem',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         marginBottom: '15px'
     };
 
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         margin: '0 auto'
     };
 
     const iconMap = {
-        Calendar: <Calendar style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
-        MapPin: <MapPin style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
-        Phone: <Phone style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
+        Calendar: <Calendar style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        MapPin: <MapPin style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Phone: <Phone style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
     };
 
     const displayServices = services;
@@ -433,7 +433,7 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
                         whileHover={{ y: -10 }}
                         style={{
                             padding: '50px 40px',
-                            backgroundColor: 'var(--soft-cream)',
+                            backgroundColor: 'var(--secondary)',
                             borderRadius: '8px',
                             textAlign: 'center',
                             transition: 'all 0.3s ease'
@@ -442,7 +442,7 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
                         <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
                             {iconMap[service.icon_name] || iconMap.Calendar}
                         </div>
-                        <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }}>{service.title}</h3>
+                        <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }}>{service.title}</h3>
                         <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#666', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8' }}>{service.description || service.desc}</p>
                     </motion.div>
                 ))}
@@ -458,20 +458,20 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 50px' : '120px 50px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--secondary)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
 
     const headingStyle = {
         fontSize: '3rem',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         marginBottom: '15px'
     };
 
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         margin: '0 auto'
     };
 
@@ -515,8 +515,8 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
                         >
                             <img src={member.image_url || member.img} alt={member.stylist_name || member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </motion.div>
-                        <h3 style={{ fontSize: '2rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', marginBottom: '5px' }}>{member.stylist_name || member.name}</h3>
-                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.85rem', marginBottom: '20px', opacity: 0.8 }}>{member.role}</p>
+                        <h3 style={{ fontSize: '2rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', marginBottom: '5px' }}>{member.stylist_name || member.name}</h3>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.85rem', marginBottom: '20px', opacity: 0.8 }}>{member.role}</p>
                         <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#666', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1.05rem' }}>{member.description || member.desc}</p>
                     </motion.div>
                 ))}
@@ -553,7 +553,7 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
     const headingStyle = {
         fontFamily: 'var(--font-heading)',
         fontSize: '6rem',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         textAlign: 'center',
         marginBottom: '60px',
         fontWeight: '400',
@@ -593,7 +593,7 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
                                 fontFamily: 'var(--font-heading)',
                                 fontSize: 'clamp(1.1rem, 3vw, 1.4rem)',
                                 fontWeight: '700',
-                                color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+                                color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
                                 letterSpacing: '2px',
                                 marginBottom: '20px',
                                 borderBottom: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(61,43,31,0.1)',
@@ -609,8 +609,8 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
                                         alignItems: 'baseline',
                                         gap: '20px'
                                     }}>
-                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', opacity: 0.8 }}>{item.name}</span>
-                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', fontWeight: '600', whiteSpace: 'nowrap' }}>{item.price}</span>
+                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', opacity: 0.8 }}>{item.name}</span>
+                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '600', whiteSpace: 'nowrap' }}>{item.price}</span>
                                     </div>
                                 ))}
                             </div>
@@ -631,8 +631,8 @@ const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) =
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 20px' : '120px 20px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--text-dark)',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--text-main)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--accent)',
         textAlign: 'center'
     };
 
@@ -645,7 +645,7 @@ const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) =
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--accent)',
         margin: '0 auto 40px'
     };
 
@@ -819,7 +819,7 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
                 <div style={{
                     display: 'flex',
                     gap: '15px',
-                    color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+                    color: textColor && textColor !== 'auto' ? textColor : 'var(--accent)',
                     marginBottom: '15px'
                 }}>
                     <Phone size={24} />
@@ -848,8 +848,8 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
                                     justifyContent: 'center',
                                     gap: '10px',
                                     padding: '12px',
-                                    backgroundColor: 'var(--accent-cream)',
-                                    color: 'var(--primary-brown)',
+                                    backgroundColor: 'var(--accent)',
+                                    color: 'var(--primary)',
                                     borderRadius: '8px',
                                     textDecoration: 'none',
                                     fontWeight: '600',
@@ -870,7 +870,7 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
             whileHover={{ y: -5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.08)' : 'rgba(234, 224, 213, 0.08)' }}
             style={cardStyle}
         >
-            <div style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)', marginBottom: '15px' }}>{icon}</div>
+            <div style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--accent)', marginBottom: '15px' }}>{icon}</div>
             <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.6, marginBottom: '5px', color: textColor && textColor !== 'auto' ? textColor : 'inherit' }}>{label}</div>
             <a href={link} target={link.startsWith('http') ? "_blank" : "_self"} rel="noopener noreferrer" style={{ color: textColor && textColor !== 'auto' ? textColor : '#FFF', fontSize: '1.1rem', fontWeight: '600', textDecoration: 'none', wordBreak: 'break-word' }}>{value}</a>
         </motion.div>
@@ -884,20 +884,20 @@ const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 20px' : '120px 20px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--secondary)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
 
     const headingStyle = {
         fontSize: '3rem',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         marginBottom: '15px'
     };
 
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         margin: '0 auto'
     };
 
@@ -945,7 +945,7 @@ const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false
                             </p>
                         </div>
                         {t.name && (
-                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', fontWeight: '700', textAlign: 'center', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '700', textAlign: 'center', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                 - {t.name}
                             </p>
                         )}
@@ -972,8 +972,8 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
         <>
             <footer style={{
                 padding: '80px 20px 40px',
-                backgroundColor: 'var(--soft-cream)',
-                color: 'var(--primary-brown)',
+                backgroundColor: 'var(--secondary)',
+                color: 'var(--primary)',
                 borderTop: '1px solid rgba(61, 43, 31, 0.1)'
             }}>
                 <div style={{
@@ -1003,13 +1003,13 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                             const bookingSection = pageSections.find(s => s.id === 'booking');
                             const isSeparate = bookingSection?.is_separate_page;
                             const style = {
-                                color: 'var(--primary-brown)',
+                                color: 'var(--primary)',
                                 textDecoration: 'none',
                                 fontWeight: '700',
                                 fontSize: '0.85rem',
                                 textTransform: 'uppercase',
                                 letterSpacing: '1px',
-                                borderBottom: '1px solid var(--primary-brown)',
+                                borderBottom: '1px solid var(--primary)',
                                 width: 'fit-content',
                                 paddingBottom: '2px'
                             };
@@ -1040,7 +1040,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                                         style={{
                                             background: 'none',
                                             border: 'none',
-                                            color: 'var(--primary-brown)',
+                                            color: 'var(--primary)',
                                             fontSize: '0.95rem',
                                             cursor: 'pointer',
                                             textAlign: 'left',
@@ -1060,7 +1060,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                                         style={{
                                             background: 'none',
                                             border: 'none',
-                                            color: 'var(--primary-brown)',
+                                            color: 'var(--primary)',
                                             fontSize: '0.95rem',
                                             cursor: 'pointer',
                                             textAlign: 'left',
@@ -1094,7 +1094,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                                     href={settings.instagram_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    style={{ color: 'var(--primary-brown)', marginTop: '5px', width: 'fit-content' }}
+                                    style={{ color: 'var(--primary)', marginTop: '5px', width: 'fit-content' }}
                                 >
                                     <Instagram size={20} />
                                 </a>

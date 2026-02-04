@@ -60,7 +60,7 @@ const PrivacyPolicyModal = ({ isOpen, onClose, content, title }) => {
                             transition={{ duration: 0.3, ease: 'easeOut' }}
                             onClick={(e) => e.stopPropagation()}
                             style={{
-                                backgroundColor: 'var(--soft-cream)',
+                                backgroundColor: 'var(--secondary)',
                                 borderRadius: '12px',
                                 maxWidth: '800px',
                                 width: '100%',
@@ -75,14 +75,14 @@ const PrivacyPolicyModal = ({ isOpen, onClose, content, title }) => {
                             {/* Header */}
                             <div style={{
                                 padding: '30px 40px 20px',
-                                borderBottom: '2px solid var(--primary-brown)',
+                                borderBottom: '2px solid var(--primary)',
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center'
                             }}>
                                 <h2 style={{
                                     fontSize: '2rem',
-                                    color: 'var(--primary-brown)',
+                                    color: 'var(--primary)',
                                     margin: 0,
                                     fontFamily: 'var(--font-heading)'
                                 }}>
@@ -95,7 +95,7 @@ const PrivacyPolicyModal = ({ isOpen, onClose, content, title }) => {
                                         border: 'none',
                                         cursor: 'pointer',
                                         padding: '8px',
-                                        color: 'var(--primary-brown)',
+                                        color: 'var(--primary)',
                                         transition: 'opacity 0.2s ease',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -113,7 +113,7 @@ const PrivacyPolicyModal = ({ isOpen, onClose, content, title }) => {
                                 padding: '30px 40px',
                                 overflowY: 'auto',
                                 flex: 1,
-                                color: 'var(--text-dark)',
+                                color: 'var(--text-main)',
                                 lineHeight: '1.8',
                                 fontSize: '1rem'
                             }}>

@@ -372,21 +372,21 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 0' : '120px 0',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--secondary)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit',
         minHeight: '800px'
     };
 
     const headingStyle = {
         fontSize: 'clamp(2.5rem, 8vw, 4rem)',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         marginBottom: '15px'
     };
 
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         margin: '0 auto'
     };
 
@@ -401,9 +401,9 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                 <div className="booking-card">
 
                     <div style={{
-                        backgroundColor: 'var(--primary-brown)',
+                        backgroundColor: 'var(--primary)',
                         padding: '60px 40px',
-                        color: 'var(--accent-cream)',
+                        color: 'var(--accent)',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between'
@@ -420,7 +420,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                         <div style={{ opacity: 0.6, fontSize: '0.9rem' }}>
                             Step {step} of 4
                             <div style={{ width: '100%', height: '4px', backgroundColor: 'rgba(255, 255, 255, 0.2)', marginTop: '10px', borderRadius: '2px' }}>
-                                <div style={{ width: `${(step / 4) * 100}%`, height: '100%', backgroundColor: 'var(--accent-cream)', transition: 'width 0.5s ease' }}></div>
+                                <div style={{ width: `${(step / 4) * 100}%`, height: '100%', backgroundColor: 'var(--accent)', transition: 'width 0.5s ease' }}></div>
                             </div>
                         </div>
                     </div>
@@ -429,10 +429,10 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                         <AnimatePresence mode="wait">
                             {isSuccess ? (
                                 <motion.div key="success" variants={containerVariants} initial="hidden" animate="visible" style={{ textAlign: 'center', paddingTop: '10px' }}>
-                                    <div style={{ width: '60px', height: '60px', backgroundColor: 'var(--primary-brown)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-                                        <Check color="var(--accent-cream)" size={30} />
+                                    <div style={{ width: '60px', height: '60px', backgroundColor: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                                        <Check color="var(--accent)" size={30} />
                                     </div>
-                                    <h3 style={{ fontSize: '1.8rem', color: 'var(--primary-brown)', marginBottom: '10px' }}>Booking Confirmed!</h3>
+                                    <h3 style={{ fontSize: '1.8rem', color: 'var(--primary)', marginBottom: '10px' }}>Booking Confirmed!</h3>
 
                                     {/* Booking Details */}
                                     <div style={{
@@ -443,7 +443,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                         textAlign: 'left',
                                         fontSize: '0.9rem'
                                     }}>
-                                        <h4 style={{ fontSize: '1rem', color: 'var(--primary-brown)', marginBottom: '15px', fontWeight: '700' }}>Your Appointment</h4>
+                                        <h4 style={{ fontSize: '1rem', color: 'var(--primary)', marginBottom: '15px', fontWeight: '700' }}>Your Appointment</h4>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
                                                 <span style={{ color: '#666', fontSize: '0.85rem' }}>Professional:</span>
@@ -511,15 +511,15 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                         style={{
                                                             padding: '20px',
                                                             borderRadius: '12px',
-                                                            border: booking.professional?.name === s.name ? '2px solid var(--primary-brown)' : '2px solid transparent',
-                                                            backgroundColor: booking.professional?.name === s.name ? 'var(--soft-cream)' : '#F9F9F9',
+                                                            border: booking.professional?.name === s.name ? '2px solid var(--primary)' : '2px solid transparent',
+                                                            backgroundColor: booking.professional?.name === s.name ? 'var(--secondary)' : '#F9F9F9',
                                                             transition: 'all 0.3s ease',
                                                             textAlign: 'center',
                                                             cursor: 'pointer'
                                                         }}
                                                     >
                                                         <img src={s.img} alt={s.name} style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '15px', objectFit: 'cover' }} />
-                                                        <div style={{ fontWeight: '700', color: 'var(--primary-brown)' }}>{s.name}</div>
+                                                        <div style={{ fontWeight: '700', color: 'var(--primary)' }}>{s.name}</div>
                                                         <div style={{ fontSize: '0.8rem', color: '#666' }}>{s.role.split(' ')[0]}</div>
                                                     </button>
                                                 ))}
@@ -533,8 +533,8 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                     style={{
                                                         padding: '12px 24px',
                                                         backgroundColor: 'transparent',
-                                                        color: 'var(--primary-brown)',
-                                                        border: '1px solid var(--primary-brown)',
+                                                        color: 'var(--primary)',
+                                                        border: '1px solid var(--primary)',
                                                         borderRadius: '8px',
                                                         fontSize: '0.9rem',
                                                         cursor: 'pointer',
@@ -542,7 +542,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                         width: 'fit-content'
                                                     }}
                                                     onMouseEnter={(e) => {
-                                                        e.target.style.backgroundColor = 'var(--soft-cream)';
+                                                        e.target.style.backgroundColor = 'var(--secondary)';
                                                     }}
                                                     onMouseLeave={(e) => {
                                                         e.target.style.backgroundColor = 'transparent';
@@ -580,7 +580,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                     if (filteredItems.length === 0) return null;
 
                                                     return (
-                                                        <div key={cat.title} style={{ borderBottom: '1px solid var(--accent-cream)', pb: '15px' }}>
+                                                        <div key={cat.title} style={{ borderBottom: '1px solid var(--accent)', pb: '15px' }}>
                                                             <button
                                                                 onClick={() => toggleCategory(cat.title)}
                                                                 style={{
@@ -595,7 +595,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                     textAlign: 'left'
                                                                 }}
                                                             >
-                                                                <div style={{ fontSize: '0.8rem', letterSpacing: '2px', color: 'var(--primary-brown)', fontWeight: '700', textTransform: 'uppercase' }}>
+                                                                <div style={{ fontSize: '0.8rem', letterSpacing: '2px', color: 'var(--primary)', fontWeight: '700', textTransform: 'uppercase' }}>
                                                                     {cat.title}
                                                                 </div>
                                                                 <div style={{ marginLeft: 'auto', color: '#999' }}>
@@ -620,9 +620,9 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                             style={{
                                                                                 padding: '10px 20px',
                                                                                 borderRadius: '30px',
-                                                                                border: '1px solid var(--accent-cream)',
-                                                                                backgroundColor: booking.service === item ? 'var(--primary-brown)' : 'white',
-                                                                                color: booking.service === item ? '#FFF' : 'var(--primary-brown)',
+                                                                                border: '1px solid var(--accent)',
+                                                                                backgroundColor: booking.service === item ? 'var(--primary)' : 'white',
+                                                                                color: booking.service === item ? '#FFF' : 'var(--primary)',
                                                                                 fontSize: '0.9rem',
                                                                                 transition: 'all 0.2s ease',
                                                                                 cursor: 'pointer',
@@ -657,7 +657,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                             <p style={{ color: '#666', marginBottom: '30px', fontSize: '0.9rem' }}>Select your preferred date to see available time slots.</p>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                                                 <div>
-                                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: 'var(--primary-brown)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                                         Pick a Date
                                                     </label>
                                                     <AntdDatePicker
@@ -682,7 +682,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                 </div>
 
                                                 <div>
-                                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: 'var(--primary-brown)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                                         Available Time Slots
                                                     </label>
                                                     {isLoadingSlots ? (
@@ -721,7 +721,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                         style={{
                                                                             padding: '12px 0',
                                                                             borderRadius: '10px',
-                                                                            border: booking.time === t ? '2px solid #3D2B1F' : '1px solid var(--accent-cream)',
+                                                                            border: booking.time === t ? '2px solid #3D2B1F' : '1px solid var(--accent)',
                                                                             backgroundColor: booking.time === t ? '#3D2B1F' : 'white',
                                                                             color: booking.time === t ? '#FFFFFF' : '#3D2B1F',
                                                                             fontWeight: booking.time === t ? '700' : '400',
@@ -757,7 +757,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                             const val = e.target.value;
                                                             setBooking(prev => ({ ...prev, name: val }));
                                                         }}
-                                                        style={{ padding: '15px 15px 15px 45px', width: '100%', border: '1px solid var(--accent-cream)', borderRadius: '8px', boxSizing: 'border-box', maxWidth: '100%' }}
+                                                        style={{ padding: '15px 15px 15px 45px', width: '100%', border: '1px solid var(--accent)', borderRadius: '8px', boxSizing: 'border-box', maxWidth: '100%' }}
                                                     />
                                                 </div>
                                                 <div style={{ position: 'relative' }}>
@@ -768,7 +768,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                             const val = e.target.value;
                                                             setBooking(prev => ({ ...prev, email: val }));
                                                         }}
-                                                        style={{ padding: '15px 15px 15px 45px', width: '100%', border: '1px solid var(--accent-cream)', borderRadius: '8px', boxSizing: 'border-box', maxWidth: '100%' }}
+                                                        style={{ padding: '15px 15px 15px 45px', width: '100%', border: '1px solid var(--accent)', borderRadius: '8px', boxSizing: 'border-box', maxWidth: '100%' }}
                                                     />
                                                 </div>
                                                 <div style={{ position: 'relative' }}>
@@ -779,7 +779,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                             const val = e.target.value;
                                                             setBooking(prev => ({ ...prev, phone: val }));
                                                         }}
-                                                        style={{ padding: '15px 15px 15px 45px', width: '100%', border: '1px solid var(--accent-cream)', borderRadius: '8px', boxSizing: 'border-box', maxWidth: '100%' }}
+                                                        style={{ padding: '15px 15px 15px 45px', width: '100%', border: '1px solid var(--accent)', borderRadius: '8px', boxSizing: 'border-box', maxWidth: '100%' }}
                                                     />
                                                 </div>
                                                 {(!booking.email && !booking.phone) && (
@@ -798,7 +798,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
 
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '40px' }}>
                                         {step > 1 && (
-                                            <button onClick={prevStep} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-brown)', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer' }}>
+                                            <button onClick={prevStep} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer' }}>
                                                 <ChevronLeft size={20} /> Back
                                             </button>
                                         )}

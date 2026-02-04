@@ -8,28 +8,29 @@ export const useTheme = () => useContext(ThemeContext);
 export const ThemeProvider = ({ children }) => {
 
     const FACOTRY_THEME = {
-        '--primary-brown': '#3D2B1F',
-        '--primary-brown-rgb': '61, 43, 31',
-        '--primary-brown-hover': '#4D3B2F',
-        '--accent-cream': '#EAE0D5',
-        '--soft-cream': '#F5F1ED',
-        '--text-dark': '#2A1D15',
-        '--text-light': '#FFFFFF',
+        '--primary': '#3D2B1F',
+        '--primary-rgb': '61, 43, 31',
+        '--primary-hover': '#4D3B2F',
+        '--accent': '#EAE0D5',
+        '--secondary': '#F5F1ED',
+        '--text-main': '#2A1D15',
+        '--text-contrast': '#FFFFFF',
         '--font-heading': "'Playfair Display', serif",
         '--font-body': "'Inter', sans-serif",
     };
 
     const [theme, setTheme] = useState(FACOTRY_THEME);
     const [loading, setLoading] = useState(true);
+    const [maintenance, setMaintenance] = useState(false);
 
     // Map database keys to CSS variable names
     const dbKeyToCssVar = {
-        'theme_primary': '--primary-brown',
-        'theme_primary_hover': '--primary-brown-hover',
-        'theme_accent': '--accent-cream',
-        'theme_soft_cream': '--soft-cream',
-        'theme_text_dark': '--text-dark',
-        'theme_text_light': '--text-light',
+        'theme_primary': '--primary',
+        'theme_primary_hover': '--primary-hover',
+        'theme_accent': '--accent',
+        'theme_soft_cream': '--secondary',
+        'theme_text_dark': '--text-main',
+        'theme_text_light': '--text-contrast',
         'theme_font_heading': '--font-heading',
         'theme_font_body': '--font-body',
     };
@@ -55,7 +56,7 @@ export const ThemeProvider = ({ children }) => {
 
             if (error) throw error;
 
-            if (data) {
+            if (data && data.length > 0) {
                 const newTheme = { ...FACOTRY_THEME };
                 data.forEach(setting => {
                     const cssVar = dbKeyToCssVar[setting.key];
@@ -64,9 +65,17 @@ export const ThemeProvider = ({ children }) => {
                     }
                 });
                 setTheme(newTheme);
+                setMaintenance(false);
+            } else {
+                // No theme settings found - trigger maintenance mode
+                setMaintenance(true);
             }
         } catch (err) {
             console.error('Error fetching theme:', err);
+            // On error, also default to maintenance or factory?
+            // User asked: "if there are no colours then we should say under maintenance"
+            // We'll assume error fetching = maintenance for safety.
+            setMaintenance(true);
         } finally {
             setLoading(false);
         }
@@ -84,11 +93,18 @@ export const ThemeProvider = ({ children }) => {
         Object.entries(themeSettings).forEach(([property, value]) => {
             root.style.setProperty(property, value);
 
-            // If we are setting primary brown, also set its RGB counter-part for rgba usage
-            if (property === '--primary-brown') {
+            // If we are setting primary, also set its RGB counter-part for rgba usage
+            if (property === '--primary') {
                 const rgb = hexToRgb(value);
                 if (rgb) {
-                    root.style.setProperty('--primary-brown-rgb', rgb);
+                    root.style.setProperty('--primary-rgb', rgb);
+                }
+            }
+            // Also handle accent rgb if needed, but primary is most critical
+            if (property === '--accent') {
+                const rgb = hexToRgb(value);
+                if (rgb) {
+                    root.style.setProperty('--accent-rgb', rgb);
                 }
             }
         });
@@ -99,6 +115,7 @@ export const ThemeProvider = ({ children }) => {
         const updatedTheme = { ...theme, ...newThemeSettings };
         setTheme(updatedTheme);
         applyTheme(updatedTheme);
+        setMaintenance(false); // Manually updating implies we have colors now
 
         // 2. Persist to Supabase
         const updates = Object.entries(newThemeSettings).map(([cssVar, value]) => {
@@ -113,7 +130,6 @@ export const ThemeProvider = ({ children }) => {
             const { error } = await supabase
                 .from('site_settings')
                 .upsert(updates);
-
             if (error) throw error;
         } catch (err) {
             console.error('Error saving theme:', err);
@@ -172,7 +188,7 @@ export const ThemeProvider = ({ children }) => {
 
 
     return (
-        <ThemeContext.Provider value={{ theme, updateTheme, saveAsDefault, resetToDefault, resetToFactory, loading }}>
+        <ThemeContext.Provider value={{ theme, updateTheme, saveAsDefault, resetToDefault, resetToFactory, loading, maintenance }}>
             {children}
         </ThemeContext.Provider>
     );

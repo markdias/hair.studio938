@@ -13,6 +13,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react"
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import { supabase } from './lib/supabase'
+import { useTheme } from './lib/ThemeContext'
 import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
@@ -170,6 +171,8 @@ const useSiteData = () => {
 
 const MainSite = ({ siteData }) => {
   const { settings, pageSections, loading } = siteData;
+  // Get maintenance state from theme context
+  const { maintenance, loading: themeLoading } = useTheme();
   const [showIntro, setShowIntro] = useState(false);
 
   useEffect(() => {
@@ -180,16 +183,16 @@ const MainSite = ({ siteData }) => {
     }
   }, [settings.intro_video_url, settings.intro_video_custom_url]);
 
-  if (loading) {
+  if (loading || themeLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[var(--primary-brown)]">
-        <Loader2 size={40} className="animate-spin text-[var(--accent-cream)]" />
+      <div className="flex items-center justify-center min-h-screen bg-[var(--primary)]">
+        <Loader2 size={40} className="animate-spin text-[var(--accent)]" />
       </div>
     );
   }
 
-  // Kill Switch Check - Show maintenance screen if site is disabled
-  if (settings.site_enabled === 'false') {
+  // Kill Switch Check - Show maintenance screen if site is disabled or theme data is missing
+  if (settings.site_enabled === 'false' || maintenance) {
     return <MaintenanceScreen />;
   }
 
@@ -203,8 +206,8 @@ const MainSite = ({ siteData }) => {
 
   return (
     <>
-      {/* Kill Switch Check - Show maintenance screen if site is disabled */}
-      {siteData.settings.site_enabled === 'false' ? (
+      {/* Kill Switch Check - Show maintenance screen if site is disabled or theme missing */}
+      {(siteData.settings.site_enabled === 'false' || maintenance) ? (
         <MaintenanceScreen />
       ) : (
         <>

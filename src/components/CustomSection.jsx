@@ -11,7 +11,7 @@ const CustomSection = ({ data, isSeparatePage = false }) => {
     }
 
     const elements = [...custom_section_elements].sort((a, b) => a.sort_order - b.sort_order);
-    const textColor = text_color || 'var(--primary-brown)';
+    const textColor = text_color || 'var(--primary)';
 
     return (
         <section
@@ -136,7 +136,7 @@ const TextBoxElement = ({ config, index }) => {
             viewport={{ once: true }}
             transition={{ delay: index * 0.1 }}
             className={`max-w-4xl mx-auto ${alignmentClass[alignment]} ${fontSizeClass[fontSize]}`}
-            style={{ color: 'var(--text-dark)' }}
+            style={{ color: 'var(--text-main)' }}
         >
             <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, '<br />') }} />
         </motion.div>
@@ -167,7 +167,7 @@ const CardElement = ({ config, index }) => {
                 )}
                 <div className="p-6">
                     {title && (
-                        <h3 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-dark)' }}>
+                        <h3 className="text-2xl font-bold mb-3" style={{ color: 'var(--text-main)' }}>
                             {title}
                         </h3>
                     )}
@@ -182,7 +182,7 @@ const CardElement = ({ config, index }) => {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-block px-6 py-3 rounded-lg text-white font-medium transition-all hover:shadow-lg"
-                            style={{ backgroundColor: 'var(--primary-brown)' }}
+                            style={{ backgroundColor: 'var(--primary)' }}
                         >
                             {link_text}
                         </a>
@@ -357,7 +357,7 @@ const CarouselElement = ({ config, index }) => {
                             setCurrentIndex(idx);
                         }}
                         className={`h-2 rounded-full transition-all ${idx === currentIndex ? 'w-8 bg-stone-800' : 'w-2 bg-stone-300'}`}
-                        style={{ backgroundColor: idx === currentIndex ? 'var(--primary-brown)' : '#d1d5db' }}
+                        style={{ backgroundColor: idx === currentIndex ? 'var(--primary)' : '#d1d5db' }}
                     />
                 ))}
             </div>
@@ -409,7 +409,7 @@ const ListElement = ({ config, index }) => {
                 {items.map((item, i) => (
                     <li key={i} className="flex gap-4 items-start text-lg md:text-xl">
                         {type === 'bullet' && (
-                            <span className="mt-2 w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--primary-brown)' }} />
+                            <span className="mt-2 w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--primary)' }} />
                         )}
                         <span>{item}</span>
                     </li>
@@ -442,10 +442,10 @@ const ButtonElement = ({ config, index }) => {
                 target={url && url.startsWith('http') ? '_blank' : '_self'}
                 rel="noopener noreferrer"
                 className={`inline-block px-8 py-4 rounded-lg font-bold text-lg transition-all hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl ${style === 'outline'
-                    ? 'border-2 border-[var(--primary-brown)] text-[var(--primary-brown)] bg-transparent hover:bg-[var(--primary-brown)] hover:text-white'
-                    : 'bg-[var(--primary-brown)] text-white hover:bg-opacity-90'
+                    ? 'border-2 border-[var(--primary)] text-[var(--primary)] bg-transparent hover:bg-[var(--primary)] hover:text-white'
+                    : 'bg-[var(--primary)] text-white hover:bg-opacity-90'
                     }`}
-                style={style === 'outline' ? { borderColor: 'var(--primary-brown)', color: 'var(--primary-brown)' } : { backgroundColor: 'var(--primary-brown)', color: 'white' }}
+                style={style === 'outline' ? { borderColor: 'var(--primary)', color: 'var(--primary)' } : { backgroundColor: 'var(--primary)', color: 'white' }}
             >
                 {label}
             </a>

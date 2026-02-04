@@ -185,11 +185,11 @@ const AdminDashboard = ({ refreshSiteData }) => {
             <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10  rounded-lg flex items-center justify-center" style={{ backgroundColor: "var(--primary-brown)" }}>
+                        <div className="w-10 h-10  rounded-lg flex items-center justify-center" style={{ backgroundColor: "var(--primary)" }}>
                             <Scissors size={20} className="text-white" />
                         </div>
                         <div>
-                            <h1 className="text-lg font-semibold text-gray-900">{siteSettings.business_name || 'Studio 938'}</h1>
+                            <h1 className="text-lg font-semibold text-gray-900">{siteSettings.business_name}</h1>
                             <p className="text-xs text-gray-500">Admin Panel</p>
                         </div>
                     </div>
@@ -418,11 +418,11 @@ const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultM
     const textColor = settings?.[textColorKey] || '';
 
     const themeColors = [
-        { name: 'Primary', value: 'var(--primary-brown)', hex: theme?.['--primary-brown'] || '#3D2B1F' },
-        { name: 'Accent', value: 'var(--accent-cream)', hex: theme?.['--accent-cream'] || '#EAE0D5' },
-        { name: 'Soft Cream', value: 'var(--soft-cream)', hex: theme?.['--soft-cream'] || '#F5F1ED' },
-        { name: 'Dark Text', value: 'var(--text-dark)', hex: theme?.['--text-dark'] || '#2A1D15' },
-        { name: 'Light Text', value: 'var(--text-light)', hex: theme?.['--text-light'] || '#FFFFFF' },
+        { name: 'Primary', value: 'var(--primary)', hex: theme?.['--primary'] || '#3D2B1F' },
+        { name: 'Accent', value: 'var(--accent)', hex: theme?.['--accent'] || '#EAE0D5' },
+        { name: 'Soft Cream', value: 'var(--secondary)', hex: theme?.['--secondary'] || '#F5F1ED' },
+        { name: 'Dark Text', value: 'var(--text-main)', hex: theme?.['--text-main'] || '#2A1D15' },
+        { name: 'Light Text', value: 'var(--text-contrast)', hex: theme?.['--text-contrast'] || '#FFFFFF' },
     ];
 
     const handleSaveSetting = async (key, value) => {
@@ -779,7 +779,7 @@ const OpeningHoursPicker = ({ initialValue, onSave, showMessage }) => {
                                         }
                                         border active:scale-95
                                     `}
-                                    style={selectedSlots[day][hourIdx] ? { backgroundColor: 'var(--primary-brown)' } : {}}
+                                    style={selectedSlots[day][hourIdx] ? { backgroundColor: 'var(--primary)' } : {}}
                                 />
                             ))}
                         </div>
@@ -797,7 +797,7 @@ const OpeningHoursPicker = ({ initialValue, onSave, showMessage }) => {
             <button
                 onClick={() => handleSaveHours()}
                 className="w-full px-4 py-3 bg-stone-800 text-white rounded-lg hover:shadow-lg transition-all font-medium"
-                style={{ backgroundColor: 'var(--primary-brown)' }}
+                style={{ backgroundColor: 'var(--primary)' }}
             >
                 Set Opening Hours
             </button>
@@ -849,7 +849,7 @@ const OpeningHoursTab = ({ settings, setSettings, showMessage }) => {
                     <button
                         onClick={() => handleToggleVisibility(!isVisible)}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isVisible ? 'bg-stone-800' : 'bg-gray-400'}`}
-                        style={isVisible ? { backgroundColor: 'var(--primary-brown)' } : { backgroundColor: '#9ca3af' }}
+                        style={isVisible ? { backgroundColor: 'var(--primary)' } : { backgroundColor: '#9ca3af' }}
                     >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${isVisible ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>
@@ -1006,7 +1006,7 @@ const PhoneNumbersEditor = ({ showMessage, settings, setSettings }) => {
                 <button
                     onClick={handleAdd}
                     className="flex items-center gap-2 px-3 py-1.5 bg-stone-800 text-white rounded-lg text-xs font-medium hover:bg-opacity-90 transition-all"
-                    style={{ backgroundColor: 'var(--primary-brown)' }}
+                    style={{ backgroundColor: 'var(--primary)' }}
                 >
                     <Plus size={14} />
                     Add Number
@@ -1045,7 +1045,7 @@ const PhoneNumbersEditor = ({ showMessage, settings, setSettings }) => {
                                 <button
                                     onClick={() => handleUpdate(phone.id, 'type', 'phone')}
                                     className={getTypeButtonClass(phone.type, 'phone')}
-                                    style={phone.type === 'phone' ? { backgroundColor: 'var(--primary-brown)', borderColor: 'var(--primary-brown)' } : {}}
+                                    style={phone.type === 'phone' ? { backgroundColor: 'var(--primary)', borderColor: 'var(--primary)' } : {}}
                                 >
                                     Phone
                                 </button>
@@ -1059,7 +1059,7 @@ const PhoneNumbersEditor = ({ showMessage, settings, setSettings }) => {
                                 <button
                                     onClick={() => handleUpdate(phone.id, 'type', 'both')}
                                     className={getTypeButtonClass(phone.type, 'both')}
-                                    style={phone.type === 'both' ? { backgroundColor: 'var(--primary-brown)', borderColor: 'var(--primary-brown)' } : {}}
+                                    style={phone.type === 'both' ? { backgroundColor: 'var(--primary)', borderColor: 'var(--primary)' } : {}}
                                 >
                                     Both
                                 </button>
@@ -1151,7 +1151,7 @@ const PrivacyPolicyEditor = ({ settings, setSettings, showMessage, theme }) => {
                     onClick={handleSave}
                     disabled={saving}
                     className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all disabled:opacity-50"
-                    style={{ backgroundColor: 'var(--primary-brown)' }}
+                    style={{ backgroundColor: 'var(--primary)' }}
                 >
                     {saving ? (
                         <>
@@ -1273,7 +1273,7 @@ const TermsAndConditionsEditor = ({ settings, setSettings, showMessage, theme })
                     onClick={handleSave}
                     disabled={saving}
                     className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all disabled:opacity-50"
-                    style={{ backgroundColor: 'var(--primary-brown)' }}
+                    style={{ backgroundColor: 'var(--primary)' }}
                 >
                     {saving ? (
                         <>
@@ -1364,7 +1364,7 @@ const BrandingEditor = ({ settings, onSave, showMessage }) => {
                             <button
                                 onClick={saveSize}
                                 className="px-3 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all text-sm"
-                                style={{ backgroundColor: 'var(--primary-brown)' }}
+                                style={{ backgroundColor: 'var(--primary)' }}
                             >
                                 <Save size={16} />
                             </button>
@@ -1396,12 +1396,12 @@ const ThemeTab = ({ showMessage }) => {
     }, [theme]);
 
     const colors = [
-        { label: 'Primary Brand Color', var: '--primary-brown' },
-        { label: 'Primary Hover Color', var: '--primary-brown-hover' },
-        { label: 'Accent Color', var: '--accent-cream' },
-        { label: 'Background Color', var: '--soft-cream' },
-        { label: 'Headings & Dark Text', var: '--text-dark' },
-        { label: 'Light Text', var: '--text-light' },
+        { label: 'Primary Brand Color', var: '--primary' },
+        { label: 'Primary Hover Color', var: '--primary-hover' },
+        { label: 'Accent Color', var: '--accent' },
+        { label: 'Background Color', var: '--secondary' },
+        { label: 'Headings & Dark Text', var: '--text-main' },
+        { label: 'Light Text', var: '--text-contrast' },
     ];
 
     const handleChange = (cssVar, value) => {
@@ -1540,7 +1540,7 @@ const ThemeTab = ({ showMessage }) => {
                         <button
                             onClick={handleSave}
                             className="flex items-center gap-2 px-6 py-2 bg-stone-800 text-white rounded-lg hover:shadow-lg transition-all font-medium"
-                            style={{ backgroundColor: 'var(--primary-brown)' }}
+                            style={{ backgroundColor: 'var(--primary)' }}
                         >
                             <Save size={18} />
                             Save Changes
@@ -1670,7 +1670,7 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                     <div className="flex gap-3">
                         <input
                             type="text"
-                            placeholder="e.g. Studio 938"
+                            placeholder="e.g business name"
                             value={settings.business_name || ''}
                             onChange={(e) => setSettings({ ...settings, business_name: e.target.value })}
                             className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-lg font-medium"
@@ -1678,7 +1678,7 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                         <button
                             onClick={() => handleSave('business_name', settings.business_name)}
                             className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center gap-2"
-                            style={{ backgroundColor: "var(--primary-brown)" }}
+                            style={{ backgroundColor: "var(--primary)" }}
                         >
                             <Save size={18} />
                             Save
@@ -1748,7 +1748,7 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                             />
                             <button
                                 onClick={() => handleSave('hero_bg_url', settings.hero_bg_url)}
-                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary-brown)" }}
+                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary)" }}
                             >
                                 <Save size={18} />
                             </button>
@@ -1805,7 +1805,7 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                             />
                             <button
                                 onClick={() => handleSave('intro_video_url', settings.intro_video_url)}
-                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary-brown)" }}
+                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary)" }}
                             >
                                 <Save size={18} />
                             </button>
@@ -1819,7 +1819,7 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                                     src={settings.intro_video_url}
                                     controls
                                     className="w-full h-full object-cover"
-                                    style={{ backgroundColor: 'var(--primary-brown)' }}
+                                    style={{ backgroundColor: 'var(--primary)' }}
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
@@ -1849,7 +1849,7 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                             <button
                                 onClick={() => handleSave(field.key, settings[field.key])}
                                 className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium flex items-center gap-2"
-                                style={{ backgroundColor: "var(--primary-brown)" }}
+                                style={{ backgroundColor: "var(--primary)" }}
                             >
                                 <Save size={18} /> Save
                             </button>
@@ -1917,7 +1917,7 @@ const ContactTab = ({ settings, setSettings, showMessage, theme }) => {
                             <button
                                 onClick={() => handleSave(field.key, settings[field.key])}
                                 className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium flex items-center gap-2"
-                                style={{ backgroundColor: "var(--primary-brown)" }}
+                                style={{ backgroundColor: "var(--primary)" }}
                             >
                                 <Save size={18} /> Save
                             </button>
@@ -2464,7 +2464,7 @@ const ServiceSelectionModal = ({ isOpen, onClose, onSave, initialSelection = [],
                     <button
                         onClick={() => { onSave(selected); onClose(); }}
                         className="flex-1 px-4 py-3 bg-stone-800 text-white rounded-xl font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-stone-200"
-                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                        style={{ backgroundColor: 'var(--primary)' }}
                     >
                         Save Selections
                     </button>
@@ -2934,7 +2934,7 @@ const StylistServiceModal = ({ isOpen, onClose, stylist, pricing, showMessage })
                     <button
                         onClick={onClose}
                         className="px-6 py-2.5 bg-stone-800 text-white rounded-xl font-bold hover:bg-stone-700 transition-all shadow-lg"
-                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                        style={{ backgroundColor: 'var(--primary)' }}
                     >
                         Done
                     </button>
@@ -4656,7 +4656,7 @@ const EditAppointmentModal = ({ appointment, onClose, onSave }) => {
 const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
 
     const [template, setTemplate] = useState(settings.email_template || DEFAULT_EMAIL_TEMPLATE.trim());
-    const [subject, setSubject] = useState(settings.email_subject || 'Booking Confirmation - Studio 938');
+    const [subject, setSubject] = useState(settings.email_subject);
     const [isSaving, setIsSaving] = useState(false);
     const [showHtmlSource, setShowHtmlSource] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
@@ -4724,7 +4724,7 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
     const resetToDefault = async () => {
         if (window.confirm('Reset to default template? This will overwrite your current changes.')) {
             const content = DEFAULT_EMAIL_TEMPLATE.trim();
-            const defaultSubject = 'Booking Confirmation - Studio 938';
+            const defaultSubject = 'Booking Confirmation';
             setTemplate(content);
             setSubject(defaultSubject);
             if (contentEditableRef.current) {
@@ -4749,12 +4749,12 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
     const previewHtml = template
         .replace(/{{name}}/g, 'Jane Doe')
         .replace(/{{service}}/g, 'Full Balayage')
-        .replace(/{{professional}}/g, 'Jo')
+        .replace(/{{professional}}/g, 'John Doe')
         .replace(/{{date}}/g, 'Friday, 30 January 2026')
         .replace(/{{time}}/g, '14:30')
-        .replace(/{{business_phone}}/g, settings.phone || '020 8445 1122')
-        .replace(/{{business_address}}/g, settings.address || '938 High Road, London')
-        .replace(/{{business_name}}/g, settings.business_name || 'Studio 938');
+        .replace(/{{business_phone}}/g, settings.phone)
+        .replace(/{{business_address}}/g, settings.address)
+        .replace(/{{business_name}}/g, settings.business_name);
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -4774,7 +4774,7 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
                         onClick={handleSave}
                         disabled={isSaving}
                         className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-stone-900 flex items-center gap-2 transition-all disabled:opacity-50"
-                        style={{ backgroundColor: "var(--primary-brown)" }}
+                        style={{ backgroundColor: "var(--primary)" }}
                     >
                         {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                         Save Settings
@@ -4793,7 +4793,7 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
                             value={subject}
                             onChange={(e) => setSubject(e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] focus:border-transparent outline-none"
-                            placeholder="e.g. Your Appointment at Studio 938"
+                            placeholder="e.g. Your Appointment at business name"
                         />
                     </div>
 
@@ -4968,7 +4968,7 @@ const ClientsTab = ({ clients, setClients, showMessage, refreshClients }) => {
                 <button
                     onClick={() => handleOpenModal()}
                     className="text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-90 transition-all font-medium"
-                    style={{ backgroundColor: "var(--primary-brown)" }}
+                    style={{ backgroundColor: "var(--primary)" }}
                 >
                     <Plus size={18} /> Add Client
                 </button>
@@ -5011,7 +5011,7 @@ const ClientsTab = ({ clients, setClients, showMessage, refreshClients }) => {
                                         <div className="flex justify-end gap-3">
                                             <button
                                                 onClick={() => handleOpenModal(client)}
-                                                className="text-[var(--primary-brown)] hover:underline font-medium flex items-center gap-1"
+                                                className="text-[var(--primary)] hover:underline font-medium flex items-center gap-1"
                                             >
                                                 <Edit size={14} /> Edit
                                             </button>
@@ -5164,7 +5164,7 @@ const TestimonialsTab = ({ testimonials, refresh, showMessage, settings, setSett
                 <button
                     onClick={() => handleOpenModal()}
                     className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:shadow-md transition-all text-sm font-medium"
-                    style={{ backgroundColor: 'var(--primary-brown)' }}
+                    style={{ backgroundColor: 'var(--primary)' }}
                 >
                     <Plus size={18} /> Add Testimonial
                 </button>
@@ -5271,7 +5271,7 @@ const TestimonialsTab = ({ testimonials, refresh, showMessage, settings, setSett
                                         type="submit"
                                         disabled={loading}
                                         className="flex-1 px-4 py-2 bg-stone-800 text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center justify-center gap-2"
-                                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                                        style={{ backgroundColor: 'var(--primary)' }}
                                     >
                                         {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                                         {editingTestimonial ? 'Update' : 'Save'} Testimonial
@@ -5402,7 +5402,7 @@ const CustomSectionsTab = ({ customSections = [], setCustomSections, siteSetting
                     <button
                         onClick={handleAddSection}
                         className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all"
-                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                        style={{ backgroundColor: 'var(--primary)' }}
                     >
                         <Plus size={18} />
                         Add New Section
@@ -5420,7 +5420,7 @@ const CustomSectionsTab = ({ customSections = [], setCustomSections, siteSetting
                     <button
                         onClick={handleAddSection}
                         className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all"
-                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                        style={{ backgroundColor: 'var(--primary)' }}
                     >
                         <Plus size={18} />
                         Add New Section
@@ -5449,7 +5449,7 @@ const CustomSectionsTab = ({ customSections = [], setCustomSections, siteSetting
                                     <button
                                         onClick={() => setEditingSection(section)}
                                         className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all"
-                                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                                        style={{ backgroundColor: 'var(--primary)' }}
                                     >
                                         <Edit size={16} />
                                         Edit
@@ -5706,7 +5706,7 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
                                 <button
                                     onClick={() => handleToggleEnabled(section.id, section.enabled)}
                                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-stone-500 focus:outline-none ${section.enabled ? 'bg-stone-800' : 'bg-gray-400'}`}
-                                    style={section.enabled ? { backgroundColor: 'var(--primary-brown)' } : { backgroundColor: '#9ca3af' }}
+                                    style={section.enabled ? { backgroundColor: 'var(--primary)' } : { backgroundColor: '#9ca3af' }}
                                 >
                                     <span
                                         className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${section.enabled ? 'translate-x-6' : 'translate-x-1'}`}
@@ -5960,7 +5960,7 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                         <button
                             onClick={() => setLocalSection({ ...localSection, enabled: !localSection.enabled })}
                             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${localSection.enabled ? 'bg-stone-800' : 'bg-gray-400'}`}
-                            style={localSection.enabled ? { backgroundColor: 'var(--primary-brown)' } : { backgroundColor: '#9ca3af' }}
+                            style={localSection.enabled ? { backgroundColor: 'var(--primary)' } : { backgroundColor: '#9ca3af' }}
                         >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${localSection.enabled ? 'translate-x-6' : 'translate-x-1'}`} />
                         </button>
@@ -5971,7 +5971,7 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                         onClick={handleSaveSection}
                         disabled={saving}
                         className="flex items-center gap-2 px-6 py-3 rounded-lg text-white font-medium transition-all disabled:opacity-50"
-                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                        style={{ backgroundColor: 'var(--primary)' }}
                     >
                         {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                         {saving ? 'Saving...' : 'Save Settings'}
@@ -5989,7 +5989,7 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                         onClick={() => setAddingElementType(true)}
                         disabled={elements.length >= localSection.element_limit}
                         className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                        style={{ backgroundColor: 'var(--primary)' }}
                     >
                         <Plus size={18} />
                         Add Element
@@ -6077,7 +6077,7 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                                     <button
                                         onClick={() => setEditingElement(element)}
                                         className="px-3 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all text-sm"
-                                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                                        style={{ backgroundColor: 'var(--primary)' }}
                                     >
                                         Configure
                                     </button>
@@ -6299,7 +6299,7 @@ const GalleryElementConfig = ({ config, onSave, showMessage }) => {
             <button
                 onClick={() => onSave({ images, columns })}
                 className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
-                style={{ backgroundColor: 'var(--primary-brown)' }}
+                style={{ backgroundColor: 'var(--primary)' }}
             >
                 Save Gallery
             </button>
@@ -6354,7 +6354,7 @@ const TextBoxElementConfig = ({ config, onSave }) => {
             <button
                 onClick={() => onSave({ content, alignment, fontSize })}
                 className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
-                style={{ backgroundColor: 'var(--primary-brown)' }}
+                style={{ backgroundColor: 'var(--primary)' }}
             >
                 Save Text Box
             </button>
@@ -6420,7 +6420,7 @@ const CardElementConfig = ({ config, onSave, showMessage }) => {
             <button
                 onClick={() => onSave({ title, description, image_url: imageUrl, link_url: linkUrl, link_text: linkText })}
                 className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
-                style={{ backgroundColor: 'var(--primary-brown)' }}
+                style={{ backgroundColor: 'var(--primary)' }}
             >
                 Save Card
             </button>
@@ -6479,7 +6479,7 @@ const ImageElementConfig = ({ config, onSave, showMessage }) => {
             <button
                 onClick={() => onSave({ url, alt, caption, size })}
                 className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
-                style={{ backgroundColor: 'var(--primary-brown)' }}
+                style={{ backgroundColor: 'var(--primary)' }}
             >
                 Save Image
             </button>
@@ -6538,7 +6538,7 @@ const VideoElementConfig = ({ config, onSave, showMessage }) => {
             <button
                 onClick={() => onSave({ url, type, autoplay })}
                 className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
-                style={{ backgroundColor: 'var(--primary-brown)' }}
+                style={{ backgroundColor: 'var(--primary)' }}
             >
                 Save Video
             </button>
@@ -6598,7 +6598,7 @@ const CarouselElementConfig = ({ config, onSave, showMessage }) => {
             <button
                 onClick={() => onSave({ images })}
                 className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
-                style={{ backgroundColor: 'var(--primary-brown)' }}
+                style={{ backgroundColor: 'var(--primary)' }}
             >
                 Save Carousel
             </button>
@@ -6633,7 +6633,7 @@ const QRCodeElementConfig = ({ config, onSave }) => {
             <button
                 onClick={() => onSave({ content })}
                 className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
-                style={{ backgroundColor: 'var(--primary-brown)' }}
+                style={{ backgroundColor: 'var(--primary)' }}
             >
                 Save QR Code
             </button>
@@ -6701,7 +6701,7 @@ const ListElementConfig = ({ config, onSave }) => {
             <button
                 onClick={() => onSave({ items, type })}
                 className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
-                style={{ backgroundColor: 'var(--primary-brown)' }}
+                style={{ backgroundColor: 'var(--primary)' }}
             >
                 Save List
             </button>
@@ -6763,7 +6763,7 @@ const ButtonElementConfig = ({ config, onSave }) => {
             <button
                 onClick={() => onSave({ label, url, style, alignment })}
                 className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
-                style={{ backgroundColor: 'var(--primary-brown)' }}
+                style={{ backgroundColor: 'var(--primary)' }}
             >
                 Save Button
             </button>
@@ -6872,7 +6872,7 @@ const TableElementConfig = ({ config, onSave }) => {
             <button
                 onClick={() => onSave({ rows, hasHeader })}
                 className="w-full px-4 py-3 rounded-lg text-white font-medium transition-all"
-                style={{ backgroundColor: 'var(--primary-brown)' }}
+                style={{ backgroundColor: 'var(--primary)' }}
             >
                 Save Table
             </button>
