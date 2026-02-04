@@ -9,7 +9,6 @@ export const ThemeProvider = ({ children }) => {
 
     const FACOTRY_THEME = {
         '--primary-brown': '#3D2B1F',
-        '--primary-brown-rgb': '61, 43, 31',
         '--primary-brown-hover': '#4D3B2F',
         '--accent-cream': '#EAE0D5',
         '--soft-cream': '#F5F1ED',
