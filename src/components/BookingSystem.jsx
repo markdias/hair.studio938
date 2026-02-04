@@ -173,6 +173,28 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
         });
         setStep(1);
     }, []);
+    useEffect(() => {
+        const handleHashChange = () => {
+            if (window.location.hash === '#booking') {
+                // reset state
+                setBooking({
+                    professional: null,
+                    service: null,
+                    date: null,
+                    time: null,
+                    duration_minutes: null,
+                    name: '',
+                    email: '',
+                    phone: ''
+                });
+                setStep(1);
+                setIsSuccess(false);
+                setError(null);
+            }
+        };
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+    }, []);
 
     const [timeSlots, setTimeSlots] = useState([]);
     const [isLoadingSlots, setIsLoadingSlots] = useState(false);

@@ -148,11 +148,11 @@ export default async function handler(req, res) {
         const timeMax = endOfDay(parseISO(date)).toISOString();
 
         const allBusySlots = await Promise.all(professionalsToCheck.map(async (st) => {
-            if (!st.calendar_id) return { stylist: st.stylist_name, busy: [] };
+            if (!st.calendar_id) return { professional: st.stylist_name, busy: [] };
             try {
                 const response = await calendar.events.list({ calendarId: st.calendar_id, timeMin, timeMax, singleEvents: true });
                 return {
-                    stylist: st.stylist_name,
+                    professional: st.stylist_name,
                     busy: response.data.items.map(event => ({
                         start: parseISO(event.start.dateTime || event.start.date),
                         end: parseISO(event.end.dateTime || event.end.date)
@@ -160,7 +160,7 @@ export default async function handler(req, res) {
                 };
             } catch (err) {
                 console.error(`Error fetching calendar for ${st.stylist_name}:`, err.message);
-                return { stylist: st.stylist_name, busy: [] };
+                return { professional: st.stylist_name, busy: [] };
             }
         }));
 
@@ -185,7 +185,7 @@ export default async function handler(req, res) {
                         return overlapStart < overlapEnd;
                     });
                     return !isBusy;
-                }).map(st => st.stylist_name.trim());
+                }).map(st => st.professional.trim());
 
                 if (availableProfessionals.length > 0) {
                     availableSlots.push({
