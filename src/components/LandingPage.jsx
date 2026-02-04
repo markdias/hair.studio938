@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2 } from 'lucide-react';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
@@ -990,6 +990,7 @@ const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false
 
 const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
     const location = useLocation();
+    const navigate = useNavigate();
     const isHomePage = location.pathname === '/';
     const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
     const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
@@ -1178,8 +1179,11 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                     borderTop: '1px solid rgba(var(--primary-rgb), 0.1)',
                     textAlign: 'center',
                     fontSize: '0.85rem',
-                    opacity: 0.5
-                }}>
+                    opacity: 0.5,
+                    cursor: 'default'
+                }}
+                    onDoubleClick={() => navigate('/admin/dashboard')}
+                    title="Double click to access Admin Dashboard">
                     &copy; {new Date().getFullYear()} {businessName}. All Rights Reserved.
                 </div>
             </footer>
