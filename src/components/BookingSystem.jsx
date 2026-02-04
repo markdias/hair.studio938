@@ -766,6 +766,11 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                         style={{ padding: '15px 15px 15px 45px', width: '100%', border: '1px solid var(--accent-cream)', borderRadius: '8px', boxSizing: 'border-box', maxWidth: '100%' }}
                                                     />
                                                 </div>
+                                                {(!booking.email && !booking.phone) && (
+                                                    <div style={{ fontSize: '0.86rem', color: '#dc2626', marginTop: '15px', fontWeight: '500' }}>
+                                                        * Please provide an email or phone number to continue.
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}

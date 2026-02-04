@@ -12,8 +12,8 @@ export default async function handler(req, res) {
     const { professional, service, date, time, name, email, phone, duration_minutes, send_email = true } = req.body;
     const duration = parseInt(duration_minutes) || 60;
 
-    if (!date || !time || !name || !email) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    if (!date || !time || !name || (!email && !phone)) {
+        return res.status(400).json({ error: 'Missing required fields. Name and at least one contact method (Email or Phone) are required.' });
     }
 
     const timezone = 'Europe/London';
@@ -118,20 +118,27 @@ export default async function handler(req, res) {
         }
 
 
-        // 0. UPSERT CLIENT
-        // Check if client exists, if not create, if yes update phone/name
+        // 0. CLIENT SYNC
         try {
-            const { error: clientError } = await supabase
-                .from('clients')
-                .upsert(
-                    { email, name, phone },
-                    { onConflict: 'email', ignoreDuplicates: false }
-                );
-
-            if (clientError) {
-                console.warn('Error upserting client:', clientError.message);
-            } else {
-                console.log('Client record synced for:', email);
+            if (email) {
+                const { error: clientError } = await supabase
+                    .from('clients')
+                    .upsert(
+                        { email, name, phone },
+                        { onConflict: 'email', ignoreDuplicates: false }
+                    );
+                if (clientError) console.warn('Error upserting client by email:', clientError.message);
+                else console.log('Client record synced by email:', email);
+            } else if (phone) {
+                // Find by phone
+                const { data: existingClients } = await supabase.from('clients').select('id').eq('phone', phone).limit(1);
+                if (existingClients && existingClients.length > 0) {
+                    await supabase.from('clients').update({ name }).eq('id', existingClients[0].id);
+                    console.log('Client record updated by phone:', phone);
+                } else {
+                    await supabase.from('clients').insert({ name, phone });
+                    console.log('New client created by phone:', phone);
+                }
             }
         } catch (clientErr) {
             console.warn('Client sync failed:', clientErr.message);
@@ -142,7 +149,7 @@ export default async function handler(req, res) {
             calendarId: calendarId,
             resource: {
                 summary: `[938] ${service} - ${name}`,
-                description: `Professional: ${finalProfessionalName}\nService: ${service}\nPhone: ${phone}\nEmail: ${email}`,
+                description: `Professional: ${finalProfessionalName}\nService: ${service}\nPhone: ${phone || 'N/A'}\nEmail: ${email || 'N/A'}`,
                 start: { dateTime: startDateTime, timeZone: 'Europe/London' },
                 end: { dateTime: endDateTime, timeZone: 'Europe/London' },
                 reminders: { useDefault: true },
@@ -152,13 +159,12 @@ export default async function handler(req, res) {
         console.log('Event created successfully:', calendarResponse.data.id);
 
         // 2. Send Email Notification (if SMTP is configured and send_email is true)
-        if (smtpUser && smtpPass && send_email) {
+        if (smtpUser && smtpPass && send_email && email) {
             try {
                 const transporter = nodemailer.createTransport({
                     service: 'gmail',
                     auth: { user: smtpUser, pass: smtpPass }
                 });
-
                 // Fetch template and salon info from settings
                 const { data: settingsData } = await supabase.from('site_settings').select('key, value');
                 const settings = {};
@@ -228,7 +234,7 @@ export default async function handler(req, res) {
                 console.error('Email Sending Error:', emailError.message);
             }
         } else {
-            console.warn('SMTP credentials missing, skipping email.');
+            console.warn(email ? 'SMTP credentials missing, skipping email.' : 'No customer email provided, skipping confirmation email.');
         }
 
         return res.status(200).json({
