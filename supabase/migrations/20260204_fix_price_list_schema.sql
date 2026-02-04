@@ -15,6 +15,16 @@ BEGIN
         ALTER TABLE public.price_list ADD COLUMN category TEXT;
     END IF;
 
+    -- Add 'sort_order' (INTEGER) column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='price_list' AND column_name='sort_order') THEN
+        ALTER TABLE public.price_list ADD COLUMN sort_order INTEGER DEFAULT 0;
+    END IF;
+
+    -- Change 'price' to TEXT to allow for flexible pricing (e.g. "from £50")
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='price_list' AND column_name='price') THEN
+        ALTER TABLE public.price_list ALTER COLUMN price TYPE TEXT;
+    END IF;
+
     -- 3. Sync data if category_id exists
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='price_list' AND column_name='category_id') THEN
         -- Link items to their category names
