@@ -2737,7 +2737,10 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <ImageUploader
                                         folder="team"
-                                        onUpload={(url) => handleFieldChange(idx, 'image_url', url)}
+                                        onUpload={(url) => {
+                                            handleFieldChange(idx, 'image_url', url);
+                                            handleSave({ ...s, image_url: url });
+                                        }}
                                         showMessage={showMessage}
                                     />
                                 </div>
