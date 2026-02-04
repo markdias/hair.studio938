@@ -69,9 +69,10 @@ Before starting, ensure you have:
 
 1. In Supabase dashboard, go to **SQL Editor** (left sidebar)
 2. Click **"New query"**
-3. Copy and paste the [Database Schema SQL](#database-schema) below
-4. Click **"Run"** to execute
-5. Verify success message appears
+3. Open the file `supabase/schema.sql` from this repository
+4. Copy its contents and paste into the Supabase SQL Editor
+5. Click **"Run"** to execute
+6. Verify success message appears
 
 ### Step 3: Get Credentials
 
@@ -279,11 +280,10 @@ CREATE POLICY "Enable read access for all users" ON public.clients
 CREATE POLICY "Enable insert access for all users" ON public.clients
     FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Enable update access for all users" ON public.clients
-    FOR UPDATE USING (true);
+The complete database schema is located in:
+`supabase/schema.sql`
 
-CREATE POLICY "Enable delete access for all users" ON public.clients
-    FOR DELETE USING (true);
+This file contains all necessary table definitions without any pre-filled data, allowing for a clean installation.
 
 CREATE INDEX IF NOT EXISTS clients_email_idx ON public.clients (email);
 
