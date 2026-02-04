@@ -18,23 +18,29 @@ export default async function handler(req, res) {
 
     const timezone = 'Europe/London';
 
-    try {
-        const cleanKey = (key) => {
-            if (!key) return null;
-            let cleaned = key.trim();
-            if (!cleaned.startsWith('-')) {
-                try {
-                    const decoded = Buffer.from(cleaned, 'base64').toString('utf8');
-                    if (decoded.includes('BEGIN PRIVATE KEY')) cleaned = decoded;
-                } catch (e) { }
-            }
-            cleaned = cleaned.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
-            if (cleaned.includes('BEGIN PRIVATE KEY') && !cleaned.includes('\n')) {
-                cleaned = cleaned.replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n').replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
-            }
-            return cleaned.trim();
-        };
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+    const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+    let calendarId = process.env.GOOGLE_CALENDAR_ID;
 
+    const cleanKey = (key) => {
+        if (!key) return null;
+        let cleaned = key.trim();
+        if (!cleaned.startsWith('-')) {
+            try {
+                const decoded = Buffer.from(cleaned, 'base64').toString('utf8');
+                if (decoded.includes('BEGIN PRIVATE KEY')) cleaned = decoded;
+            } catch (e) { }
+        }
+        cleaned = cleaned.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+        if (cleaned.includes('BEGIN PRIVATE KEY') && !cleaned.includes('\n')) {
+            cleaned = cleaned.replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n').replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
+        }
+        return cleaned.trim();
+    };
+
+    try {
         const cleanedKey = cleanKey(privateKey);
         const auth = new google.auth.JWT(clientEmail, null, cleanedKey, SCOPES);
         const calendar = google.calendar({ version: 'v3', auth });
@@ -195,7 +201,7 @@ export default async function handler(req, res) {
                 const replacements = {
                     '{{name}}': name,
                     '{{service}}': service,
-                    '{{stylist}}': stylistName,
+                    '{{stylist}}': finalStylistName,
                     '{{date}}': formattedDate,
                     '{{time}}': time,
                     '{{salon_phone}}': settings.phone || '020 8445 1122',

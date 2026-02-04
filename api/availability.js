@@ -18,32 +18,30 @@ export default async function handler(req, res) {
 
     // Check opening hours first
     const hoursCount = 13; // 8 AM to 8 PM
-    let openingSlots = new Array(hoursCount).fill(false); // Closed by default
+    let openingSlots = new Array(hoursCount).fill(true); // Default to open to avoid "no slots" bug
 
-    // Sensible default if parsing fails but we want to show SOMETHING (9 AM - 6 PM)
+    // Sensible default fallback (9 AM - 6 PM)
     const fallbackSlots = new Array(hoursCount).fill(false);
-    for (let i = 1; i <= 10; i++) fallbackSlots[i] = true; // Index 1 is 9 AM, Index 10 is 6 PM (starts at 8 AM)
+    for (let i = 1; i <= 10; i++) fallbackSlots[i] = true;
+
     try {
         const { data: settingsData, error: settingsError } = await supabase
             .from('site_settings')
-            .select('opening_hours')
+            .select('value')
+            .eq('key', 'opening_hours')
             .single();
 
-        if (!settingsError && settingsData?.opening_hours) {
+        const openingHoursText = settingsData?.value;
+
+        if (!settingsError && openingHoursText) {
             const selectedDate = parseISO(date);
             const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             const dayName = dayNames[selectedDate.getDay()];
 
-            // Parse opening hours matching the AdminDashboard format
             const parseOpeningHours = (text) => {
                 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                const hoursList = Array.from({ length: 13 }, (_, i) => i + 8);
                 const selectedSlots = {};
-
-                // Initialize all days as closed
-                days.forEach(day => {
-                    selectedSlots[day] = new Array(13).fill(false);
-                });
+                days.forEach(day => { selectedSlots[day] = new Array(13).fill(false); });
 
                 if (!text || text.toLowerCase() === 'closed') return selectedSlots;
 
@@ -53,8 +51,6 @@ export default async function handler(req, res) {
                     if (!match) return;
 
                     const [, dayPart, timePart] = match;
-                    const timeRanges = timePart.split(',').map(t => t.trim());
-
                     let targetDays = [];
                     if (dayPart.includes('-')) {
                         const [start, end] = dayPart.split('-').map(d => d.trim());
@@ -68,8 +64,8 @@ export default async function handler(req, res) {
                         if (day) targetDays.push(day);
                     }
 
-                    timeRanges.forEach(timeRange => {
-                        const timeMatch = timeRange.match(/(\d+)\s*(AM|PM)\s*-\s*(\d+)\s*(AM|PM)/i);
+                    timePart.split(',').forEach(range => {
+                        const timeMatch = range.match(/(\d+)\s*(AM|PM)\s*-\s*(\d+)\s*(AM|PM)/i);
                         if (!timeMatch) return;
                         let [, sh, sp, eh, ep] = timeMatch;
                         let startH = parseInt(sh);
@@ -80,33 +76,33 @@ export default async function handler(req, res) {
                         if (ep.toUpperCase() === 'AM' && endH === 12) endH = 0;
 
                         targetDays.forEach(day => {
-                            hoursList.forEach((hour, idx) => {
-                                if (hour >= startH && hour < endH) selectedSlots[day][idx] = true;
-                            });
+                            for (let h = 8; h < 21; h++) {
+                                if (h >= startH && h < endH) selectedSlots[day][h - 8] = true;
+                            }
                         });
                     });
                 });
                 return selectedSlots;
             };
 
-            const parsedHours = parseOpeningHours(settingsData.opening_hours);
+            const parsedHours = parseOpeningHours(openingHoursText);
             const slotsForDay = parsedHours[dayName];
 
             if (slotsForDay && slotsForDay.some(s => s)) {
                 openingSlots = slotsForDay;
-            } else if (settingsData.opening_hours && settingsData.opening_hours.toLowerCase() !== 'closed') {
-                // If it's not explicitly 'closed' but parsing failed, use fallback
-                console.warn('Opening hours parsing failed or returned no slots for', dayName, '- using fallback');
+            } else if (openingHoursText.toLowerCase() === 'closed') {
+                openingSlots = new Array(13).fill(false);
+            } else {
+                console.warn('Parsing failed for', dayName, '- using fallback');
                 openingSlots = fallbackSlots;
-            }
-
-            // If salon is strictly marked as closed on this day (either by parsing or if settings say 'closed')
-            if (!openingSlots.some(s => s)) {
-                return res.status(200).json({ slots: [], closed: true });
             }
         }
     } catch (err) {
-        console.warn('Could not fetch opening hours:', err.message);
+        console.warn('Opening hours check failed:', err.message);
+    }
+
+    if (!openingSlots.some(s => s)) {
+        return res.status(200).json({ slots: [], closed: true });
     }
 
     // Check for credentials
