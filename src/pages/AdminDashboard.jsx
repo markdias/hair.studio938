@@ -26,9 +26,9 @@ const TABS = [
 ];
 
 const STYLIST_COLORS = {
-    'Jo': 'bg-blue-100 text-blue-800 border-blue-200',
+    'Jo': 'bg-secondary text-blue-800 border-blue-200',
     'Nisha': 'bg-purple-100 text-purple-800 border-purple-200',
-    'default': 'bg-stone-100 text-stone-800 border-stone-200'
+    'default': 'bg-secondary text-primary border-primary/20'
 };
 
 const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -62,7 +62,7 @@ const EMAIL_VARIABLES = [
 
 const DEFAULT_EMAIL_TEMPLATE = `
 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #EAE0D5; border-radius: 12px;">
-    <h2 style="color: #3D2B1F; border-bottom: 2px solid #EAE0D5; padding-bottom: 10px;">Booking Confirmed!</h2>
+    <h2 style="color: var(--primary); border-bottom: 2px solid #EAE0D5; padding-bottom: 10px;">Booking Confirmed!</h2>
     <p>Hi {{name}},</p>
     <p>Thank you for choosing {{business_name}}. Your appointment is officially confirmed.</p>
 
@@ -173,14 +173,14 @@ const AdminDashboard = ({ refreshSiteData }) => {
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <Loader2 size={40} className="animate-spin text-stone-800" />
+                <Loader2 size={40} className="animate-spin text-primary" />
             </div>
         );
     }
 
 
     return (
-        <div className="flex h-screen bg-stone-50 font-sans text-stone-900">
+        <div className="flex h-screen bg-secondary font-sans text-stone-900">
             {/* Sidebar */}
             <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="p-6 border-b border-gray-200">
@@ -201,7 +201,7 @@ const AdminDashboard = ({ refreshSiteData }) => {
                             key={tab.id}
                             onClick={() => { setActiveTab(tab.id); setSidebarOpen(false); }}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm ${activeTab === tab.id
-                                ? 'bg-stone-100 text-stone-800 font-medium'
+                                ? 'bg-secondary text-primary font-medium'
                                 : 'text-gray-600 hover:bg-gray-50'
                                 }`}
                         >
@@ -232,7 +232,7 @@ const AdminDashboard = ({ refreshSiteData }) => {
                     >
                         <Menu size={24} />
                     </button>
-                    <span className="ml-4 font-bold text-stone-800">Admin Dashboard</span>
+                    <span className="ml-4 font-bold text-primary">Admin Dashboard</span>
                 </div>
 
                 <div className="max-w-6xl mx-auto p-8">
@@ -336,7 +336,7 @@ const ImageUploader = ({ onUpload, folder = 'general', showMessage }) => {
             />
             <button
                 disabled={uploading}
-                className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-all" style={{ backgroundColor: "#3D2B1F" }}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-all" style={{ backgroundColor: "var(--primary)" }}
             >
                 {uploading ? <Loader2 size={16} className="animate-spin" /> : <Image size={16} />}
                 {uploading ? 'Uploading...' : 'Upload Image'}
@@ -394,7 +394,7 @@ const VideoUploader = ({ onUpload, folder = 'videos', showMessage }) => {
             />
             <button
                 disabled={uploading}
-                className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-all" style={{ backgroundColor: "#3D2B1F" }}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-all" style={{ backgroundColor: "var(--primary)" }}
             >
                 {uploading ? <Loader2 size={16} className="animate-spin" /> : <Image size={16} />}
                 {uploading ? 'Uploading...' : 'Upload Video'}
@@ -418,7 +418,7 @@ const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultM
     const textColor = settings?.[textColorKey] || '';
 
     const themeColors = [
-        { name: 'Primary', value: 'var(--primary)', hex: theme?.['--primary'] || '#3D2B1F' },
+        { name: 'Primary', value: 'var(--primary)', hex: theme?.['--primary'] || 'var(--primary)' },
         { name: 'Accent', value: 'var(--accent)', hex: theme?.['--accent'] || '#EAE0D5' },
         { name: 'Soft Cream', value: 'var(--secondary)', hex: theme?.['--secondary'] || '#F5F1ED' },
         { name: 'Dark Text', value: 'var(--text-main)', hex: theme?.['--text-main'] || '#2A1D15' },
@@ -459,15 +459,15 @@ const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultM
             {!isCollapsed && (
                 <div className="px-6 pb-6 space-y-6">
                     {/* Toggle Section - Full Width */}
-                    <div className="flex items-center justify-between p-4 bg-stone-50 rounded-lg border border-stone-100">
+                    <div className="flex items-center justify-between p-4 bg-secondary rounded-lg border border-stone-100">
                         <div>
                             <p className="font-medium text-gray-900">Show Section</p>
                             <p className="text-xs text-gray-500">{description || `Enable or disable ${sectionId} on the website`}</p>
                         </div>
                         <button
                             onClick={() => handleSaveSetting(showKey, isVisible ? 'false' : 'true')}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${isVisible ? 'border-[#3D2B1F]' : 'border-gray-200'}`}
-                            style={{ backgroundColor: isVisible ? '#3D2B1F' : '#E5E7EB' }}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${isVisible ? 'border-[var(--primary)]' : 'border-gray-200'}`}
+                            style={{ backgroundColor: isVisible ? 'var(--primary)' : '#E5E7EB' }}
                         >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isVisible ? 'translate-x-6' : 'translate-x-1'}`} />
                         </button>
@@ -483,7 +483,7 @@ const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultM
                                     onChange={(e) => setSettings(prev => ({ ...prev, [menuNameKey]: e.target.value }))}
                                     onBlur={(e) => handleSaveSetting(menuNameKey, e.target.value)}
                                     placeholder={`e.g. ${defaultMenuName}`}
-                                    className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
+                                    className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
                                 />
                             </div>
                             <p className="text-xs text-gray-400">Text shown in navigation menu</p>
@@ -496,7 +496,7 @@ const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultM
                                     onChange={(e) => setSettings(prev => ({ ...prev, [headingNameKey]: e.target.value }))}
                                     onBlur={(e) => handleSaveSetting(headingNameKey, e.target.value)}
                                     placeholder={`e.g. ${defaultHeadingName}`}
-                                    className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
+                                    className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
                                 />
                             </div>
                             <p className="text-xs text-gray-400">Text shown as page section title</p>
@@ -774,7 +774,7 @@ const OpeningHoursPicker = ({ initialValue, onSave, showMessage }) => {
                                     className={`
                                         h-10 rounded cursor-pointer transition-all select-none
                                         ${selectedSlots[day][hourIdx]
-                                            ? 'bg-stone-800 text-white border-stone-900'
+                                            ? 'bg-primary text-white border-stone-900'
                                             : 'bg-gray-100 border-gray-300 hover:bg-gray-200'
                                         }
                                         border active:scale-95
@@ -796,7 +796,7 @@ const OpeningHoursPicker = ({ initialValue, onSave, showMessage }) => {
             {/* Save button */}
             <button
                 onClick={() => handleSaveHours()}
-                className="w-full px-4 py-3 bg-stone-800 text-white rounded-lg hover:shadow-lg transition-all font-medium"
+                className="w-full px-4 py-3 bg-primary text-white rounded-lg hover:shadow-lg transition-all font-medium"
                 style={{ backgroundColor: 'var(--primary)' }}
             >
                 Set Opening Hours
@@ -848,7 +848,7 @@ const OpeningHoursTab = ({ settings, setSettings, showMessage }) => {
                     </div>
                     <button
                         onClick={() => handleToggleVisibility(!isVisible)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isVisible ? 'bg-stone-800' : 'bg-gray-400'}`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isVisible ? 'bg-primary' : 'bg-gray-400'}`}
                         style={isVisible ? { backgroundColor: 'var(--primary)' } : { backgroundColor: '#9ca3af' }}
                     >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${isVisible ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -991,7 +991,7 @@ const PhoneNumbersEditor = ({ showMessage, settings, setSettings }) => {
     if (loading) {
         return (
             <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-                <Loader2 size={24} className="animate-spin text-stone-800 mx-auto" />
+                <Loader2 size={24} className="animate-spin text-primary mx-auto" />
             </div>
         );
     }
@@ -1005,7 +1005,7 @@ const PhoneNumbersEditor = ({ showMessage, settings, setSettings }) => {
                 </label>
                 <button
                     onClick={handleAdd}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-stone-800 text-white rounded-lg text-xs font-medium hover:bg-opacity-90 transition-all"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-medium hover:bg-opacity-90 transition-all"
                     style={{ backgroundColor: 'var(--primary)' }}
                 >
                     <Plus size={14} />
@@ -1020,13 +1020,13 @@ const PhoneNumbersEditor = ({ showMessage, settings, setSettings }) => {
             ) : (
                 <div className="space-y-3">
                     {phoneNumbers.map((phone) => (
-                        <div key={phone.id} className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg border border-stone-100">
+                        <div key={phone.id} className="flex items-center gap-3 p-3 bg-secondary rounded-lg border border-stone-100">
                             <input
                                 type="text"
                                 value={phone.number}
                                 onChange={(e) => handleUpdate(phone.id, 'number', e.target.value)}
                                 placeholder="Enter phone number"
-                                className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
+                                className="flex-grow px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
                             />
                             <button
                                 onClick={() => handleUpdate(phone.id, 'is_primary', !phone.is_primary)}
@@ -1125,7 +1125,7 @@ const PrivacyPolicyEditor = ({ settings, setSettings, showMessage, theme }) => {
     if (loading) {
         return (
             <div className="flex items-center justify-center p-8">
-                <Loader2 size={40} className="animate-spin text-stone-800" />
+                <Loader2 size={40} className="animate-spin text-primary" />
             </div>
         );
     }
@@ -1181,7 +1181,7 @@ const PrivacyPolicyEditor = ({ settings, setSettings, showMessage, theme }) => {
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="Enter your privacy policy content here..."
-                    className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none font-mono text-sm"
+                    className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none resize-none font-mono text-sm"
                     style={{ fontFamily: 'monospace' }}
                 />
 
@@ -1247,7 +1247,7 @@ const TermsAndConditionsEditor = ({ settings, setSettings, showMessage, theme })
     if (loading) {
         return (
             <div className="flex items-center justify-center p-8">
-                <Loader2 size={40} className="animate-spin text-stone-800" />
+                <Loader2 size={40} className="animate-spin text-primary" />
             </div>
         );
     }
@@ -1303,7 +1303,7 @@ const TermsAndConditionsEditor = ({ settings, setSettings, showMessage, theme })
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="Enter your terms and conditions content here..."
-                    className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none font-mono text-sm"
+                    className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none resize-none font-mono text-sm"
                     style={{ fontFamily: 'monospace' }}
                 />
 
@@ -1359,11 +1359,11 @@ const BrandingEditor = ({ settings, onSave, showMessage }) => {
                                 type="number"
                                 value={size}
                                 onChange={handleSizeChange}
-                                className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none text-sm"
+                                className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm"
                             />
                             <button
                                 onClick={saveSize}
-                                className="px-3 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all text-sm"
+                                className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all text-sm"
                                 style={{ backgroundColor: 'var(--primary)' }}
                             >
                                 <Save size={16} />
@@ -1372,7 +1372,7 @@ const BrandingEditor = ({ settings, onSave, showMessage }) => {
                     </div>
                 </div>
 
-                <div className="relative rounded-lg flex items-center justify-center p-4 bg-stone-50 border border-dashed border-gray-300 min-h-[140px]">
+                <div className="relative rounded-lg flex items-center justify-center p-4 bg-secondary border border-dashed border-gray-300 min-h-[140px]">
                     <div
                         className="relative shadow-md rounded-full bg-white flex items-center justify-center overflow-hidden border border-gray-100"
                         style={{ width: `${size}px`, height: `${size}px`, maxWidth: '100%', maxHeight: '120px' }}
@@ -1533,13 +1533,13 @@ const ThemeTab = ({ showMessage }) => {
                     <div className="flex gap-3">
                         <button
                             onClick={handleSaveDefault}
-                            className="px-4 py-2 text-stone-600 hover:bg-stone-50 border border-stone-200 rounded-lg text-sm font-medium transition-all"
+                            className="px-4 py-2 text-primary/80 hover:bg-secondary border border-primary/20 rounded-lg text-sm font-medium transition-all"
                         >
                             Save as Default
                         </button>
                         <button
                             onClick={handleSave}
-                            className="flex items-center gap-2 px-6 py-2 bg-stone-800 text-white rounded-lg hover:shadow-lg transition-all font-medium"
+                            className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:shadow-lg transition-all font-medium"
                             style={{ backgroundColor: 'var(--primary)' }}
                         >
                             <Save size={18} />
@@ -1591,17 +1591,17 @@ const PaymentMethodsEditor = ({ settings, onSave, showMessage }) => {
                             key={method.id}
                             onClick={() => toggleMethod(method.id)}
                             className={`flex flex-col items-center gap-3 p-4 rounded-xl border-2 transition-all group ${isActive
-                                ? 'border-stone-800 bg-stone-50'
+                                ? 'border-primary bg-secondary'
                                 : 'border-gray-100 hover:border-gray-200'
                                 }`}
                         >
                             <div className={`h-10 flex items-center justify-center transition-opacity ${isActive ? 'opacity-100' : 'opacity-40 grayscale group-hover:grayscale-0'}`}>
                                 <img src={method.logo} alt={method.label} className="max-h-full max-w-full" />
                             </div>
-                            <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? 'text-stone-800' : 'text-gray-400'}`}>
+                            <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? 'text-primary' : 'text-gray-400'}`}>
                                 {method.label}
                             </span>
-                            <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${isActive ? 'bg-stone-800 border-stone-800 text-white' : 'border-gray-300'}`}>
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${isActive ? 'bg-primary border-primary text-white' : 'border-gray-300'}`}>
                                 {isActive && <Check size={12} />}
                             </div>
                         </button>
@@ -1673,11 +1673,11 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                             placeholder="e.g business name"
                             value={settings.business_name || ''}
                             onChange={(e) => setSettings({ ...settings, business_name: e.target.value })}
-                            className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-lg font-medium"
+                            className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-lg font-medium"
                         />
                         <button
                             onClick={() => handleSave('business_name', settings.business_name)}
-                            className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center gap-2"
+                            className="px-6 py-2 bg-primary text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center gap-2"
                             style={{ backgroundColor: "var(--primary)" }}
                         >
                             <Save size={18} />
@@ -1695,7 +1695,7 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                         <select
                             value={settings.default_appointment_view || 'list'}
                             onChange={(e) => handleSave('default_appointment_view', e.target.value)}
-                            className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none h-[44px]"
+                            className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none h-[44px]"
                         >
                             <option value="list">List View</option>
                             <option value="day">Day View</option>
@@ -1744,11 +1744,11 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                                 placeholder="Or paste image URL (e.g., direct image link)"
                                 value={settings.hero_bg_url || ''}
                                 onChange={(e) => setSettings({ ...settings, hero_bg_url: e.target.value })}
-                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-sm"
+                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
                             />
                             <button
                                 onClick={() => handleSave('hero_bg_url', settings.hero_bg_url)}
-                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary)" }}
+                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary)" }}
                             >
                                 <Save size={18} />
                             </button>
@@ -1756,11 +1756,11 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                         <p className="text-xs text-gray-500">
                             Background image for your website's hero section.
                         </p>
-                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-stone-50 shadow-sm">
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-secondary shadow-sm">
                             {settings.hero_bg_url ? (
                                 <>
                                     <img src={settings.hero_bg_url} alt="Hero BG Preview" className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-[#3D2B1F]/60" />
+                                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-[var(--primary)]/60" />
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <div className="text-white/30 text-[10px] uppercase tracking-[0.2em] font-semibold">Hero Preview</div>
                                     </div>
@@ -1801,11 +1801,11 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                                 placeholder="Or paste video URL (e.g., Instagram, direct MP4 link)"
                                 value={settings.intro_video_url || ''}
                                 onChange={(e) => setSettings({ ...settings, intro_video_url: e.target.value })}
-                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-sm"
+                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
                             />
                             <button
                                 onClick={() => handleSave('intro_video_url', settings.intro_video_url)}
-                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary)" }}
+                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary)" }}
                             >
                                 <Save size={18} />
                             </button>
@@ -1813,7 +1813,7 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                         <p className="text-xs text-gray-500">
                             Plays when users first visit your website.
                         </p>
-                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-stone-50 shadow-sm">
+                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-secondary shadow-sm">
                             {settings.intro_video_url ? (
                                 <video
                                     src={settings.intro_video_url}
@@ -1844,11 +1844,11 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
                                 type="text"
                                 value={settings[field.key] || ''}
                                 onChange={(e) => setSettings({ ...settings, [field.key]: e.target.value })}
-                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                             />
                             <button
                                 onClick={() => handleSave(field.key, settings[field.key])}
-                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium flex items-center gap-2"
+                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all font-medium flex items-center gap-2"
                                 style={{ backgroundColor: "var(--primary)" }}
                             >
                                 <Save size={18} /> Save
@@ -1912,11 +1912,11 @@ const ContactTab = ({ settings, setSettings, showMessage, theme }) => {
                                 type="text"
                                 value={settings[field.key] || ''}
                                 onChange={(e) => setSettings({ ...settings, [field.key]: e.target.value })}
-                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                                className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                             />
                             <button
                                 onClick={() => handleSave(field.key, settings[field.key])}
-                                className="px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium flex items-center gap-2"
+                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all font-medium flex items-center gap-2"
                                 style={{ backgroundColor: "var(--primary)" }}
                             >
                                 <Save size={18} /> Save
@@ -2003,7 +2003,7 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings, th
                 <h2 className="text-2xl font-semibold text-gray-900">Service Highlights</h2>
                 <button
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary)" }}
                 >
                     <Plus size={18} /> {showAddForm ? 'Cancel' : 'Add Service'}
                 </button>
@@ -2016,17 +2016,17 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings, th
                         placeholder="Service Title"
                         value={newService.title}
                         onChange={(e) => setNewService({ ...newService, title: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                     <textarea
                         placeholder="Description"
                         value={newService.description}
                         onChange={(e) => setNewService({ ...newService, description: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg h-32 resize-none focus:ring-2 focus:ring-stone-800 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg h-32 resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                     <button
                         onClick={() => handleAdd()}
-                        className="w-full bg-stone-800 text-white font-medium py-3 rounded-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2" style={{ backgroundColor: "#3D2B1F" }}
+                        className="w-full bg-primary text-white font-medium py-3 rounded-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2" style={{ backgroundColor: "var(--primary)" }}
                     >
                         <Plus size={16} /> Create Service
                     </button>
@@ -2037,7 +2037,7 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings, th
                 {(localServices || []).map((s, idx) => (
                     <div key={s.id || idx} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-4">
                         <div className="flex items-start justify-between">
-                            <div className="w-12 h-12 bg-stone-50 rounded-lg flex items-center justify-center text-stone-800">
+                            <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center text-primary">
                                 <Scissors size={24} />
                             </div>
                             {s.id && (
@@ -2063,7 +2063,7 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings, th
                         />
                         <button
                             onClick={() => handleSave(s)}
-                            className="w-full bg-stone-800 text-white font-medium py-3 rounded-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2" style={{ backgroundColor: "#3D2B1F" }}
+                            className="w-full bg-primary text-white font-medium py-3 rounded-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2" style={{ backgroundColor: "var(--primary)" }}
                         >
                             <Save size={16} /> Save Changes
                         </button>
@@ -2168,14 +2168,14 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                 <h2 className="text-2xl font-semibold text-gray-900">Price List</h2>
                 <button
                     onClick={() => setIsManagingCategories(!isManagingCategories)}
-                    className="text-sm font-medium text-stone-800 hover:underline flex items-center gap-1"
+                    className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
                 >
                     {isManagingCategories ? 'Close Category Manager' : 'Manage Service Categories'}
                 </button>
             </div>
 
             {isManagingCategories && (
-                <div className="bg-stone-50 rounded-xl border border-stone-200 p-6 mb-8">
+                <div className="bg-secondary rounded-xl border border-primary/20 p-6 mb-8">
                     <h3 className="text-lg font-semibold text-stone-900 mb-4">Manage Service Categories</h3>
 
                     <div className="flex gap-4 mb-6">
@@ -2183,12 +2183,12 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                             placeholder="New Category Name"
                             value={newCategoryName}
                             onChange={(e) => setNewCategoryName(e.target.value)}
-                            className="flex-grow px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                            className="flex-grow px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                         />
                         <button
                             onClick={handleAddCategory}
-                            className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all flex items-center gap-2"
-                            style={{ backgroundColor: "#3D2B1F" }}
+                            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all flex items-center gap-2"
+                            style={{ backgroundColor: "var(--primary)" }}
                         >
                             <Plus size={18} /> Add Category
                         </button>
@@ -2196,7 +2196,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
 
                     <div className="space-y-3">
                         {(localCategories || []).map((cat, idx) => (
-                            <div key={cat.id || idx} className="flex items-center justify-between p-3 bg-white border border-stone-200 rounded-lg">
+                            <div key={cat.id || idx} className="flex items-center justify-between p-3 bg-white border border-primary/20 rounded-lg">
                                 <input
                                     value={cat.name}
                                     onChange={(e) => {
@@ -2205,7 +2205,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                                         setLocalCategories(updated);
                                     }}
                                     onBlur={(e) => handleUpdateCategory(cat, e.target.value)}
-                                    className="font-medium text-stone-800 border-none p-0 focus:ring-0 outline-none flex-grow"
+                                    className="font-medium text-primary border-none p-0 focus:ring-0 outline-none flex-grow"
                                 />
                                 <button
                                     onClick={() => handleDeleteCategory(cat)}
@@ -2259,7 +2259,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                     </select>
                     <button
                         onClick={handleAdd}
-                        className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all flex items-center gap-2" style={{ backgroundColor: "#3D2B1F" }}
+                        className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all flex items-center gap-2" style={{ backgroundColor: "var(--primary)" }}
                     >
                         <Plus size={18} /> Add
                     </button>
@@ -2290,7 +2290,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                                 <input
                                     value={item.price}
                                     onChange={(e) => handleFieldChange(idx, 'price', e.target.value)}
-                                    className="text-stone-800 font-semibold border-none p-0 focus:ring-0 outline-none w-24"
+                                    className="text-primary font-semibold border-none p-0 focus:ring-0 outline-none w-24"
                                 />
                                 <select
                                     value={item.duration_minutes || 60}
@@ -2311,7 +2311,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => handleSaveItem(item)}
-                                className="text-stone-600 hover:text-stone-900 transition-colors p-2"
+                                className="text-primary/80 hover:text-stone-900 transition-colors p-2"
                                 title="Save"
                             >
                                 <Save size={18} />
@@ -2398,12 +2398,12 @@ const ServiceSelectionModal = ({ isOpen, onClose, onSave, initialSelection = [],
                             placeholder="Search services..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
                         />
                     </div>
                     <button
                         onClick={toggleAll}
-                        className="px-4 py-2 text-sm font-medium text-stone-800 hover:bg-white rounded-lg border border-transparent hover:border-gray-200 transition-all font-bold"
+                        className="px-4 py-2 text-sm font-medium text-primary hover:bg-white rounded-lg border border-transparent hover:border-gray-200 transition-all font-bold"
                     >
                         {isAllSelected ? 'Deselect All' : 'Select All'}
                     </button>
@@ -2419,10 +2419,10 @@ const ServiceSelectionModal = ({ isOpen, onClose, onSave, initialSelection = [],
                         return (
                             <div key={cat.id || cat.name} className="space-y-3">
                                 <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-                                    <h4 className="font-bold text-stone-800 uppercase tracking-wider text-xs">{cat.name}</h4>
+                                    <h4 className="font-bold text-primary uppercase tracking-wider text-xs">{cat.name}</h4>
                                     <button
                                         onClick={() => toggleCategory(cat.name)}
-                                        className="text-xs font-bold text-stone-600 hover:text-stone-900 underline"
+                                        className="text-xs font-bold text-primary/80 hover:text-stone-900 underline"
                                     >
                                         {isCatSelected ? 'Deselect Category' : 'Select Category'}
                                     </button>
@@ -2432,7 +2432,7 @@ const ServiceSelectionModal = ({ isOpen, onClose, onSave, initialSelection = [],
                                         <label
                                             key={service.id}
                                             className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${selected.includes(service.item_name)
-                                                ? 'bg-stone-50 border-stone-800 ring-1 ring-stone-800'
+                                                ? 'bg-secondary border-primary ring-1 ring-primary'
                                                 : 'bg-white border-gray-100 hover:border-gray-300'
                                                 }`}
                                         >
@@ -2440,7 +2440,7 @@ const ServiceSelectionModal = ({ isOpen, onClose, onSave, initialSelection = [],
                                                 type="checkbox"
                                                 checked={selected.includes(service.item_name)}
                                                 onChange={() => toggleService(service.item_name)}
-                                                className="rounded border-gray-300 text-stone-800 focus:ring-stone-500"
+                                                className="rounded border-gray-300 text-primary focus:ring-stone-500"
                                             />
                                             <div className="flex-grow">
                                                 <div className="text-sm font-medium text-gray-900">{service.item_name}</div>
@@ -2463,7 +2463,7 @@ const ServiceSelectionModal = ({ isOpen, onClose, onSave, initialSelection = [],
                     </button>
                     <button
                         onClick={() => { onSave(selected); onClose(); }}
-                        className="flex-1 px-4 py-3 bg-stone-800 text-white rounded-xl font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-stone-200"
+                        className="flex-1 px-4 py-3 bg-primary text-white rounded-xl font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-stone-200"
                         style={{ backgroundColor: 'var(--primary)' }}
                     >
                         Save Selections
@@ -2567,13 +2567,13 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
                 <div className="flex gap-2">
                     <button
                         onClick={handleSaveOrder}
-                        className="flex items-center gap-2 px-4 py-2 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-all border border-stone-200"
+                        className="flex items-center gap-2 px-4 py-2 bg-secondary text-primary/90 rounded-lg hover:bg-stone-200 transition-all border border-primary/20"
                     >
                         <Save size={18} /> Save Order
                     </button>
                     <button
                         onClick={() => setIsAdding(!isAdding)}
-                        className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all font-medium" style={{ backgroundColor: "#3D2B1F" }}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all font-medium" style={{ backgroundColor: "var(--primary)" }}
                     >
                         <Plus size={18} /> Add Professional
                     </button>
@@ -2636,15 +2636,15 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
                         />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input value={newStylist.stylist_name} onChange={e => setNewStylist({ ...newStylist, stylist_name: e.target.value })} placeholder="Name" className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
-                        <input value={newStylist.role} onChange={e => setNewStylist({ ...newStylist, role: e.target.value })} placeholder="Role" className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
-                        <input type="number" value={newStylist.sort_order} onChange={e => setNewStylist({ ...newStylist, sort_order: parseInt(e.target.value) || 0 })} placeholder="Order" className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
+                        <input value={newStylist.stylist_name} onChange={e => setNewStylist({ ...newStylist, stylist_name: e.target.value })} placeholder="Name" className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" />
+                        <input value={newStylist.role} onChange={e => setNewStylist({ ...newStylist, role: e.target.value })} placeholder="Role" className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" />
+                        <input type="number" value={newStylist.sort_order} onChange={e => setNewStylist({ ...newStylist, sort_order: parseInt(e.target.value) || 0 })} placeholder="Order" className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" />
                     </div>
                     <input
                         value={newStylist.calendar_id}
                         onChange={e => setNewStylist({ ...newStylist, calendar_id: e.target.value })}
                         placeholder="Google Calendar ID (e.g., example@group.calendar.google.com)"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-sm"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
                     />
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">Service Assignment:</label>
@@ -2657,22 +2657,22 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
                             className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-white hover:border-stone-400 transition-all text-sm group"
                         >
                             <div className="flex items-center gap-2">
-                                <Scissors size={18} className="text-stone-600" />
-                                <span className="text-stone-800">
+                                <Scissors size={18} className="text-primary/80" />
+                                <span className="text-primary">
                                     {newStylist.provided_services?.length || 0} services assigned
                                 </span>
                             </div>
-                            <Edit size={16} className="text-gray-400 group-hover:text-stone-800" />
+                            <Edit size={16} className="text-gray-400 group-hover:text-primary" />
                         </button>
                     </div>
                     <textarea
                         value={newStylist.description}
                         onChange={e => setNewStylist({ ...newStylist, description: e.target.value })}
                         placeholder="Bio"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg h-20 resize-none focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg h-20 resize-none focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     />
                     <div className="flex gap-4">
-                        <button onClick={handleAdd} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Create Professional</button>
+                        <button onClick={handleAdd} className="flex-grow bg-primary text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "var(--primary)" }}>Create Professional</button>
                         <button onClick={() => setIsAdding(false)} className="px-8 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all">Cancel</button>
                     </div>
                 </div>
@@ -2698,9 +2698,9 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
                             <div className="flex-grow space-y-2 pr-8">
                                 <input value={s.stylist_name} onChange={(e) => handleFieldChange(idx, 'stylist_name', e.target.value)} className="w-full text-lg font-semibold border-none p-0 focus:ring-0 outline-none" />
                                 <input value={s.role || ''} placeholder="Role" onChange={(e) => handleFieldChange(idx, 'role', e.target.value)} className="w-full text-sm text-gray-600 border-none p-0 focus:ring-0 outline-none" />
-                                <div className="flex items-center gap-2 mt-2 bg-stone-50 p-2 rounded-lg border border-stone-100">
-                                    <span className="text-sm font-medium text-stone-600">Display Order:</span>
-                                    <span className="text-sm font-bold text-stone-800">{idx}</span>
+                                <div className="flex items-center gap-2 mt-2 bg-secondary p-2 rounded-lg border border-stone-100">
+                                    <span className="text-sm font-medium text-primary/80">Display Order:</span>
+                                    <span className="text-sm font-bold text-primary">{idx}</span>
                                     <span className="text-xs text-gray-400 ml-auto">(Drag to reorder)</span>
                                 </div>
                             </div>
@@ -2709,7 +2709,7 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
                             value={s.calendar_id || ''}
                             onChange={(e) => handleFieldChange(idx, 'calendar_id', e.target.value)}
                             placeholder="Google Calendar ID (e.g., example@group.calendar.google.com)"
-                            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none font-mono text-gray-700"
+                            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-mono text-gray-700"
                         />
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">Service Assignment:</label>
@@ -2719,26 +2719,26 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
                                     context: idx,
                                     initialSelection: s.provided_services || []
                                 })}
-                                className="w-full flex items-center justify-between px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg hover:bg-white hover:border-stone-400 transition-all text-sm group"
+                                className="w-full flex items-center justify-between px-4 py-3 bg-secondary border border-primary/20 rounded-lg hover:bg-white hover:border-stone-400 transition-all text-sm group"
                             >
                                 <div className="flex items-center gap-2">
-                                    <Scissors size={18} className="text-stone-600" />
-                                    <span className="text-stone-800 font-medium">
+                                    <Scissors size={18} className="text-primary/80" />
+                                    <span className="text-primary font-medium">
                                         {s.provided_services?.length || 0} services assigned
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs text-stone-400 group-hover:text-stone-600">Click to manage</span>
-                                    <Edit size={16} className="text-gray-400 group-hover:text-stone-800" />
+                                    <span className="text-xs text-stone-400 group-hover:text-primary/80">Click to manage</span>
+                                    <Edit size={16} className="text-gray-400 group-hover:text-primary" />
                                 </div>
                             </button>
                         </div>
-                        <textarea value={s.description || ''} onChange={(e) => handleFieldChange(idx, 'description', e.target.value)} placeholder="Bio" className="w-full text-sm text-gray-600 h-20 resize-none border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
+                        <textarea value={s.description || ''} onChange={(e) => handleFieldChange(idx, 'description', e.target.value)} placeholder="Bio" className="w-full text-sm text-gray-600 h-20 resize-none border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-transparent outline-none" />
                         <div className="flex gap-2">
-                            <button onClick={() => handleSave(s)} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all font-medium" style={{ backgroundColor: "#3D2B1F" }}>Save Details</button>
+                            <button onClick={() => handleSave(s)} className="flex-grow bg-primary text-white py-2 rounded-lg hover:bg-opacity-90 transition-all font-medium" style={{ backgroundColor: "var(--primary)" }}>Save Details</button>
                             <button
                                 onClick={() => setAssigningServices(s)}
-                                className="px-4 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-all font-medium"
+                                className="px-4 bg-secondary text-primary/90 rounded-lg hover:bg-stone-200 transition-all font-medium"
                             >
                                 Services
                             </button>
@@ -2873,16 +2873,16 @@ const StylistServiceModal = ({ isOpen, onClose, stylist, pricing, showMessage })
                 animate={{ opacity: 1, scale: 1 }}
                 className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden"
             >
-                <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-stone-50">
+                <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-secondary">
                     <div>
                         <h3 className="text-xl font-bold text-gray-900">Assign Services</h3>
-                        <p className="text-sm text-gray-500">Managing services for <span className="font-semibold text-stone-800">{stylist.stylist_name}</span></p>
+                        <p className="text-sm text-gray-500">Managing services for <span className="font-semibold text-primary">{stylist.stylist_name}</span></p>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handleSelectAll}
                             disabled={loading}
-                            className="text-xs font-bold text-stone-600 hover:text-stone-900 px-3 py-1.5 rounded-lg border border-stone-200 hover:bg-stone-100 transition-all uppercase tracking-wider"
+                            className="text-xs font-bold text-primary/80 hover:text-stone-900 px-3 py-1.5 rounded-lg border border-primary/20 hover:bg-secondary transition-all uppercase tracking-wider"
                         >
                             Select All
                         </button>
@@ -2902,7 +2902,7 @@ const StylistServiceModal = ({ isOpen, onClose, stylist, pricing, showMessage })
                 <div className="flex-grow overflow-y-auto p-6">
                     {loading ? (
                         <div className="flex items-center justify-center py-12">
-                            <Loader2 className="animate-spin text-stone-600" size={32} />
+                            <Loader2 className="animate-spin text-primary/80" size={32} />
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -2911,7 +2911,7 @@ const StylistServiceModal = ({ isOpen, onClose, stylist, pricing, showMessage })
                                     key={service.id}
                                     onClick={() => toggleService(service.id)}
                                     className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left ${assignedIds.includes(service.id)
-                                        ? 'border-stone-800 bg-stone-50'
+                                        ? 'border-primary bg-secondary'
                                         : 'border-gray-100 bg-white hover:border-gray-300'
                                         }`}
                                 >
@@ -2920,7 +2920,7 @@ const StylistServiceModal = ({ isOpen, onClose, stylist, pricing, showMessage })
                                         <div className="text-xs text-gray-500 uppercase tracking-wider">{service.category}</div>
                                     </div>
                                     {assignedIds.includes(service.id) && (
-                                        <div className="w-6 h-6 bg-stone-800 rounded-full flex items-center justify-center text-white">
+                                        <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white">
                                             <Check size={14} strokeWidth={3} />
                                         </div>
                                     )}
@@ -2933,7 +2933,7 @@ const StylistServiceModal = ({ isOpen, onClose, stylist, pricing, showMessage })
                 <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
                     <button
                         onClick={onClose}
-                        className="px-6 py-2.5 bg-stone-800 text-white rounded-xl font-bold hover:bg-stone-700 transition-all shadow-lg"
+                        className="px-6 py-2.5 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover transition-all shadow-lg"
                         style={{ backgroundColor: 'var(--primary)' }}
                     >
                         Done
@@ -3466,13 +3466,13 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                     <div className="flex bg-gray-100 rounded-lg p-1">
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-all text-sm ${viewMode === 'list' ? 'bg-white text-stone-800 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                            className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-all text-sm ${viewMode === 'list' ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
                         >
                             <List size={16} /> List
                         </button>
                         <button
                             onClick={() => setViewMode('calendar')}
-                            className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-all text-sm ${viewMode === 'calendar' ? 'bg-white text-stone-800 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
+                            className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-all text-sm ${viewMode === 'calendar' ? 'bg-white text-primary shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
                         >
                             <Calendar size={16} /> Calendar
                         </button>
@@ -3480,15 +3480,15 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
 
                     <button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="bg-[#3D2B1F] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-opacity-90"
-                        style={{ backgroundColor: "#3D2B1F" }}
+                        className="bg-[var(--primary)] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-opacity-90"
+                        style={{ backgroundColor: "var(--primary)" }}
                     >
                         <Plus size={18} /> New Appointment
                     </button>
 
                     <button
                         onClick={fetchAppointments}
-                        className="flex items-center gap-2 px-3 py-2 bg-stone-100 text-stone-900 rounded-lg hover:bg-stone-200 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 bg-secondary text-stone-900 rounded-lg hover:bg-stone-200 transition-colors"
                         disabled={loading}
                     >
                         {loading ? <Loader2 size={16} className="animate-spin" /> : <Calendar size={16} />} Refresh
@@ -3504,7 +3504,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                         <select
                             value={filterStylist}
                             onChange={(e) => setFilterStylist(e.target.value)}
-                            className="w-full px-3 md:px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none h-[42px]"
+                            className="w-full px-3 md:px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none h-[42px]"
                         >
                             <option value="all">All Professionals</option>
                             {uniqueStylists.map(s => (
@@ -3520,7 +3520,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                 placeholder="Search by name or email..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 md:pl-10 pr-3 md:pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none h-[42px]"
+                                className="w-full pl-9 md:pl-10 pr-3 md:pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none h-[42px]"
                             />
                             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         </div>
@@ -3559,7 +3559,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-100 text-stone-700 font-medium text-xs">
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary text-primary/90 font-medium text-xs">
                                                 <Scissors size={12} />
                                                 {appt.service}
                                             </span>
@@ -3574,7 +3574,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                             <div className="flex justify-end gap-2">
                                                 <button
                                                     onClick={() => setEditingAppt(appt)}
-                                                    className="p-1 text-gray-500 hover:text-stone-800 hover:bg-stone-100 rounded transition-colors"
+                                                    className="p-1 text-gray-500 hover:text-primary hover:bg-secondary rounded transition-colors"
                                                     title="Edit Appointment"
                                                 >
                                                     <Edit size={16} />
@@ -3594,7 +3594,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                     <tr>
                                         <td colSpan="5" className="px-6 py-12 text-center">
                                             <div className="flex flex-col items-center gap-3">
-                                                <Loader2 size={32} className="animate-spin text-stone-600" />
+                                                <Loader2 size={32} className="animate-spin text-primary/80" />
                                                 <p className="text-gray-500 font-medium">Loading appointments...</p>
                                             </div>
                                         </td>
@@ -3628,7 +3628,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                 {isAddModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                         <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#3D2B1F] text-[#EAE0D5]">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[var(--primary)] text-[#EAE0D5]">
                                 <h3 className="text-lg font-semibold">{isAddingNewClient ? 'Add New Client' : 'New Appointment'}</h3>
                                 <button onClick={() => { setIsAddModalOpen(false); setIsAddingNewClient(false); }}><X size={20} /></button>
                             </div>
@@ -3637,7 +3637,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                                         <input
-                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]"
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)]"
                                             value={newClientData.name || clientSearch}
                                             onChange={e => setNewClientData({ ...newClientData, name: e.target.value })}
                                             placeholder="Jane Doe"
@@ -3647,7 +3647,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                         <input
                                             type="email"
-                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]"
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)]"
                                             value={newClientData.email}
                                             onChange={e => setNewClientData({ ...newClientData, email: e.target.value })}
                                             placeholder="jane@example.com"
@@ -3657,7 +3657,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                                         <input
                                             type="tel"
-                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]"
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)]"
                                             value={newClientData.phone}
                                             onChange={e => setNewClientData({ ...newClientData, phone: e.target.value })}
                                             placeholder="+1 234 567 8900"
@@ -3665,7 +3665,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                     </div>
                                     <div className="flex gap-3 pt-2">
                                         <button onClick={() => setIsAddingNewClient(false)} className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
-                                        <button onClick={handleQuickAddClient} style={{ backgroundColor: '#3D2B1F', color: 'white' }} className="flex-1 py-2 rounded-lg hover:opacity-90 font-medium">Save & Select</button>
+                                        <button onClick={handleQuickAddClient} style={{ backgroundColor: 'var(--primary)', color: 'white' }} className="flex-1 py-2 rounded-lg hover:opacity-90 font-medium">Save & Select</button>
                                     </div>
                                 </div>
                             ) : (
@@ -3701,7 +3701,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                 setClientSearch(e.target.value);
                                                 if (newAppt.client_id) setNewAppt({ ...newAppt, client_id: '' }); // Clear selection on edit
                                             }}
-                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]"
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)]"
                                         />
                                         {clientSearch && !newAppt.client_id && (
                                             <div className="absolute z-10 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-lg max-h-48 overflow-y-auto">
@@ -3729,7 +3729,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                                 e.stopPropagation();
                                                                 setIsAddingNewClient(true);
                                                             }}
-                                                            style={{ backgroundColor: '#3D2B1F', color: 'white' }}
+                                                            style={{ backgroundColor: 'var(--primary)', color: 'white' }}
                                                             className="w-full text-sm px-4 py-3 rounded-lg hover:opacity-90 font-bold flex items-center justify-center gap-2 shadow-sm"
                                                         >
                                                             <Plus size={18} />
@@ -3786,10 +3786,10 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                                 type="button"
                                                                 onClick={() => setNewAppt({ ...newAppt, time: t })}
                                                                 className={`px-1 py-2 text-sm rounded-md border transition-all shadow-sm ${newAppt.time === t
-                                                                    ? 'text-white border-[#3D2B1F] font-bold shadow-md'
-                                                                    : 'bg-white text-gray-700 border-gray-200 hover:border-[#3D2B1F] hover:text-[#3D2B1F]'
+                                                                    ? 'text-white border-[var(--primary)] font-bold shadow-md'
+                                                                    : 'bg-white text-gray-700 border-gray-200 hover:border-[var(--primary)] hover:text-[var(--primary)]'
                                                                     }`}
-                                                                style={{ backgroundColor: newAppt.time === t ? '#3D2B1F' : 'white' }}
+                                                                style={{ backgroundColor: newAppt.time === t ? 'var(--primary)' : 'white' }}
                                                             >
                                                                 {t}
                                                             </button>
@@ -3809,7 +3809,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                     id="send_email"
                                                     checked={newAppt.send_email}
                                                     onChange={(e) => setNewAppt({ ...newAppt, send_email: e.target.checked })}
-                                                    className="w-4 h-4 accent-[#3D2B1F] border-gray-300 rounded cursor-pointer"
+                                                    className="w-4 h-4 accent-[var(--primary)] border-gray-300 rounded cursor-pointer"
                                                 />
                                                 <label htmlFor="send_email" className="text-sm font-medium text-gray-700 cursor-pointer select-none">
                                                     Send confirmation email to client
@@ -3820,8 +3820,8 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="w-full py-3.5 bg-[#3D2B1F] text-white rounded-lg mt-6 font-bold text-lg shadow-md hover:shadow-lg hover:bg-opacity-95 transition-all transform active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                        style={{ backgroundColor: isSaving ? '#8B7355' : '#3D2B1F' }}
+                                        className="w-full py-3.5 bg-[var(--primary)] text-white rounded-lg mt-6 font-bold text-lg shadow-md hover:shadow-lg hover:bg-opacity-95 transition-all transform active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        style={{ backgroundColor: isSaving ? 'var(--primary-hover)' : 'var(--primary)' }}
                                     >
                                         {isSaving ? (
                                             <>
@@ -3902,7 +3902,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                 {editingAppt && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                         <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#3D2B1F] text-[#EAE0D5]">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[var(--primary)] text-[#EAE0D5]">
                                 <h3 className="text-lg font-semibold">Edit Appointment</h3>
                                 <button onClick={() => setEditingAppt(null)}><X size={20} /></button>
                             </div>
@@ -3914,7 +3914,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                             type="text"
                                             value={editForm.name}
                                             onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none text-base bg-white"
+                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-base bg-white"
                                             required
                                         />
                                     </div>
@@ -3924,7 +3924,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                             type="email"
                                             value={editForm.email}
                                             onChange={e => setEditForm({ ...editForm, email: e.target.value })}
-                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none text-base bg-white"
+                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-base bg-white"
                                             required
                                         />
                                     </div>
@@ -3934,7 +3934,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                             type="tel"
                                             value={editForm.phone}
                                             onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
-                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none text-base bg-white"
+                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-base bg-white"
                                         />
                                     </div>
                                     <div className="col-span-2 sm:col-span-1">
@@ -3942,7 +3942,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                         <select
                                             value={editForm.stylist}
                                             onChange={e => setEditForm({ ...editForm, stylist: e.target.value })}
-                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none text-base bg-white"
+                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-base bg-white"
                                             required
                                         >
                                             <option value="">-- Select Professional --</option>
@@ -3958,7 +3958,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                         <select
                                             value={editForm.service}
                                             onChange={e => setEditForm({ ...editForm, service: e.target.value })}
-                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] outline-none text-base bg-white"
+                                            className="w-full h-[45px] px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none text-base bg-white"
                                             required
                                         >
                                             {pricing?.map(p => (
@@ -4000,10 +4000,10 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                                             type="button"
                                                             onClick={() => setEditForm({ ...editForm, time: t })}
                                                             className={`px-1 py-2 text-xs rounded-md border transition-all shadow-sm ${editForm.time === t
-                                                                ? 'text-white border-[#3D2B1F] font-bold shadow-md'
-                                                                : 'bg-white text-gray-700 border-gray-200 hover:border-[#3D2B1F] hover:text-[#3D2B1F]'
+                                                                ? 'text-white border-[var(--primary)] font-bold shadow-md'
+                                                                : 'bg-white text-gray-700 border-gray-200 hover:border-[var(--primary)] hover:text-[var(--primary)]'
                                                                 }`}
-                                                            style={{ backgroundColor: editForm.time === t ? '#3D2B1F' : 'white' }}
+                                                            style={{ backgroundColor: editForm.time === t ? 'var(--primary)' : 'white' }}
                                                         >
                                                             {t}
                                                         </button>
@@ -4029,8 +4029,8 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                     <button
                                         type="submit"
                                         disabled={isSaving || !editForm.time}
-                                        className="flex-1 py-3 bg-[#3D2B1F] text-white rounded-lg hover:bg-opacity-90 font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md"
-                                        style={{ backgroundColor: "#3D2B1F" }}
+                                        className="flex-1 py-3 bg-[var(--primary)] text-white rounded-lg hover:bg-opacity-90 font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md"
+                                        style={{ backgroundColor: "var(--primary)" }}
                                     >
                                         {isSaving ? (
                                             <>
@@ -4342,7 +4342,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
                                     return (
                                         <div
                                             key={i}
-                                            className={`min-h-[70px] border rounded p-1 cursor-pointer transition-colors hover:bg-stone-50 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}
+                                            className={`min-h-[70px] border rounded p-1 cursor-pointer transition-colors hover:bg-secondary ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}
                                             onClick={() => onSlotClick(date, hour)}
                                         >
                                             {slotAppts.map(appt => {
@@ -4411,7 +4411,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
                                     {hour}:00
                                 </div>
                                 <div
-                                    className={`flex-1 min-h-[70px] border rounded-lg p-3 cursor-pointer transition-colors hover:bg-stone-50 ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}
+                                    className={`flex-1 min-h-[70px] border rounded-lg p-3 cursor-pointer transition-colors hover:bg-secondary ${isTodayDate ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}
                                     onClick={() => onSlotClick(currentDate, hour)}
                                 >
                                     {slotAppts.map(appt => {
@@ -4459,7 +4459,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
                     <div className="flex items-center gap-2">
                         <button
                             onClick={goToToday}
-                            className="px-3 py-2 text-xs md:text-sm text-stone-800 hover:bg-stone-100 rounded-lg transition-all"
+                            className="px-3 py-2 text-xs md:text-sm text-primary hover:bg-secondary rounded-lg transition-all"
                         >
                             Today
                         </button>
@@ -4483,7 +4483,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
                     <button
                         onClick={() => setCalendarViewMode('day')}
                         className={`flex-1 sm:flex-none px-3 py-2 rounded-md transition-all text-xs md:text-sm ${calendarViewMode === 'day'
-                            ? 'bg-white text-stone-800 shadow-sm font-medium'
+                            ? 'bg-white text-primary shadow-sm font-medium'
                             : 'text-gray-600 hover:text-gray-900'
                             }`}
                     >
@@ -4492,7 +4492,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
                     <button
                         onClick={() => setCalendarViewMode('week')}
                         className={`flex-1 sm:flex-none px-3 py-2 rounded-md transition-all text-xs md:text-sm ${calendarViewMode === 'week'
-                            ? 'bg-white text-stone-800 shadow-sm font-medium'
+                            ? 'bg-white text-primary shadow-sm font-medium'
                             : 'text-gray-600 hover:text-gray-900'
                             }`}
                     >
@@ -4501,7 +4501,7 @@ const CalendarView = ({ appointments, onEditAppointment, onDeleteAppointment, st
                     <button
                         onClick={() => setCalendarViewMode('month')}
                         className={`flex-1 sm:flex-none px-3 py-2 rounded-md transition-all text-xs md:text-sm ${calendarViewMode === 'month'
-                            ? 'bg-white text-stone-800 shadow-sm font-medium'
+                            ? 'bg-white text-primary shadow-sm font-medium'
                             : 'text-gray-600 hover:text-gray-900'
                             }`}
                     >
@@ -4580,7 +4580,7 @@ const EditAppointmentModal = ({ appointment, onClose, onSave }) => {
                             type="text"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                         />
                     </div>
                     <div>
@@ -4589,7 +4589,7 @@ const EditAppointmentModal = ({ appointment, onClose, onSave }) => {
                             type="email"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                         />
                     </div>
                     <div>
@@ -4598,7 +4598,7 @@ const EditAppointmentModal = ({ appointment, onClose, onSave }) => {
                             type="tel"
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                         />
                     </div>
                     <div>
@@ -4607,7 +4607,7 @@ const EditAppointmentModal = ({ appointment, onClose, onSave }) => {
                             type="text"
                             value={formData.service}
                             onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -4617,7 +4617,7 @@ const EditAppointmentModal = ({ appointment, onClose, onSave }) => {
                                 type="date"
                                 value={formData.date}
                                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                             />
                         </div>
                         <div>
@@ -4626,7 +4626,7 @@ const EditAppointmentModal = ({ appointment, onClose, onSave }) => {
                                 type="time"
                                 value={formData.time}
                                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                             />
                         </div>
                     </div>
@@ -4636,7 +4636,7 @@ const EditAppointmentModal = ({ appointment, onClose, onSave }) => {
                     <button
                         onClick={handleSubmit}
                         className="flex-grow text-white py-2 rounded-lg transition-all"
-                        style={{ backgroundColor: "#3D2B1F" }}
+                        style={{ backgroundColor: "var(--primary)" }}
                     >
                         Save Changes
                     </button>
@@ -4766,14 +4766,14 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
                 <div className="flex gap-3">
                     <button
                         onClick={resetToDefault}
-                        className="px-4 py-2 text-stone-600 hover:text-stone-800 text-sm font-medium transition-colors"
+                        className="px-4 py-2 text-primary/80 hover:text-primary text-sm font-medium transition-colors"
                     >
                         Reset to Default
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="px-6 py-2 bg-stone-800 text-white rounded-lg hover:bg-stone-900 flex items-center gap-2 transition-all disabled:opacity-50"
+                        className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover flex items-center gap-2 transition-all disabled:opacity-50"
                         style={{ backgroundColor: "var(--primary)" }}
                     >
                         {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
@@ -4792,7 +4792,7 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
                             type="text"
                             value={subject}
                             onChange={(e) => setSubject(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F] focus:border-transparent outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none"
                             placeholder="e.g. Your Appointment at business name"
                         />
                     </div>
@@ -4814,12 +4814,12 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
                                 </button>
 
                                 {!showPreview && (
-                                    <label className="flex items-center gap-2 text-xs font-semibold text-stone-600 cursor-pointer">
+                                    <label className="flex items-center gap-2 text-xs font-semibold text-primary/80 cursor-pointer">
                                         <input
                                             type="checkbox"
                                             checked={showHtmlSource}
                                             onChange={(e) => setShowHtmlSource(e.target.checked)}
-                                            className="rounded border-gray-300 text-stone-600 focus:ring-stone-500"
+                                            className="rounded border-gray-300 text-primary/80 focus:ring-stone-500"
                                         />
                                         Show HTML Source
                                     </label>
@@ -4863,7 +4863,7 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
                 <div className="space-y-6">
                     <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                         <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <Info size={16} className="text-stone-800" />
+                            <Info size={16} className="text-primary" />
                             Available Variables
                         </h3>
                         <p className="text-xs text-gray-500 mb-4">
@@ -4872,7 +4872,7 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
                         <div className="space-y-3">
                             {EMAIL_VARIABLES.map(v => (
                                 <div key={v.tag} className="flex flex-col gap-1">
-                                    <code className="text-[11px] bg-stone-100 text-stone-800 px-2 py-1 rounded inline-block w-fit font-bold select-all">
+                                    <code className="text-[11px] bg-secondary text-primary px-2 py-1 rounded inline-block w-fit font-bold select-all">
                                         {v.tag}
                                     </code>
                                     <span className="text-[10px] text-gray-500 ml-1">{v.desc}</span>
@@ -5041,30 +5041,30 @@ const ClientsTab = ({ clients, setClients, showMessage, refreshClients }) => {
                 {isModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                         <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden">
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#3D2B1F] text-[#EAE0D5]">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[var(--primary)] text-[#EAE0D5]">
                                 <h3 className="text-lg font-semibold">{editingClient ? 'Edit Client' : 'Add New Client'}</h3>
                                 <button onClick={() => setIsModalOpen(false)}><X size={20} /></button>
                             </div>
                             <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                    <input className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                                    <input className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)]" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                    <input type="email" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                                    <input type="email" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)]" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                                    <input type="tel" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+                                    <input type="tel" className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)]" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                                    <textarea className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3D2B1F]" rows="3" value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} />
+                                    <textarea className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)]" rows="3" value={formData.notes} onChange={e => setFormData({ ...formData, notes: e.target.value })} />
                                 </div>
                                 <div className="flex gap-3 pt-4">
                                     <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">Cancel</button>
-                                    <button type="submit" className="flex-1 py-2 text-white rounded-lg hover:opacity-90 font-medium transition-all" style={{ backgroundColor: "#3D2B1F" }}>Save Client</button>
+                                    <button type="submit" className="flex-1 py-2 text-white rounded-lg hover:opacity-90 font-medium transition-all" style={{ backgroundColor: "var(--primary)" }}>Save Client</button>
                                 </div>
                             </form>
                         </motion.div>
@@ -5163,7 +5163,7 @@ const TestimonialsTab = ({ testimonials, refresh, showMessage, settings, setSett
                 <h2 className="text-2xl font-semibold text-gray-900">Customer Testimonials</h2>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:shadow-md transition-all text-sm font-medium"
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:shadow-md transition-all text-sm font-medium"
                     style={{ backgroundColor: 'var(--primary)' }}
                 >
                     <Plus size={18} /> Add Testimonial
@@ -5185,7 +5185,7 @@ const TestimonialsTab = ({ testimonials, refresh, showMessage, settings, setSett
                             <p className="text-gray-600 text-sm italic line-clamp-4">"{t.description}"</p>
                         </div>
                         <div className="p-3 bg-gray-50 border-t border-gray-100 flex justify-end gap-2">
-                            <button onClick={() => handleOpenModal(t)} className="p-2 text-stone-600 hover:bg-stone-100 rounded-lg transition-colors">
+                            <button onClick={() => handleOpenModal(t)} className="p-2 text-primary/80 hover:bg-secondary rounded-lg transition-colors">
                                 <Edit size={16} />
                             </button>
                             <button onClick={() => handleDelete(t.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
@@ -5205,7 +5205,7 @@ const TestimonialsTab = ({ testimonials, refresh, showMessage, settings, setSett
                             exit={{ scale: 0.95, opacity: 0 }}
                             className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
                         >
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#3D2B1F] text-[#EAE0D5]">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[var(--primary)] text-[#EAE0D5]">
                                 <h3 className="text-lg font-semibold">{editingTestimonial ? 'Edit Testimonial' : 'Add Testimonial'}</h3>
                                 <button onClick={() => setIsModalOpen(false)} className="hover:rotate-90 transition-transform"><X size={20} /></button>
                             </div>
@@ -5241,7 +5241,7 @@ const TestimonialsTab = ({ testimonials, refresh, showMessage, settings, setSett
                                 <div className="space-y-2">
                                     <label className="text-xs font-semibold text-gray-500 uppercase">Client Name (Optional)</label>
                                     <input
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none text-sm"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm"
                                         placeholder="e.g. Sarah J."
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -5251,7 +5251,7 @@ const TestimonialsTab = ({ testimonials, refresh, showMessage, settings, setSett
                                 <div className="space-y-2">
                                     <label className="text-xs font-semibold text-gray-500 uppercase">Review Description</label>
                                     <textarea
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none text-sm min-h-[120px]"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm min-h-[120px]"
                                         placeholder="Enter the client's testimonial..."
                                         required
                                         value={formData.description}
@@ -5270,7 +5270,7 @@ const TestimonialsTab = ({ testimonials, refresh, showMessage, settings, setSett
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="flex-1 px-4 py-2 bg-stone-800 text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center justify-center gap-2"
+                                        className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:shadow-lg transition-all font-medium flex items-center justify-center gap-2"
                                         style={{ backgroundColor: 'var(--primary)' }}
                                     >
                                         {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
@@ -5308,8 +5308,8 @@ const CustomSectionsTab = ({ customSections = [], setCustomSections, siteSetting
                     enabled: true,
                     sort_order: maxOrder + 1,
                     element_limit: 10,
-                    background_color: siteSettings?.background_color || '#FDFBF9',
-                    text_color: siteSettings?.primary_brown || '#3D2B1F'
+                    background_color: siteSettings?.background_color || '#F5F1ED',
+                    text_color: siteSettings?.primary_brown || 'var(--primary)'
                 }])
                 .select('*, custom_section_elements(*)')
                 .single();
@@ -5448,7 +5448,7 @@ const CustomSectionsTab = ({ customSections = [], setCustomSections, siteSetting
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => setEditingSection(section)}
-                                        className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all"
+                                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all"
                                         style={{ backgroundColor: 'var(--primary)' }}
                                     >
                                         <Edit size={16} />
@@ -5629,7 +5629,7 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
     if (loading) {
         return (
             <div className="flex items-center justify-center p-12">
-                <Loader2 size={40} className="animate-spin text-stone-800" />
+                <Loader2 size={40} className="animate-spin text-primary" />
             </div>
         );
     }
@@ -5649,7 +5649,7 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
             </div>
 
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="bg-stone-50 border-b border-gray-100 p-4 grid grid-cols-12 text-xs font-bold uppercase tracking-wider text-gray-500">
+                <div className="bg-secondary border-b border-gray-100 p-4 grid grid-cols-12 text-xs font-bold uppercase tracking-wider text-gray-500">
                     <div className="col-span-1 text-center">Order</div>
                     <div className="col-span-5 pl-4">Section Name</div>
                     <div className="col-span-2 text-center">Type</div>
@@ -5659,7 +5659,7 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
 
                 <div className="divide-y divide-gray-100">
                     {pageSections.map((section, index) => (
-                        <div key={section.id} className="grid grid-cols-12 items-center p-4 hover:bg-stone-50 transition-colors group">
+                        <div key={section.id} className="grid grid-cols-12 items-center p-4 hover:bg-secondary transition-colors group">
                             <div className="col-span-1 flex flex-col items-center gap-1">
                                 <button
                                     onClick={() => handleMove(index, -1)}
@@ -5685,7 +5685,7 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
                             </div>
 
                             <div className="col-span-2 flex justify-center">
-                                <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-widest ${section.is_custom ? 'bg-stone-100 text-stone-600' : 'bg-blue-100 text-blue-700'}`}>
+                                <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-widest ${section.is_custom ? 'bg-secondary text-primary/80' : 'bg-secondary text-primary'}`}>
                                     {section.is_custom ? 'Custom' : 'System'}
                                 </span>
                             </div>
@@ -5695,7 +5695,7 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
                                     onClick={() => handleToggleSeparatePage(section.id, section.is_separate_page)}
                                     className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${section.is_separate_page
                                         ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                        : 'bg-secondary text-primary hover:bg-blue-200'
                                         }`}
                                 >
                                     {section.is_separate_page ? 'Separate Page' : 'Landing Flow'}
@@ -5705,7 +5705,7 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
                             <div className="col-span-2 flex justify-center">
                                 <button
                                     onClick={() => handleToggleEnabled(section.id, section.enabled)}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-stone-500 focus:outline-none ${section.enabled ? 'bg-stone-800' : 'bg-gray-400'}`}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-stone-500 focus:outline-none ${section.enabled ? 'bg-primary' : 'bg-gray-400'}`}
                                     style={section.enabled ? { backgroundColor: 'var(--primary)' } : { backgroundColor: '#9ca3af' }}
                                 >
                                     <span
@@ -5719,7 +5719,7 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
             </div>
 
             <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl flex gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                <div className="flex-shrink-0 w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-blue-600">
                     <Info size={20} />
                 </div>
                 <div>
@@ -5907,7 +5907,7 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                         <input
                             value={localSection.title}
                             onChange={e => setLocalSection({ ...localSection, title: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                         />
                     </div>
                     <div>
@@ -5915,7 +5915,7 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                         <input
                             value={localSection.menu_name}
                             onChange={e => setLocalSection({ ...localSection, menu_name: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                         />
                     </div>
                     <div>
@@ -5923,7 +5923,7 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                         <input
                             value={localSection.heading_name}
                             onChange={e => setLocalSection({ ...localSection, heading_name: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                         />
                     </div>
                     <div>
@@ -5934,7 +5934,7 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                             max="50"
                             value={localSection.element_limit}
                             onChange={e => setLocalSection({ ...localSection, element_limit: parseInt(e.target.value) || 10 })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                         />
                     </div>
                     <div>
@@ -5959,7 +5959,7 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                         <label className="text-sm font-medium text-gray-700 mr-4">Show Section</label>
                         <button
                             onClick={() => setLocalSection({ ...localSection, enabled: !localSection.enabled })}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${localSection.enabled ? 'bg-stone-800' : 'bg-gray-400'}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${localSection.enabled ? 'bg-primary' : 'bg-gray-400'}`}
                             style={localSection.enabled ? { backgroundColor: 'var(--primary)' } : { backgroundColor: '#9ca3af' }}
                         >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${localSection.enabled ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -6005,7 +6005,7 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                                 <button
                                     key={et.type}
                                     onClick={() => handleAddElement(et.type)}
-                                    className="flex flex-col items-center gap-2 p-4 bg-white border border-gray-300 rounded-lg hover:border-stone-800 hover:shadow-md transition-all"
+                                    className="flex flex-col items-center gap-2 p-4 bg-white border border-gray-300 rounded-lg hover:border-primary hover:shadow-md transition-all"
                                 >
                                     {et.icon}
                                     <span className="font-medium text-sm">{et.label}</span>
@@ -6076,7 +6076,7 @@ const CustomSectionEditor = ({ section, onClose, showMessage }) => {
                                     </div>
                                     <button
                                         onClick={() => setEditingElement(element)}
-                                        className="px-3 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all text-sm"
+                                        className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all text-sm"
                                         style={{ backgroundColor: 'var(--primary)' }}
                                     >
                                         Configure
@@ -6253,7 +6253,7 @@ const GalleryElementConfig = ({ config, onSave, showMessage }) => {
                 <select
                     value={columns}
                     onChange={e => setColumns(parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 >
                     <option value={2}>2 Columns</option>
                     <option value={3}>3 Columns</option>
@@ -6320,7 +6320,7 @@ const TextBoxElementConfig = ({ config, onSave }) => {
                     value={content}
                     onChange={e => setContent(e.target.value)}
                     placeholder="Enter your text content here..."
-                    className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none"
+                    className="w-full h-48 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none resize-none"
                 />
             </div>
 
@@ -6330,7 +6330,7 @@ const TextBoxElementConfig = ({ config, onSave }) => {
                     <select
                         value={alignment}
                         onChange={e => setAlignment(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                     >
                         <option value="left">Left</option>
                         <option value="center">Center</option>
@@ -6342,7 +6342,7 @@ const TextBoxElementConfig = ({ config, onSave }) => {
                     <select
                         value={fontSize}
                         onChange={e => setFontSize(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                     >
                         <option value="small">Small</option>
                         <option value="medium">Medium</option>
@@ -6377,7 +6377,7 @@ const CardElementConfig = ({ config, onSave, showMessage }) => {
                     value={title}
                     onChange={e => setTitle(e.target.value)}
                     placeholder="Card title"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 />
             </div>
 
@@ -6387,7 +6387,7 @@ const CardElementConfig = ({ config, onSave, showMessage }) => {
                     value={description}
                     onChange={e => setDescription(e.target.value)}
                     placeholder="Card description"
-                    className="w-full h-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none resize-none"
+                    className="w-full h-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none resize-none"
                 />
             </div>
 
@@ -6403,7 +6403,7 @@ const CardElementConfig = ({ config, onSave, showMessage }) => {
                     value={linkUrl}
                     onChange={e => setLinkUrl(e.target.value)}
                     placeholder="https://example.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 />
             </div>
 
@@ -6413,7 +6413,7 @@ const CardElementConfig = ({ config, onSave, showMessage }) => {
                     value={linkText}
                     onChange={e => setLinkText(e.target.value)}
                     placeholder="Learn More"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 />
             </div>
 
@@ -6448,7 +6448,7 @@ const ImageElementConfig = ({ config, onSave, showMessage }) => {
                     value={alt}
                     onChange={e => setAlt(e.target.value)}
                     placeholder="Describe the image"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 />
             </div>
 
@@ -6458,7 +6458,7 @@ const ImageElementConfig = ({ config, onSave, showMessage }) => {
                     value={caption}
                     onChange={e => setCaption(e.target.value)}
                     placeholder="Image caption"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 />
             </div>
 
@@ -6467,7 +6467,7 @@ const ImageElementConfig = ({ config, onSave, showMessage }) => {
                 <select
                     value={size}
                     onChange={e => setSize(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 >
                     <option value="full">Full Width</option>
                     <option value="large">Large</option>
@@ -6499,7 +6499,7 @@ const VideoElementConfig = ({ config, onSave, showMessage }) => {
                 <select
                     value={type}
                     onChange={e => setType(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 >
                     <option value="upload">Upload Video</option>
                     <option value="embed">Embed URL</option>
@@ -6519,7 +6519,7 @@ const VideoElementConfig = ({ config, onSave, showMessage }) => {
                         value={url}
                         onChange={e => setUrl(e.target.value)}
                         placeholder="https://www.youtube.com/watch?v=..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                     />
                 </div>
             )}
@@ -6528,8 +6528,8 @@ const VideoElementConfig = ({ config, onSave, showMessage }) => {
                 <label className="text-sm font-medium text-gray-700">Autoplay</label>
                 <button
                     onClick={() => setAutoplay(!autoplay)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${autoplay ? 'border-[#3D2B1F]' : 'border-gray-200'}`}
-                    style={{ backgroundColor: autoplay ? '#3D2B1F' : '#E5E7EB' }}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${autoplay ? 'border-[var(--primary)]' : 'border-gray-200'}`}
+                    style={{ backgroundColor: autoplay ? 'var(--primary)' : '#E5E7EB' }}
                 >
                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoplay ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
@@ -6617,7 +6617,7 @@ const QRCodeElementConfig = ({ config, onSave }) => {
                     value={content}
                     onChange={e => setContent(e.target.value)}
                     placeholder="https://example.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 />
             </div>
             {content && (
@@ -6666,7 +6666,7 @@ const ListElementConfig = ({ config, onSave }) => {
                 <select
                     value={type}
                     onChange={e => setType(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 >
                     <option value="bullet">Bullet Points</option>
                     <option value="numbered">Numbered List</option>
@@ -6683,7 +6683,7 @@ const ListElementConfig = ({ config, onSave }) => {
                         <input
                             value={item}
                             onChange={e => handleUpdateItem(idx, e.target.value)}
-                            className="flex-grow px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-stone-800 outline-none"
+                            className="flex-grow px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-primary outline-none"
                         />
                         <button onClick={() => handleRemoveItem(idx)} className="text-red-500 hover:text-red-700 px-1">
                             <Trash2 size={16} />
@@ -6692,7 +6692,7 @@ const ListElementConfig = ({ config, onSave }) => {
                 ))}
                 <button
                     onClick={handleAddItem}
-                    className="mt-2 flex items-center gap-1 text-sm text-stone-800 hover:underline"
+                    className="mt-2 flex items-center gap-1 text-sm text-primary hover:underline"
                 >
                     <Plus size={14} /> Add Item
                 </button>
@@ -6723,7 +6723,7 @@ const ButtonElementConfig = ({ config, onSave }) => {
                     value={label}
                     onChange={e => setLabel(e.target.value)}
                     placeholder="e.g. Book Appointment"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 />
             </div>
             <div>
@@ -6732,7 +6732,7 @@ const ButtonElementConfig = ({ config, onSave }) => {
                     value={url}
                     onChange={e => setUrl(e.target.value)}
                     placeholder="https://..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -6741,7 +6741,7 @@ const ButtonElementConfig = ({ config, onSave }) => {
                     <select
                         value={style}
                         onChange={e => setStyle(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                     >
                         <option value="solid">Solid</option>
                         <option value="outline">Outline</option>
@@ -6752,7 +6752,7 @@ const ButtonElementConfig = ({ config, onSave }) => {
                     <select
                         value={alignment}
                         onChange={e => setAlignment(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                     >
                         <option value="left">Left</option>
                         <option value="center">Center</option>
@@ -6808,7 +6808,7 @@ const TableElementConfig = ({ config, onSave }) => {
                         type="checkbox"
                         checked={hasHeader}
                         onChange={e => setHasHeader(e.target.checked)}
-                        className="rounded border-gray-300 text-stone-800 focus:ring-stone-800"
+                        className="rounded border-gray-300 text-primary focus:ring-primary"
                     />
                     First row as header
                 </label>
@@ -6825,7 +6825,7 @@ const TableElementConfig = ({ config, onSave }) => {
                                             <input
                                                 value={cell}
                                                 onChange={e => handleUpdateCell(rowIndex, colIndex, e.target.value)}
-                                                className={`w-full px-2 py-1 text-sm border border-transparent rounded focus:border-stone-800 outline-none ${rowIndex === 0 && hasHeader ? 'font-bold' : ''}`}
+                                                className={`w-full px-2 py-1 text-sm border border-transparent rounded focus:border-primary outline-none ${rowIndex === 0 && hasHeader ? 'font-bold' : ''}`}
                                             />
                                             {rowIndex === 0 && (
                                                 <button

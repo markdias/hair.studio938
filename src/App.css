@@ -22,14 +22,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--soft-cream);
+  background: var(--secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-brown);
+  background: var(--primary);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4D3B2F;
+  background: var(--primary-hover);
 }

@@ -540,7 +540,7 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
     };
 
     const cardStyle = {
-        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.05)' : '#EDE4DB',
+        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.05)' : 'var(--accent)',
         maxWidth: '900px',
         width: '100%',
         padding: '60px 20px',
