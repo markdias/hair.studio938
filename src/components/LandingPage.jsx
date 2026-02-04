@@ -6,16 +6,7 @@ import PrivacyPolicyModal from './PrivacyPolicyModal';
 import TermsAndConditionsModal from './TermsAndConditionsModal';
 
 const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
-    const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
     const location = useLocation();
@@ -49,7 +40,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
         setIsMenuOpen(false);
     };
 
-    const isCompact = isScrolled || !isHomePage;
+    const isCompact = true;
 
     return (
         <nav className={isMenuOpen ? 'mobile-menu-active' : ''} style={{
@@ -62,10 +53,10 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
             justifyContent: 'space-between',
             alignItems: 'center',
             zIndex: 1000,
-            backgroundColor: (isCompact || isMenuOpen) ? 'rgba(var(--primary-rgb), 0.98)' : 'rgba(var(--primary-rgb), 0.8)',
+            backgroundColor: (isCompact || isMenuOpen) ? 'rgba(var(--navbar-bg-rgb, var(--primary-rgb)), 0.98)' : 'rgba(var(--navbar-bg-rgb, var(--primary-rgb)), 0.8)',
             backdropFilter: 'blur(10px)',
             transition: 'all 0.4s ease',
-            color: 'var(--accent)',
+            color: 'var(--navbar-text, var(--accent))',
             boxSizing: 'border-box'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -77,7 +68,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         width: isCompact ? `${(parseInt(settings.logo_size) || 85) * 0.7}px` : `${parseInt(settings.logo_size) || 85}px`,
                         borderRadius: '50%',
                         objectFit: 'cover',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        border: '1px solid rgba(80, 174, 36, 0.2)',
                         transition: 'all 0.4s ease'
                     }}
                 />
@@ -158,7 +149,9 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                 })()}
                 {(() => {
                     const bookingSection = pageSections.find(s => s.id === 'booking');
-                    if (bookingSection?.enabled !== false) {
+                    const isVisible = settings.show_booking_section !== 'false' && bookingSection?.enabled !== false;
+
+                    if (isVisible) {
                         const isSeparate = bookingSection?.is_separate_page;
                         const style = {
                             padding: '10px 24px',
@@ -168,12 +161,12 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         };
 
                         if (isSeparate) {
-                            return <Link to="/section/booking" className="btn-primary" style={style}>Book Now</Link>;
+                            return <Link to="/section/booking" className="btn-primary" style={style}>{settings.booking_menu_name || 'Book Now'}</Link>;
                         }
                         return isHomePage ? (
-                            <a href="#booking" className="btn-primary" style={style}>Book Now</a>
+                            <a href="#booking" className="btn-primary" style={style}>{settings.booking_menu_name || 'Book Now'}</a>
                         ) : (
-                            <Link to="/#booking" className="btn-primary" style={style}>Book Now</Link>
+                            <Link to="/#booking" className="btn-primary" style={style}>{settings.booking_menu_name || 'Book Now'}</Link>
                         );
                     }
                     return null;
@@ -230,6 +223,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         else if (id === 'pricing' && settings.show_pricing_section !== 'false') label = settings.pricing_menu_name || 'Pricing';
                         else if (id === 'gallery' && settings.show_gallery_section !== 'false') label = settings.gallery_menu_name || 'Gallery';
                         else if (id === 'testimonials' && settings.show_testimonials_section === 'true') label = settings.testimonials_menu_name || 'Testimonials';
+                        else if (id === 'booking' && settings.show_booking_section !== 'false') label = settings.booking_menu_name || 'Book Now';
                         else if (id === 'contact') label = settings.contact_menu_name || 'Contact';
                         else {
                             const custom = customSections.find(s => s.id === id);
@@ -346,13 +340,16 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     </div>
                 )}
                 <div className="hero-buttons" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', width: '100%', margin: '0 auto' }}>
-                    {isBookingEnabled && (() => {
+                    {(() => {
                         const bookingSection = pageSections.find(s => s.id === 'booking');
+                        const isVisible = settings.show_booking_section !== 'false' && bookingSection?.enabled !== false;
+                        if (!isVisible) return null;
+
                         const isSeparate = bookingSection?.is_separate_page;
                         if (isSeparate) {
-                            return <Link to="/section/booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</Link>;
+                            return <Link to="/section/booking" className="btn-primary" style={{ textDecoration: 'none' }}>{settings.booking_menu_name || 'Book Now'}</Link>;
                         }
-                        return <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</a>;
+                        return <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>{settings.booking_menu_name || 'Book Now'}</a>;
                     })()}
                     {(() => {
                         const servicesSection = pageSections.find(s => s.id === 'services');
