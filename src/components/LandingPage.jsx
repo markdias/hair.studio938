@@ -409,7 +409,7 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
         Phone: <Phone style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
     };
 
-    const displayServices = services.length > 0 ? services : [];
+    const displayServices = services;
 
     return (
         <section id="services" style={sectionStyle}>
@@ -475,7 +475,7 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
         margin: '0 auto'
     };
 
-    const displayTeam = team.length > 0 ? team : [];
+    const displayTeam = team;
 
     return (
         <section id="team" style={sectionStyle}>
@@ -567,9 +567,7 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
         return acc;
     }, {});
 
-    const displayCategories = pricing.length > 0
-        ? Object.entries(categoriesMap).map(([title, items]) => ({ title, items }))
-        : [];
+    const displayCategories = Object.entries(categoriesMap).map(([title, items]) => ({ title, items }));
 
     return (
         <section id="pricing" style={sectionStyle}>

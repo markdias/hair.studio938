@@ -223,19 +223,16 @@ const AdminDashboard = ({ refreshSiteData }) => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-grow overflow-y-auto">
-                {/* Top Bar for Mobile */}
-                <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200 sticky top-0 z-40">
+            <main className="flex-grow overflow-y-auto pt-16 md:pt-0">
+                {/* Mobile Header */}
+                <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center px-4 z-40">
                     <button
-                        onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="p-2 text-gray-500 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        onClick={() => setSidebarOpen(true)}
+                        className="p-2 -ml-2 text-gray-600 hover:text-gray-900"
                     >
-                        {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                        <Menu size={24} />
                     </button>
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-stone-800 to-stone-600 bg-clip-text text-transparent">
-                        Admin Panel
-                    </h1>
-                    <div className="w-10"></div> {/* Placeholder for alignment */}
+                    <span className="ml-4 font-bold text-stone-800">Admin Dashboard</span>
                 </div>
 
                 <div className="max-w-6xl mx-auto p-8">
@@ -283,7 +280,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'theme': return <ThemeTab showMessage={showMessage} />;
         case 'services': return <ServicesTab services={data.services} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
         case 'pricing': return <PricingTab pricing={data.pricing} categories={data.priceCategories} refresh={refresh} showMessage={showMessage} settings={data.siteSettings} setSettings={setData.setSiteSettings} theme={theme} />;
-        case 'team': return <TeamTab stylists={data.stylists} pricing={data.pricing} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
+        case 'team': return <TeamTab stylists={data.stylists} services={data.services} pricing={data.pricing} priceCategories={data.priceCategories} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
         case 'gallery': return <GalleryTab gallery={data.gallery} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
         case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} showMessage={showMessage} clients={data.clients} setClients={setData.setClients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} defaultView={data.siteSettings?.default_appointment_view} settings={data.siteSettings} setSettings={setData.setSiteSettings} theme={theme} />;
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
@@ -2037,7 +2034,7 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings, th
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {localServices.map((s, idx) => (
+                {(localServices || []).map((s, idx) => (
                     <div key={s.id || idx} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-4">
                         <div className="flex items-start justify-between">
                             <div className="w-12 h-12 bg-stone-50 rounded-lg flex items-center justify-center text-stone-800">
@@ -2198,7 +2195,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                     </div>
 
                     <div className="space-y-3">
-                        {localCategories.map((cat, idx) => (
+                        {(localCategories || []).map((cat, idx) => (
                             <div key={cat.id || idx} className="flex items-center justify-between p-3 bg-white border border-stone-200 rounded-lg">
                                 <input
                                     value={cat.name}
@@ -2230,7 +2227,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                         onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
                         className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     >
-                        {localCategories.map(cat => (
+                        {(localCategories || []).map(cat => (
                             <option key={cat.id} value={cat.name}>{cat.name}</option>
                         ))}
                     </select>
@@ -2241,7 +2238,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                         className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     />
                     <input
-                        placeholder="£50"
+                        placeholder=""
                         value={newItem.price}
                         onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
                         className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
@@ -2270,7 +2267,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
             </div>
 
             <div className="space-y-2">
-                {localPricing.map((item, idx) => (
+                {(localPricing || []).map((item, idx) => (
                     <div key={item.id || idx} className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col md:flex-row md:items-center justify-between shadow-sm hover:shadow-md transition-shadow gap-4">
                         <div className="flex-grow flex flex-col md:flex-row md:items-center gap-4">
                             <div className="min-w-[120px]">
@@ -2279,7 +2276,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                                     onChange={(e) => handleFieldChange(idx, 'category', e.target.value)}
                                     className="text-[10px] text-gray-500 uppercase tracking-wider block mb-1 border-none bg-transparent p-0 focus:ring-0 outline-none cursor-pointer"
                                 >
-                                    {localCategories.map(cat => (
+                                    {(localCategories || []).map(cat => (
                                         <option key={cat.id} value={cat.name}>{cat.name}</option>
                                     ))}
                                 </select>
@@ -2334,12 +2331,155 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
     );
 };
 
-const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessage, theme }) => {
+const ServiceSelectionModal = ({ isOpen, onClose, onSave, initialSelection = [], pricing = [], categories = [] }) => {
+    const [selected, setSelected] = useState(initialSelection);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    useEffect(() => {
+        setSelected(initialSelection);
+    }, [initialSelection, isOpen]);
+
+    if (!isOpen) return null;
+
+    const allServiceNames = (pricing || []).map(s => s.item_name);
+    const isAllSelected = allServiceNames.length > 0 && allServiceNames.every(name => selected.includes(name));
+
+    const toggleAll = () => {
+        if (isAllSelected) {
+            setSelected([]);
+        } else {
+            setSelected(allServiceNames);
+        }
+    };
+
+    const toggleCategory = (catName) => {
+        const catServices = pricing.filter(s => s.category === catName).map(s => s.item_name);
+        const isCatSelected = catServices.every(name => selected.includes(name));
+
+        if (isCatSelected) {
+            setSelected(prev => prev.filter(name => !catServices.includes(name)));
+        } else {
+            setSelected(prev => [...new Set([...prev, ...catServices])]);
+        }
+    };
+
+    const toggleService = (name) => {
+        setSelected(prev =>
+            prev.includes(name) ? prev.filter(s => s !== name) : [...prev, name]
+        );
+    };
+
+    const filteredPricing = pricing.filter(s =>
+        s.item_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden"
+            >
+                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-xl font-bold text-gray-900">Manage Provided Services</h3>
+                        <p className="text-sm text-gray-500">Select the services this professional can perform</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <div className="p-6 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-4 items-center justify-between">
+                    <div className="relative flex-grow max-w-xs">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                        <input
+                            type="text"
+                            placeholder="Search services..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                    </div>
+                    <button
+                        onClick={toggleAll}
+                        className="px-4 py-2 text-sm font-medium text-stone-800 hover:bg-white rounded-lg border border-transparent hover:border-gray-200 transition-all font-bold"
+                    >
+                        {isAllSelected ? 'Deselect All' : 'Select All'}
+                    </button>
+                </div>
+
+                <div className="flex-grow overflow-y-auto p-6 space-y-8">
+                    {categories.map(cat => {
+                        const catServices = filteredPricing.filter(s => s.category === cat.name);
+                        if (catServices.length === 0) return null;
+
+                        const isCatSelected = catServices.every(s => selected.includes(s.item_name));
+
+                        return (
+                            <div key={cat.id || cat.name} className="space-y-3">
+                                <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                                    <h4 className="font-bold text-stone-800 uppercase tracking-wider text-xs">{cat.name}</h4>
+                                    <button
+                                        onClick={() => toggleCategory(cat.name)}
+                                        className="text-xs font-bold text-stone-600 hover:text-stone-900 underline"
+                                    >
+                                        {isCatSelected ? 'Deselect Category' : 'Select Category'}
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    {catServices.map(service => (
+                                        <label
+                                            key={service.id}
+                                            className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${selected.includes(service.item_name)
+                                                ? 'bg-stone-50 border-stone-800 ring-1 ring-stone-800'
+                                                : 'bg-white border-gray-100 hover:border-gray-300'
+                                                }`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={selected.includes(service.item_name)}
+                                                onChange={() => toggleService(service.item_name)}
+                                                className="rounded border-gray-300 text-stone-800 focus:ring-stone-500"
+                                            />
+                                            <div className="flex-grow">
+                                                <div className="text-sm font-medium text-gray-900">{service.item_name}</div>
+                                                <div className="text-xs text-gray-500">{service.duration_minutes} min • {service.price}</div>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <div className="p-6 border-t border-gray-100 bg-gray-50 flex gap-3">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => { onSave(selected); onClose(); }}
+                        className="flex-1 px-4 py-3 bg-stone-800 text-white rounded-xl font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-stone-200"
+                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                    >
+                        Save Selections
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
+const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories = [], settings, setSettings, refresh, showMessage, theme }) => {
     const [localStylists, setLocalStylists] = useState(stylists);
     const [showHelp, setShowHelp] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
-    const [assigningServices, setAssigningServices] = useState(null);
-    const [newStylist, setNewStylist] = useState({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0 });
+    const [newStylist, setNewStylist] = useState({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0, provided_services: [] });
+    const [serviceModal, setServiceModal] = useState({ isOpen: false, context: null, initialSelection: [] });
 
     useEffect(() => { setLocalStylists(stylists); }, [stylists]);
 
@@ -2363,7 +2503,7 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
         try {
             const { error } = await supabase.from('stylist_calendars').insert([newStylist]);
             if (error) throw error;
-            setNewStylist({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0 });
+            setNewStylist({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0, provided_services: [] });
             setIsAdding(false);
             refresh();
             showMessage('success', 'New staff member added!');
@@ -2382,7 +2522,7 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
 
     const handleSaveOrder = async () => {
         try {
-            const updates = localStylists.map((s, index) => ({
+            const updates = (localStylists || []).map((s, index) => ({
                 ...s,
                 sort_order: index
             }));
@@ -2453,12 +2593,12 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-6">
                     <h3 className="font-semibold text-amber-900 mb-3 flex items-center gap-2">
                         <Info size={18} />
-                        How to Set Up Google Calendar for a Staff Member
+                        How to Set Up Google Calendar for a Professional
                     </h3>
                     <div className="text-sm text-amber-900 space-y-3">
                         <div>
-                            <p className="font-medium mb-1">1. Create or Access the Google Calendar</p>
-                            <p className="text-amber-800 ml-4">Go to <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer" className="underline">calendar.google.com</a> and create a new calendar or use an existing one.</p>
+                            <p className="font-medium mb-1">1. Create or Access the Professional's Google Calendar</p>
+                            <p className="text-amber-800 ml-4">Go to <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer" className="underline">calendar.google.com</a> and create a new calendar for the stylist or use an existing one.</p>
                         </div>
                         <div>
                             <p className="font-medium mb-1">2. Share the Calendar</p>
@@ -2487,7 +2627,7 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
 
             {isAdding && (
                 <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm space-y-4">
-                    <h3 className="text-sm font-medium text-gray-700">New Staff Member</h3>
+                    <h3 className="text-sm font-medium text-gray-700">New Professional</h3>
                     <div className="flex items-center gap-4">
                         <ImageUploader
                             folder="team"
@@ -2506,6 +2646,25 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
                         placeholder="Google Calendar ID (e.g., example@group.calendar.google.com)"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-sm"
                     />
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Service Assignment:</label>
+                        <button
+                            onClick={() => setServiceModal({
+                                isOpen: true,
+                                context: 'new',
+                                initialSelection: newStylist.provided_services || []
+                            })}
+                            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-white hover:border-stone-400 transition-all text-sm group"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Scissors size={18} className="text-stone-600" />
+                                <span className="text-stone-800">
+                                    {newStylist.provided_services?.length || 0} services assigned
+                                </span>
+                            </div>
+                            <Edit size={16} className="text-gray-400 group-hover:text-stone-800" />
+                        </button>
+                    </div>
                     <textarea
                         value={newStylist.description}
                         onChange={e => setNewStylist({ ...newStylist, description: e.target.value })}
@@ -2520,7 +2679,7 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
             )}
 
             <Reorder.Group axis="y" values={localStylists} onReorder={setLocalStylists} className="space-y-4">
-                {localStylists.map((s, idx) => (
+                {(localStylists || []).map((s, idx) => (
                     <Reorder.Item key={s.id || idx} value={s} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-4 touch-none relative">
                         <div className="absolute top-4 right-4 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
                             <GripVertical size={20} />
@@ -2552,6 +2711,28 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
                             placeholder="Google Calendar ID (e.g., example@group.calendar.google.com)"
                             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none font-mono text-gray-700"
                         />
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Service Assignment:</label>
+                            <button
+                                onClick={() => setServiceModal({
+                                    isOpen: true,
+                                    context: idx,
+                                    initialSelection: s.provided_services || []
+                                })}
+                                className="w-full flex items-center justify-between px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg hover:bg-white hover:border-stone-400 transition-all text-sm group"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Scissors size={18} className="text-stone-600" />
+                                    <span className="text-stone-800 font-medium">
+                                        {s.provided_services?.length || 0} services assigned
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-stone-400 group-hover:text-stone-600">Click to manage</span>
+                                    <Edit size={16} className="text-gray-400 group-hover:text-stone-800" />
+                                </div>
+                            </button>
+                        </div>
                         <textarea value={s.description || ''} onChange={(e) => handleFieldChange(idx, 'description', e.target.value)} placeholder="Bio" className="w-full text-sm text-gray-600 h-20 resize-none border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
                         <div className="flex gap-2">
                             <button onClick={() => handleSave(s)} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all font-medium" style={{ backgroundColor: "#3D2B1F" }}>Save Details</button>
@@ -2566,6 +2747,38 @@ const TeamTab = ({ stylists, pricing, settings, setSettings, refresh, showMessag
                     </Reorder.Item>
                 ))}
             </Reorder.Group>
+
+            <ServiceSelectionModal
+                isOpen={serviceModal.isOpen}
+                onClose={() => setServiceModal(prev => ({ ...prev, isOpen: false }))}
+                initialSelection={serviceModal.initialSelection}
+                pricing={pricing}
+                categories={priceCategories}
+                onSave={async (selected) => {
+                    if (serviceModal.context === 'new') {
+                        setNewStylist(prev => ({ ...prev, provided_services: selected }));
+                    } else {
+                        const idx = serviceModal.context;
+                        const stylistToUpdate = localStylists[idx];
+                        if (!stylistToUpdate) return;
+
+                        // Optimistic update
+                        handleFieldChange(idx, 'provided_services', selected);
+
+                        try {
+                            const { error } = await supabase.from('stylist_calendars').upsert({
+                                ...stylistToUpdate,
+                                provided_services: selected
+                            });
+                            if (error) throw error;
+                            showMessage('success', `Services for ${stylistToUpdate.stylist_name} saved!`);
+                            refresh();
+                        } catch (err) {
+                            showMessage('error', 'Failed to save services: ' + err.message);
+                        }
+                    }
+                }}
+            />
         </motion.div>
     );
 };
@@ -2768,7 +2981,7 @@ const GalleryTab = ({ gallery, refresh, showMessage, settings, setSettings, them
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {gallery.map((img) => (
+                {(gallery || []).map((img) => (
                     <div key={img.id} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm">
                         <img src={img.image_url} className="w-full h-full object-cover" alt="Gallery" />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-colors" />
@@ -5077,7 +5290,7 @@ const TestimonialsTab = ({ testimonials, refresh, showMessage, settings, setSett
 // CUSTOM SECTIONS TAB - Dynamic Section Builder
 // ============================================================
 
-const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, refresh, showMessage }) => {
+const CustomSectionsTab = ({ customSections = [], setCustomSections, siteSettings, refresh, showMessage }) => {
     const [editingSection, setEditingSection] = useState(null);
 
     const handleAddSection = async () => {

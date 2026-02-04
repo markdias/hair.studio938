@@ -9,127 +9,106 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { date, stylist } = req.query;
+    const { date, professional, service, duration: durationMinutes } = req.query;
+    const duration = parseInt(durationMinutes) || 60;
 
     if (!date) {
         return res.status(400).json({ error: 'Date is required' });
     }
 
     // Check opening hours first
+    const hoursCount = 13; // 8 AM to 8 PM
+    let openingSlots = new Array(hoursCount).fill(true); // Default to open to avoid "no slots" bug
+
+    // Sensible default fallback (9 AM - 6 PM)
+    const fallbackSlots = new Array(hoursCount).fill(false);
+    for (let i = 1; i <= 10; i++) fallbackSlots[i] = true;
+
     try {
         const { data: settingsData, error: settingsError } = await supabase
             .from('site_settings')
-            .select('opening_hours')
+            .select('value')
+            .eq('key', 'opening_hours')
             .single();
 
-        if (!settingsError && settingsData?.opening_hours) {
+        const openingHoursText = settingsData?.value;
+
+        if (!settingsError && openingHoursText) {
             const selectedDate = parseISO(date);
             const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             const dayName = dayNames[selectedDate.getDay()];
 
-            // Parse opening hours matching the AdminDashboard format
             const parseOpeningHours = (text) => {
                 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                const hours = Array.from({ length: 13 }, (_, i) => i + 8);
                 const selectedSlots = {};
-
-                // Initialize all days as closed
-                days.forEach(day => {
-                    selectedSlots[day] = new Array(13).fill(false);
-                });
+                days.forEach(day => { selectedSlots[day] = new Array(13).fill(false); });
 
                 if (!text || text.toLowerCase() === 'closed') return selectedSlots;
 
-                // Parse text - Expected format: "Mon-Fri: 9 AM - 6 PM, Sat: 10 AM - 4 PM"
                 const parts = text.split(',').map(p => p.trim());
-
                 parts.forEach(part => {
                     const match = part.match(/([A-Za-z\-]+):\s*(.+)/);
                     if (!match) return;
 
                     const [, dayPart, timePart] = match;
-                    const timeRanges = timePart.split(',').map(t => t.trim());
-
-                    // Parse day range
                     let targetDays = [];
                     if (dayPart.includes('-')) {
                         const [start, end] = dayPart.split('-').map(d => d.trim());
                         const startIdx = days.indexOf(start);
                         const endIdx = days.indexOf(end);
                         if (startIdx !== -1 && endIdx !== -1) {
-                            for (let i = startIdx; i <= endIdx; i++) {
-                                targetDays.push(days[i]);
-                            }
+                            for (let i = startIdx; i <= endIdx; i++) targetDays.push(days[i]);
                         }
                     } else {
                         const day = days.find(d => dayPart.includes(d));
                         if (day) targetDays.push(day);
                     }
 
-                    // Parse time ranges
-                    timeRanges.forEach(timeRange => {
-                        const timeMatch = timeRange.match(/(\d+)\s*(AM|PM)\s*-\s*(\d+)\s*(AM|PM)/i);
+                    timePart.split(',').forEach(range => {
+                        const timeMatch = range.match(/(\d+)\s*(AM|PM)\s*-\s*(\d+)\s*(AM|PM)/i);
                         if (!timeMatch) return;
+                        let [, sh, sp, eh, ep] = timeMatch;
+                        let startH = parseInt(sh);
+                        let endH = parseInt(eh);
+                        if (sp.toUpperCase() === 'PM' && startH !== 12) startH += 12;
+                        if (sp.toUpperCase() === 'AM' && startH === 12) startH = 0;
+                        if (ep.toUpperCase() === 'PM' && endH !== 12) endH += 12;
+                        if (ep.toUpperCase() === 'AM' && endH === 12) endH = 0;
 
-                        let [, startHour, startPeriod, endHour, endPeriod] = timeMatch;
-                        startHour = parseInt(startHour);
-                        endHour = parseInt(endHour);
-
-                        // Convert to 24-hour
-                        if (startPeriod.toUpperCase() === 'PM' && startHour !== 12) startHour += 12;
-                        if (startPeriod.toUpperCase() === 'AM' && startHour === 12) startHour = 0;
-                        if (endPeriod.toUpperCase() === 'PM' && endHour !== 12) endHour += 12;
-                        if (endPeriod.toUpperCase() === 'AM' && endHour === 12) endHour = 0;
-
-                        // Mark slots as selected
                         targetDays.forEach(day => {
-                            hours.forEach((hour, idx) => {
-                                if (hour >= startHour && hour < endHour) {
-                                    selectedSlots[day][idx] = true;
-                                }
-                            });
+                            for (let h = 8; h < 21; h++) {
+                                if (h >= startH && h < endH) selectedSlots[day][h - 8] = true;
+                            }
                         });
                     });
                 });
-
                 return selectedSlots;
             };
 
-            const parsedHours = parseOpeningHours(settingsData.opening_hours);
-            const slots = parsedHours[dayName];
+            const parsedHours = parseOpeningHours(openingHoursText);
+            const slotsForDay = parsedHours[dayName];
 
-            // If salon is closed on this day (no slots or all slots are false), return empty slots
-            if (!slots || !slots.some(s => s)) {
-                return res.status(200).json({ slots: [], closed: true });
+            if (slotsForDay && slotsForDay.some(s => s)) {
+                openingSlots = slotsForDay;
+            } else if (openingHoursText.toLowerCase() === 'closed') {
+                openingSlots = new Array(13).fill(false);
+            } else {
+                console.warn('Parsing failed for', dayName, '- using fallback');
+                openingSlots = fallbackSlots;
             }
         }
     } catch (err) {
-        console.warn('Could not fetch opening hours:', err.message);
-        // Continue anyway if opening hours check fails
+        console.warn('Opening hours check failed:', err.message);
+    }
+
+    if (!openingSlots.some(s => s)) {
+        return res.status(200).json({ slots: [], closed: true });
     }
 
     // Check for credentials
     const privateKey = process.env.GOOGLE_PRIVATE_KEY;
     const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    let calendarId = process.env.GOOGLE_CALENDAR_ID;
-
-    // Fetch stylist-specific calendar if provided
-    if (stylist) {
-        try {
-            const { data, error } = await supabase
-                .from('stylist_calendars')
-                .select('calendar_id')
-                .eq('stylist_name', stylist)
-                .single();
-
-            if (data?.calendar_id) {
-                calendarId = data.calendar_id;
-                console.log(`Using specific calendar for ${stylist}: ${calendarId}`);
-            }
-        } catch (err) {
-            console.warn(`Could not fetch calendar for ${stylist}, falling back to default:`, err.message);
-        }
-    }
+    const defaultCalendarId = process.env.GOOGLE_CALENDAR_ID;
 
     if (!privateKey || !clientEmail || !calendarId) {
         console.warn('Google Calendar credentials not configured. Returning empty slots.');
@@ -140,92 +119,113 @@ export default async function handler(req, res) {
     }
 
     try {
-        const cleanKey = (key) => {
-            if (!key) return null;
-            let cleaned = key.trim();
-
-            // 1. Handle Base64 encoding (very robust for Vercel)
-            if (!cleaned.startsWith('-')) {
-                try {
-                    const decoded = Buffer.from(cleaned, 'base64').toString('utf8');
-                    if (decoded.includes('BEGIN PRIVATE KEY')) {
-                        console.log('Decoded Base64 key successfully');
-                        cleaned = decoded;
-                    }
-                } catch (e) { /* not base64 */ }
-            }
-
-            // 2. Remove any surrounding quotes
-            cleaned = cleaned.replace(/^["']|["']$/g, '');
-
-            // 3. Handle literal \n characters
-            cleaned = cleaned.replace(/\\n/g, '\n');
-
-            // 4. Ensure PEM structure (add newlines if missing in one-liner)
-            if (cleaned.includes('BEGIN PRIVATE KEY') && !cleaned.includes('\n')) {
-                cleaned = cleaned
-                    .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
-                    .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
-            }
-
-            return cleaned.trim();
-        };
-
-        const cleanedKey = cleanKey(privateKey);
-        console.log('Diagnostic - Key info:', {
-            length: cleanedKey?.length,
-            startsWithHeader: cleanedKey?.startsWith('-----BEGIN'),
-            endsWithHeader: cleanedKey?.endsWith('KEY-----'),
-            lineCount: cleanedKey?.split('\n').length
-        });
-
-        const auth = new google.auth.JWT(
-            clientEmail,
-            null,
-            cleanedKey,
-            SCOPES
-        );
-
+        const auth = new google.auth.JWT(clientEmail, null, cleanKey(privateKey), SCOPES);
         const calendar = google.calendar({ version: 'v3', auth });
 
-        // Define search interval for the given date
+        let professionalsToCheck = [];
+        if (professional) {
+            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id, provided_services').eq('stylist_name', professional).single();
+            if (data) {
+                // If service is also provided, check if professional does it
+                if (service) {
+                    const canDoService = (data.provided_services || []).includes(service);
+                    if (!canDoService) {
+                        return res.status(200).json({ slots: [], message: `${professional} does not provide the ${service} service.` });
+                    }
+                }
+                professionalsToCheck.push(data);
+            }
+        } else if (service) {
+            // Find professionals who provide this service
+            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id, provided_services').contains('provided_services', [service]);
+            professionalsToCheck = data || [];
+
+            // FALLBACK: If NO stylists have this service assigned yet, assume ALL stylists can do it
+            // This prevents the system from being "broken" before the admin configures it.
+            if (professionalsToCheck.length === 0) {
+                console.log('No stylists explicitly assigned to service, falling back to all stylists');
+                const { data: allProfessionals } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id');
+                professionalsToCheck = allProfessionals || [];
+            }
+        } else {
+            professionalsToCheck.push({ stylist_name: 'Default', calendar_id: defaultCalendarId });
+        }
+
+        if (professionalsToCheck.length === 0) {
+            return res.status(200).json({ slots: [], message: 'No professionals available.' });
+        }
+
         const timeMin = startOfDay(parseISO(date)).toISOString();
         const timeMax = endOfDay(parseISO(date)).toISOString();
 
-        const response = await calendar.events.list({
-            calendarId,
-            timeMin,
-            timeMax,
-            singleEvents: true,
-            orderBy: 'startTime',
-        });
-
-        const busySlots = response.data.items.map(event => ({
-            start: parseISO(event.start.dateTime || event.start.date),
-            end: parseISO(event.end.dateTime || event.end.date)
+        const allBusySlots = await Promise.all(professionalsToCheck.map(async (st) => {
+            if (!st.calendar_id) return { professional: st.stylist_name, busy: [] };
+            try {
+                const response = await calendar.events.list({ calendarId: st.calendar_id, timeMin, timeMax, singleEvents: true });
+                return {
+                    professional: st.stylist_name,
+                    busy: response.data.items.map(event => ({
+                        start: parseISO(event.start.dateTime || event.start.date),
+                        end: parseISO(event.end.dateTime || event.end.date)
+                    }))
+                };
+            } catch (err) {
+                console.error(`Error fetching calendar for ${st.stylist_name}:`, err.message);
+                return { professional: st.stylist_name, busy: [] };
+            }
         }));
 
-        // Generate possible slots (Opening hours: 9:00 - 18:00)
-        const allSlots = [];
-        let current = addMinutes(startOfDay(parseISO(date)), 9 * 60); // 9:00 AM
-        const dayEnd = addMinutes(startOfDay(parseISO(date)), 18 * 60); // 6:00 PM
+        const availableSlots = [];
+        const baseDate = startOfDay(parseISO(date));
 
-        while (current < dayEnd) {
-            const slotTime = current;
-            const isBusy = busySlots.some(busy =>
-                isWithinInterval(slotTime, { start: busy.start, end: addMinutes(busy.end, -1) }) ||
-                isWithinInterval(addMinutes(slotTime, 59), { start: addMinutes(busy.start, 1), end: busy.end })
-            );
+        for (let hour = 8; hour < 21; hour++) {
+            for (let mins of [0, 30]) {
+                const slotStart = addMinutes(baseDate, hour * 60 + mins);
+                const slotEnd = addMinutes(slotStart, duration);
 
-            if (!isBusy) {
-                allSlots.push(format(slotTime, 'HH:mm'));
+                const dayIndex = hour - 8;
+                if (!openingSlots[dayIndex]) continue;
+                // If the slot extends into the next hour, check if that hour is also open
+                if (duration > 30 && mins === 30 && hour < 20 && !openingSlots[dayIndex + 1]) continue;
+                if (duration > 60 && hour < 19 && !openingSlots[dayIndex + 2]) continue;
+
+                const availableProfessionals = allBusySlots.filter(st => {
+                    const isBusy = st.busy.some(busy => {
+                        const overlapStart = slotStart > busy.start ? slotStart : busy.start;
+                        const overlapEnd = slotEnd < busy.end ? slotEnd : busy.end;
+                        return overlapStart < overlapEnd;
+                    });
+                    return !isBusy;
+                }).map(st => st.professional.trim());
+
+                if (availableProfessionals.length > 0) {
+                    availableSlots.push({
+                        time: format(slotStart, 'HH:mm'),
+                        professionals: availableProfessionals
+                    });
+                }
             }
-            current = addMinutes(current, 60); // 1 hour slots
         }
 
-        return res.status(200).json({ slots: allSlots });
+        return res.status(200).json({ slots: availableSlots });
     } catch (error) {
-        console.error('Calendar API Error:', error);
+        console.error('Availability API Error:', error);
         return res.status(500).json({ error: 'Failed to fetch availability', details: error.message });
     }
+}
+
+function cleanKey(key) {
+    if (!key) return null;
+    let cleaned = key.trim();
+    if (!cleaned.startsWith('-')) {
+        try {
+            const decoded = Buffer.from(cleaned, 'base64').toString('utf8');
+            if (decoded.includes('BEGIN PRIVATE KEY')) cleaned = decoded;
+        } catch (e) { }
+    }
+    cleaned = cleaned.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+    if (cleaned.includes('BEGIN PRIVATE KEY') && !cleaned.includes('\n')) {
+        cleaned = cleaned.replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n').replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
+    }
+    return cleaned.trim();
 }
