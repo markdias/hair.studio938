@@ -70,7 +70,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <img
-                    src={settings.logo_url || "/logo.png"}
+                    src={settings.logo_url}
                     alt="938 Logo"
                     style={{
                         height: isCompact ? `${(parseInt(settings.logo_size) || 85) * 0.7}px` : `${parseInt(settings.logo_size) || 85}px`,
@@ -278,7 +278,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
             height: '100vh',
             width: '100%',
             position: 'relative',
-            backgroundImage: `url("${settings.hero_bg_url || "/salon_bg.png"}")`,
+            backgroundImage: `url("${settings.hero_bg_url}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             display: 'flex',

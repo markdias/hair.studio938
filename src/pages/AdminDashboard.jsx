@@ -1324,7 +1324,7 @@ const TermsAndConditionsEditor = ({ settings, setSettings, showMessage, theme })
 };
 
 const BrandingEditor = ({ settings, onSave, showMessage }) => {
-    const [logoUrl, setLogoUrl] = useState(settings.logo_url || '/logo.png');
+    const [logoUrl, setLogoUrl] = useState(settings.logo_url);
     const [size, setSize] = useState(parseInt(settings.logo_size) || 85);
 
     const handleLogoUpload = (url) => {
