@@ -1101,7 +1101,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                                 )}
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Column 3: Contact Us */}
                     <div>

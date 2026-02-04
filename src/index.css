@@ -18,6 +18,10 @@
   --secondary: #F5F1ED;
   --text-main: #2A1D15;
   --text-contrast: #FFFFFF;
+  --white: #FFFFFF;
+  --black: #000000;
+  --input-bg: #F9F9F9;
+  --booking-card-bg: #FFFFFF;
   --font-heading: 'Playfair Display', serif;
   --font-body: 'Inter', sans-serif;
   --glass: rgba(61, 43, 31, 0.8);
