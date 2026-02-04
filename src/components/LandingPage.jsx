@@ -530,6 +530,15 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
     const textColor = settings.pricing_text_color;
     const currency = settings.pricing_currency_symbol || '';
 
+    const formatPrice = (priceStr, currencySymbol) => {
+        if (!priceStr) return '';
+        if (!currencySymbol) return priceStr;
+        if (priceStr.includes(currencySymbol)) return priceStr;
+        // Prepend currency symbol to each number group
+        // Handles: "100" -> "£100", "From 100" -> "From £100", "100-200" -> "£100-£200"
+        return priceStr.replace(/(\d+(\.\d+)?)/g, `${currencySymbol}$1`);
+    };
+
     const sectionStyle = {
         padding: isSeparatePage ? '40px 50px' : '120px 50px',
         backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : '#FFFFFF',
@@ -611,7 +620,7 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
                                     }}>
                                         <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', opacity: 0.8 }}>{item.name}</span>
                                         <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                                            {currency}{item.price}
+                                            {formatPrice(item.price, currency)}
                                         </span>
                                     </div>
                                 ))}
