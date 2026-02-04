@@ -124,15 +124,21 @@ export const ThemeProvider = ({ children }) => {
             return { key: dbKey, value };
         }).filter(Boolean);
 
-        if (updates.length === 0) return;
+        if (updates.length === 0) return { success: true };
 
         try {
             const { error } = await supabase
                 .from('site_settings')
-                .upsert(updates);
-            if (error) throw error;
+                .upsert(updates, { onConflict: 'key' });
+
+            if (error) {
+                console.error('Supabase update error:', error);
+                throw error;
+            }
+            return { success: true };
         } catch (err) {
             console.error('Error saving theme:', err);
+            return { success: false, error: err };
         }
     };
 
@@ -144,7 +150,7 @@ export const ThemeProvider = ({ children }) => {
         }).filter(Boolean);
 
         try {
-            const { error } = await supabase.from('site_settings').upsert(updates);
+            const { error } = await supabase.from('site_settings').upsert(updates, { onConflict: 'key' });
             if (error) throw error;
         } catch (err) {
             console.error('Error saving default theme:', err);

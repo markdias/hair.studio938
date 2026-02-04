@@ -1409,8 +1409,12 @@ const ThemeTab = ({ showMessage }) => {
     };
 
     const handleSave = async () => {
-        await updateTheme(localTheme);
-        showMessage('success', 'Theme saved successfully!');
+        const result = await updateTheme(localTheme);
+        if (result?.error) {
+            showMessage('error', `Failed to save theme: ${result.error.message || 'Unknown error'}`);
+        } else {
+            showMessage('success', 'Theme saved successfully!');
+        }
     };
 
     const handleSaveDefault = async () => {
