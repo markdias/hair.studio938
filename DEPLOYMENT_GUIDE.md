@@ -266,7 +266,7 @@ CREATE TABLE IF NOT EXISTS public.clients (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
+    email TEXT UNIQUE,
     phone TEXT,
     notes TEXT
 );
@@ -294,6 +294,7 @@ CREATE TABLE IF NOT EXISTS public.appointments (
     client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE NOT NULL,
     professional TEXT NOT NULL,
     service TEXT NOT NULL,
+    duration_minutes INTEGER DEFAULT 60,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time TIMESTAMP WITH TIME ZONE NOT NULL,
     status TEXT DEFAULT 'confirmed',
@@ -410,22 +411,23 @@ DO $$ BEGIN
 END $$;
 
 -- TEAM CALENDARS TABLE
-CREATE TABLE IF NOT EXISTS public.staff_calendars (
+CREATE TABLE IF NOT EXISTS public.stylist_calendars (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    member_name TEXT NOT NULL UNIQUE,
+    stylist_name TEXT NOT NULL UNIQUE,
     calendar_id TEXT NOT NULL,
     image_url TEXT,
     role TEXT,
+    provided_services TEXT[],
     sort_order INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-ALTER TABLE public.staff_calendars ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.stylist_calendars ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public can view staff calendars" ON public.staff_calendars
+CREATE POLICY "Public can view staff calendars" ON public.stylist_calendars
     FOR SELECT USING (true);
 
-CREATE POLICY "Authenticated users can manage staff calendars" ON public.staff_calendars
+CREATE POLICY "Authenticated users can manage staff calendars" ON public.stylist_calendars
     FOR ALL USING (auth.role() = 'authenticated');
 
 -- SERVICES OVERVIEW TABLE
@@ -533,6 +535,10 @@ VALUES
     ('pricing_heading_name', 'Service Menu'),
     ('pricing_bg_color', ''),
     ('pricing_text_color', ''),
+    ('pricing_currency_symbol', '£'),
+    ('show_opening_hours', 'true'),
+    ('site_enabled', 'true'),
+    ('email_subject', 'Booking Confirmation'),
     ('testimonials_menu_name', 'Testimonials'),
     ('testimonials_heading_name', 'Client Stories'),
     ('testimonials_bg_color', ''),
@@ -569,7 +575,7 @@ ON CONFLICT (id) DO NOTHING;
 
 ### 1. Database Check
 - [ ] Go to Supabase → **Table Editor**
-- [ ] Verify tables exist: `site_settings`, `clients`, `appointments`, `testimonials`, `phone_numbers`, `services_overview`, `price_list`, `price_categories`, `staff_calendars`, `gallery_images`, `custom_sections`, `custom_section_elements`
+- [ ] Verify tables exist: `site_settings`, `clients`, `appointments`, `testimonials`, `phone_numbers`, `services_overview`, `price_list`, `price_categories`, `stylist_calendars`, `gallery_images`, `custom_sections`, `custom_section_elements`
 - [ ] Check `site_settings` has theme values
 
 ### 2. Website Check
@@ -632,10 +638,10 @@ ON CONFLICT (id) DO NOTHING;
 
 ### Multiple Professional Calendars
 To assign different calendars to professionals:
-1. Uncomment the `staff_calendars` table in setup SQL
-2. Insert professional-calendar mappings:
+1. Ensure the `stylist_calendars` table is created (it is included in setup SQL)
+2. Insert professional-calendar mappings in Supabase SQL Editor:
 ```sql
-INSERT INTO staff_calendars (member_name, calendar_id)
+INSERT INTO stylist_calendars (stylist_name, calendar_id)
 VALUES ('Sarah', 'sarah@gmail.com'),
        ('Mike', 'mike@gmail.com');
 ```
