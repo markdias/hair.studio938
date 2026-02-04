@@ -9,24 +9,19 @@ export const ThemeProvider = ({ children }) => {
 
     const FACOTRY_THEME = {
         '--primary': '#3D2B1F',
+        '--primary-rgb': '61, 43, 31',
         '--primary-hover': '#4D3B2F',
         '--accent': '#EAE0D5',
         '--secondary': '#F5F1ED',
         '--text-main': '#2A1D15',
         '--text-contrast': '#FFFFFF',
-        '--white': '#FFFFFF',
-        '--black': '#000000',
-        '--success-green': '#22c55e',
-        '--error-red': '#ef4444',
-        '--booking-card-bg': '#FFFFFF',
-        '--pricing-card-bg': '#EDE4DB',
-        '--input-bg': '#F9F9F9',
         '--font-heading': "'Playfair Display', serif",
         '--font-body': "'Inter', sans-serif",
     };
 
     const [theme, setTheme] = useState(FACOTRY_THEME);
     const [loading, setLoading] = useState(true);
+    const [maintenance, setMaintenance] = useState(false);
 
     // Map database keys to CSS variable names
     const dbKeyToCssVar = {
@@ -36,15 +31,10 @@ export const ThemeProvider = ({ children }) => {
         'theme_soft_cream': '--secondary',
         'theme_text_dark': '--text-main',
         'theme_text_light': '--text-contrast',
-        'theme_white': '--white',
-        'theme_black': '--black',
-        'theme_success': '--success-green',
-        'theme_error': '--error-red',
-        'theme_booking_card_bg': '--booking-card-bg',
-        'theme_pricing_card_bg': '--pricing-card-bg',
-        'theme_input_bg': '--input-bg',
         'theme_font_heading': '--font-heading',
         'theme_font_body': '--font-body',
+        'theme_navbar_bg': '--navbar-bg',
+        'theme_navbar_text': '--navbar-text',
     };
 
     const cssVarToDbKey = Object.fromEntries(
@@ -68,7 +58,7 @@ export const ThemeProvider = ({ children }) => {
 
             if (error) throw error;
 
-            if (data) {
+            if (data && data.length > 0) {
                 const newTheme = { ...FACOTRY_THEME };
                 data.forEach(setting => {
                     const cssVar = dbKeyToCssVar[setting.key];
@@ -77,15 +67,32 @@ export const ThemeProvider = ({ children }) => {
                     }
                 });
                 setTheme(newTheme);
+                setMaintenance(false);
+            } else {
+                // No theme settings found - trigger maintenance mode
+                setMaintenance(true);
             }
         } catch (err) {
             console.error('Error fetching theme:', err);
+            // On error, also default to maintenance or factory?
+            // User asked: "if there are no colours then we should say under maintenance"
+            // We'll assume error fetching = maintenance for safety.
+            setMaintenance(true);
         } finally {
             setLoading(false);
         }
     };
 
     const hexToRgb = (hex) => {
+        if (!hex) return null;
+        hex = hex.trim();
+
+        // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+        const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+        hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+            return r + r + g + g + b + b;
+        });
+
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result
             ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
@@ -94,14 +101,22 @@ export const ThemeProvider = ({ children }) => {
 
     const applyTheme = (themeSettings) => {
         const root = document.documentElement;
+        // console.log('Applying theme:', themeSettings); // Debug logging
         Object.entries(themeSettings).forEach(([property, value]) => {
             root.style.setProperty(property, value);
 
-            // If the value is a hex color, also set its RGB counter-part for rgba usage
-            if (value && typeof value === 'string' && value.startsWith('#')) {
+            // Handle RGB counterparts for transparent usage
+            if (property === '--primary' || property === '--navbar-bg') {
                 const rgb = hexToRgb(value);
                 if (rgb) {
-                    root.style.setProperty(`${property}-rgb`, rgb);
+                    const rgbVar = property === '--primary' ? '--primary-rgb' : '--navbar-bg-rgb';
+                    root.style.setProperty(rgbVar, rgb);
+                }
+            }
+            if (property === '--accent') {
+                const rgb = hexToRgb(value);
+                if (rgb) {
+                    root.style.setProperty('--accent-rgb', rgb);
                 }
             }
         });
@@ -112,6 +127,7 @@ export const ThemeProvider = ({ children }) => {
         const updatedTheme = { ...theme, ...newThemeSettings };
         setTheme(updatedTheme);
         applyTheme(updatedTheme);
+        setMaintenance(false); // Manually updating implies we have colors now
 
         // 2. Persist to Supabase
         const updates = Object.entries(newThemeSettings).map(([cssVar, value]) => {
@@ -120,16 +136,21 @@ export const ThemeProvider = ({ children }) => {
             return { key: dbKey, value };
         }).filter(Boolean);
 
-        if (updates.length === 0) return;
+        if (updates.length === 0) return { success: true };
 
         try {
             const { error } = await supabase
                 .from('site_settings')
-                .upsert(updates);
+                .upsert(updates, { onConflict: 'key' });
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase update error:', error);
+                throw error;
+            }
+            return { success: true };
         } catch (err) {
             console.error('Error saving theme:', err);
+            return { success: false, error: err };
         }
     };
 
@@ -141,7 +162,7 @@ export const ThemeProvider = ({ children }) => {
         }).filter(Boolean);
 
         try {
-            const { error } = await supabase.from('site_settings').upsert(updates);
+            const { error } = await supabase.from('site_settings').upsert(updates, { onConflict: 'key' });
             if (error) throw error;
         } catch (err) {
             console.error('Error saving default theme:', err);
@@ -185,7 +206,7 @@ export const ThemeProvider = ({ children }) => {
 
 
     return (
-        <ThemeContext.Provider value={{ theme, updateTheme, saveAsDefault, resetToDefault, resetToFactory, loading }}>
+        <ThemeContext.Provider value={{ theme, updateTheme, saveAsDefault, resetToDefault, resetToFactory, loading, maintenance }}>
             {children}
         </ThemeContext.Provider>
     );

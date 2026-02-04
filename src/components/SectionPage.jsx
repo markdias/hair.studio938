@@ -27,7 +27,7 @@ const SectionPage = ({ siteData }) => {
     // Helper to determine styles based on section ID and settings
     const getSectionStyles = (id) => {
         let bgColor = 'var(--primary)';
-        let textColor = 'var(--accent)'; // Default for dark backgrounds like primary
+        let textColor = 'var(--accent)'; // Default for dark backgrounds like primary-brown
 
         switch (id) {
             case 'services':
@@ -104,7 +104,7 @@ const SectionPage = ({ siteData }) => {
         <div className="section-page min-h-screen transition-colors duration-300" style={{ backgroundColor: styles.backgroundColor }}>
             <Navbar settings={siteData.settings} customSections={siteData.customSections} pageSections={siteData.pageSections} />
             <Breadcrumbs label={section.label} textColor={styles.color} />
-            <div className="section-content">
+            <div className="section-content flex-grow">
                 {renderSection()}
             </div>
             <Footer settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} pageSections={siteData.pageSections} />

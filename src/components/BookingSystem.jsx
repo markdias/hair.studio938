@@ -77,6 +77,8 @@ const parseOpeningHours = (text) => {
 };
 
 const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
+    if (settings.show_booking_section === 'false') return null;
+
     const [professionals, setProfessionals] = useState([]);
     const [isLoadingProfessionals, setIsLoadingProfessionals] = useState(true);
     const [openingHours, setOpeningHours] = useState(null);
@@ -143,9 +145,12 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                     });
                     setServiceDurations(durations);
 
-                    // Fetch stylist services mapping
+                    /* 
+                    // Fetch stylist services mapping - This currently causes a ReferenceError as state is not defined
+                    // and the system uses provided_services array on the stylist record instead.
                     const { data: stlSrvs } = await supabase.from('stylist_services').select('*');
                     if (stlSrvs) setStylistServiceMaps(stlSrvs);
+                    */
 
                     // Group price_list by categories
                     const grouped = catsRes.data.map(cat => ({
@@ -502,23 +507,30 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
 
                                     {step === 1 && (
                                         <div style={{ flex: 1 }}>
-                                            <h4 style={{ fontSize: '1.5rem', marginBottom: '30px' }}>Choose Your Professional</h4>
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px' }}>
+                                            <h4 style={{ fontSize: '1.5rem', marginBottom: '30px', textAlign: 'center' }}>Choose Your Professional</h4>
+                                            <div style={{
+                                                display: 'flex',
+                                                flexWrap: 'wrap',
+                                                gap: '20px',
+                                                justifyContent: 'center'
+                                            }}>
                                                 {professionals.map((s) => (
                                                     <button
                                                         key={s.name}
                                                         onClick={() => { setBooking({ ...booking, professional: s }); nextStep(); }}
                                                         style={{
+                                                            width: '200px',
                                                             padding: '20px',
                                                             borderRadius: '12px',
                                                             border: booking.professional?.name === s.name ? '2px solid var(--primary)' : '2px solid transparent',
-                                                            backgroundColor: booking.professional?.name === s.name ? 'var(--secondary)' : 'var(--input-bg)',
+                                                            backgroundColor: booking.professional?.name === s.name ? 'var(--secondary)' : '#F9F9F9',
                                                             transition: 'all 0.3s ease',
                                                             textAlign: 'center',
-                                                            cursor: 'pointer'
+                                                            cursor: 'pointer',
+                                                            flexShrink: 0
                                                         }}
                                                     >
-                                                        <img src={s.img} alt={s.name} style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '15px', objectFit: 'cover' }} />
+                                                        <img src={s.img} alt={s.name} style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '15px', objectFit: 'cover', margin: '0 auto' }} />
                                                         <div style={{ fontWeight: '700', color: 'var(--primary)' }}>{s.name}</div>
                                                         <div style={{ fontSize: '0.8rem', color: '#666' }}>{s.role.split(' ')[0]}</div>
                                                     </button>
@@ -621,8 +633,8 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                                 padding: '10px 20px',
                                                                                 borderRadius: '30px',
                                                                                 border: '1px solid var(--accent)',
-                                                                                backgroundColor: booking.service === item ? 'var(--primary)' : 'var(--white)',
-                                                                                color: booking.service === item ? 'var(--white)' : 'var(--primary)',
+                                                                                backgroundColor: booking.service === item ? 'var(--primary)' : 'white',
+                                                                                color: booking.service === item ? '#FFF' : 'var(--primary)',
                                                                                 fontSize: '0.9rem',
                                                                                 transition: 'all 0.2s ease',
                                                                                 cursor: 'pointer',
@@ -722,8 +734,8 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                             padding: '12px 0',
                                                                             borderRadius: '10px',
                                                                             border: booking.time === t ? '2px solid #3D2B1F' : '1px solid var(--accent)',
-                                                                            backgroundColor: booking.time === t ? 'var(--primary)' : 'var(--white)',
-                                                                            color: booking.time === t ? 'var(--white)' : 'var(--primary)',
+                                                                            backgroundColor: booking.time === t ? '#3D2B1F' : 'white',
+                                                                            color: booking.time === t ? '#FFFFFF' : '#3D2B1F',
                                                                             fontWeight: booking.time === t ? '700' : '400',
                                                                             fontSize: '0.9rem',
                                                                             transition: 'all 0.2s ease',

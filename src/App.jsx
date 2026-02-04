@@ -13,6 +13,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react"
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import { supabase } from './lib/supabase'
+import { useTheme } from './lib/ThemeContext'
 import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
@@ -170,6 +171,8 @@ const useSiteData = () => {
 
 const MainSite = ({ siteData }) => {
   const { settings, pageSections, loading } = siteData;
+  // Get maintenance state from theme context
+  const { maintenance, loading: themeLoading } = useTheme();
   const [showIntro, setShowIntro] = useState(false);
 
   useEffect(() => {
@@ -180,7 +183,7 @@ const MainSite = ({ siteData }) => {
     }
   }, [settings.intro_video_url, settings.intro_video_custom_url]);
 
-  if (loading) {
+  if (loading || themeLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[var(--primary)]">
         <Loader2 size={40} className="animate-spin text-[var(--accent)]" />
@@ -188,8 +191,8 @@ const MainSite = ({ siteData }) => {
     );
   }
 
-  // Kill Switch Check - Show maintenance screen if site is disabled
-  if (settings.site_enabled === 'false') {
+  // Kill Switch Check - Show maintenance screen if site is disabled or theme data is missing
+  if (settings.site_enabled === 'false' || maintenance) {
     return <MaintenanceScreen />;
   }
 
@@ -203,8 +206,8 @@ const MainSite = ({ siteData }) => {
 
   return (
     <>
-      {/* Kill Switch Check - Show maintenance screen if site is disabled */}
-      {siteData.settings.site_enabled === 'false' ? (
+      {/* Kill Switch Check - Show maintenance screen if site is disabled or theme missing */}
+      {(siteData.settings.site_enabled === 'false' || maintenance) ? (
         <MaintenanceScreen />
       ) : (
         <>
@@ -217,34 +220,39 @@ const MainSite = ({ siteData }) => {
               <Navbar settings={siteData.settings} customSections={siteData.customSections} pageSections={siteData.pageSections} />
               <Hero settings={siteData.settings} pageSections={siteData.pageSections} />
 
-              {(() => {
-                const sortedSections = [...siteData.pageSections].sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
+              <div className="flex-grow">
+                {(() => {
+                  const sortedSections = [...siteData.pageSections].sort((a, b) => (a.sort_order || 999) - (b.sort_order || 999));
 
-                return sortedSections.map(section => {
-                  const id = section.id;
-                  // If explicit enabled field exists and is false, skip (unless it's custom and we handled it)
-                  if (section.enabled === false) return null;
+                  return sortedSections.map(section => {
+                    const id = section.id;
+                    // If explicit enabled field exists and is false, skip (unless it's custom and we handled it)
+                    if (section.enabled === false) return null;
 
-                  // Skip sections that are set to be separate pages
-                  if (section.is_separate_page) return null;
+                    // Skip sections that are set to be separate pages
+                    if (section.is_separate_page) return null;
 
-                  // Fixed Sections
-                  if (id === 'services') return <Services key="services" services={siteData.services} settings={siteData.settings} />;
-                  if (id === 'team') return <TeamSection key="team" team={siteData.team} settings={siteData.settings} />;
-                  if (id === 'pricing') return <PriceList key="pricing" pricing={siteData.pricing} settings={siteData.settings} />;
-                  if (id === 'testimonials') return <Testimonials key="testimonials" testimonials={siteData.testimonials} settings={siteData.settings} />;
-                  if (id === 'booking') return <BookingSystem key="booking" settings={siteData.settings} />;
-                  if (id === 'gallery') return <Gallery key="gallery" images={siteData.gallery} settings={siteData.settings} />;
-                  if (id === 'contact') return <Contact key="contact" settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />;
+                    // Fixed Sections
+                    if (id === 'services') return <Services key="services" services={siteData.services} settings={siteData.settings} />;
+                    if (id === 'team') return <TeamSection key="team" team={siteData.team} settings={siteData.settings} />;
+                    if (id === 'pricing') return <PriceList key="pricing" pricing={siteData.pricing} settings={siteData.settings} />;
+                    if (id === 'testimonials') return <Testimonials key="testimonials" testimonials={siteData.testimonials} settings={siteData.settings} />;
+                    if (id === 'booking') {
+                      if (siteData.settings.show_booking_section === 'false') return null;
+                      return <BookingSystem key="booking" settings={siteData.settings} />;
+                    }
+                    if (id === 'gallery') return <Gallery key="gallery" images={siteData.gallery} settings={siteData.settings} />;
+                    if (id === 'contact') return <Contact key="contact" settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} />;
 
-                  // Custom Sections
-                  const customSection = siteData.customSections.find(s => s.id === id);
-                  if (customSection) {
-                    return <CustomSection key={customSection.id} data={customSection} />;
-                  }
-                  return null;
-                });
-              })()}
+                    // Custom Sections
+                    const customSection = siteData.customSections.find(s => s.id === id);
+                    if (customSection) {
+                      return <CustomSection key={customSection.id} data={customSection} />;
+                    }
+                    return null;
+                  });
+                })()}
+              </div>
 
               <Footer settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} pageSections={siteData.pageSections} />
               <Analytics />

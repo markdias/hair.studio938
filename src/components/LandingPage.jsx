@@ -6,16 +6,7 @@ import PrivacyPolicyModal from './PrivacyPolicyModal';
 import TermsAndConditionsModal from './TermsAndConditionsModal';
 
 const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
-    const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
     const location = useLocation();
@@ -49,7 +40,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
         setIsMenuOpen(false);
     };
 
-    const isCompact = isScrolled || !isHomePage;
+    const isCompact = true;
 
     return (
         <nav className={isMenuOpen ? 'mobile-menu-active' : ''} style={{
@@ -62,22 +53,22 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
             justifyContent: 'space-between',
             alignItems: 'center',
             zIndex: 1000,
-            backgroundColor: (isCompact || isMenuOpen) ? 'var(--primary)' : 'rgba(var(--primary-rgb), 0.8)',
+            backgroundColor: (isCompact || isMenuOpen) ? 'rgba(var(--navbar-bg-rgb, var(--primary-rgb)), 0.98)' : 'rgba(var(--navbar-bg-rgb, var(--primary-rgb)), 0.8)',
             backdropFilter: 'blur(10px)',
             transition: 'all 0.4s ease',
-            color: 'var(--accent)',
+            color: 'var(--navbar-text, var(--accent))',
             boxSizing: 'border-box'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <img
-                    src={settings.logo_url || "/logo.png"}
+                    src={settings.logo_url}
                     alt="938 Logo"
                     style={{
                         height: isCompact ? `${(parseInt(settings.logo_size) || 85) * 0.7}px` : `${parseInt(settings.logo_size) || 85}px`,
                         width: isCompact ? `${(parseInt(settings.logo_size) || 85) * 0.7}px` : `${parseInt(settings.logo_size) || 85}px`,
                         borderRadius: '50%',
                         objectFit: 'cover',
-                        border: '1px solid rgba(var(--white-rgb, 255, 255, 255), 0.2)',
+                        border: '1px solid rgba(80, 174, 36, 0.2)',
                         transition: 'all 0.4s ease'
                     }}
                 />
@@ -88,7 +79,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                     transition: 'all 0.4s ease',
                     fontFamily: 'var(--font-heading)'
                 }}>
-                    {settings.business_name || 'STUDIO 938'}
+                    {settings.business_name}
                 </span>
             </div>
 
@@ -158,7 +149,9 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                 })()}
                 {(() => {
                     const bookingSection = pageSections.find(s => s.id === 'booking');
-                    if (bookingSection?.enabled !== false) {
+                    const isVisible = settings.show_booking_section !== 'false' && bookingSection?.enabled !== false;
+
+                    if (isVisible) {
                         const isSeparate = bookingSection?.is_separate_page;
                         const style = {
                             padding: '10px 24px',
@@ -168,12 +161,12 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         };
 
                         if (isSeparate) {
-                            return <Link to="/section/booking" className="btn-primary" style={style}>Book Now</Link>;
+                            return <Link to="/section/booking" className="btn-primary" style={style}>{settings.booking_menu_name || 'Book Now'}</Link>;
                         }
                         return isHomePage ? (
-                            <a href="#booking" className="btn-primary" style={style}>Book Now</a>
+                            <a href="#booking" className="btn-primary" style={style}>{settings.booking_menu_name || 'Book Now'}</a>
                         ) : (
-                            <Link to="/#booking" className="btn-primary" style={style}>Book Now</Link>
+                            <Link to="/#booking" className="btn-primary" style={style}>{settings.booking_menu_name || 'Book Now'}</Link>
                         );
                     }
                     return null;
@@ -230,6 +223,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         else if (id === 'pricing' && settings.show_pricing_section !== 'false') label = settings.pricing_menu_name || 'Pricing';
                         else if (id === 'gallery' && settings.show_gallery_section !== 'false') label = settings.gallery_menu_name || 'Gallery';
                         else if (id === 'testimonials' && settings.show_testimonials_section === 'true') label = settings.testimonials_menu_name || 'Testimonials';
+                        else if (id === 'booking' && settings.show_booking_section !== 'false') label = settings.booking_menu_name || 'Book Now';
                         else if (id === 'contact') label = settings.contact_menu_name || 'Contact';
                         else {
                             const custom = customSections.find(s => s.id === id);
@@ -278,7 +272,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
             height: '100vh',
             width: '100%',
             position: 'relative',
-            backgroundImage: `url("${settings.hero_bg_url || "/salon_bg.png"}")`,
+            backgroundImage: `url("${settings.hero_bg_url}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             display: 'flex',
@@ -318,7 +312,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     fontWeight: '600',
                     color: 'var(--accent)'
                 }}>
-                    {settings.business_name || 'STUDIO 938'}
+                    {settings.business_name}
                 </div>
                 <h1 className="responsive-title" style={{
                     fontSize: 'clamp(3.5rem, 8vw, 5.5rem)',
@@ -327,7 +321,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     width: '100%'
                 }}>{settings.hero_title || ""}</h1>
                 <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '1.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
-                    {settings.hero_subtitle || "Premium services and bespoke treatments at 938 High Road."}
+                    {settings.hero_subtitle}
                 </p>
                 {settings.show_opening_hours !== 'false' && (
                     <div style={{
@@ -342,17 +336,20 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                         letterSpacing: '1px'
                     }}>
                         <Calendar size={18} />
-                        <span>{settings.opening_hours || "Tuesday - Saturday: 9:00 AM - 6:00 PM"}</span>
+                        <span>{settings.opening_hours}</span>
                     </div>
                 )}
                 <div className="hero-buttons" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', width: '100%', margin: '0 auto' }}>
-                    {isBookingEnabled && (() => {
+                    {(() => {
                         const bookingSection = pageSections.find(s => s.id === 'booking');
+                        const isVisible = settings.show_booking_section !== 'false' && bookingSection?.enabled !== false;
+                        if (!isVisible) return null;
+
                         const isSeparate = bookingSection?.is_separate_page;
                         if (isSeparate) {
-                            return <Link to="/section/booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</Link>;
+                            return <Link to="/section/booking" className="btn-primary" style={{ textDecoration: 'none' }}>{settings.booking_menu_name || 'Book Now'}</Link>;
                         }
-                        return <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>Book Now</a>;
+                        return <a href="#booking" className="btn-primary" style={{ textDecoration: 'none' }}>{settings.booking_menu_name || 'Book Now'}</a>;
                     })()}
                     {(() => {
                         const servicesSection = pageSections.find(s => s.id === 'services');
@@ -443,7 +440,7 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
                             {iconMap[service.icon_name] || iconMap.Calendar}
                         </div>
                         <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }}>{service.title}</h3>
-                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--text-main)', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8' }}>{service.description || service.desc}</p>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#666', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8' }}>{service.description || service.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -517,7 +514,7 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
                         </motion.div>
                         <h3 style={{ fontSize: '2rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', marginBottom: '5px' }}>{member.stylist_name || member.name}</h3>
                         <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.85rem', marginBottom: '20px', opacity: 0.8 }}>{member.role}</p>
-                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--text-main)', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1.05rem' }}>{member.description || member.desc}</p>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#666', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1.05rem' }}>{member.description || member.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -526,9 +523,21 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
 };
 
 const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
-    if (settings.show_pricing_section === 'false') return null;
+    // Show on separate page even if section is hidden on landing page
+    if (!isSeparatePage && settings.show_pricing_section === 'false') return null;
+
     const bgColor = settings.pricing_bg_color;
     const textColor = settings.pricing_text_color;
+    const currency = settings.pricing_currency_symbol || '';
+
+    const formatPrice = (priceStr, currencySymbol) => {
+        if (!priceStr) return '';
+        if (!currencySymbol) return priceStr;
+        if (priceStr.includes(currencySymbol)) return priceStr;
+        // Prepend currency symbol to each number group
+        // Handles: "100" -> "£100", "From 100" -> "From £100", "100-200" -> "£100-£200"
+        return priceStr.replace(/(\d+(\.\d+)?)/g, `${currencySymbol}$1`);
+    };
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 50px' : '120px 50px',
@@ -540,7 +549,7 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
     };
 
     const cardStyle = {
-        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb, 255,255,255), 0.05)' : 'var(--pricing-card-bg)',
+        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.05)' : 'var(--accent)',
         maxWidth: '900px',
         width: '100%',
         padding: '60px 20px',
@@ -610,7 +619,9 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
                                         gap: '20px'
                                     }}>
                                         <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', opacity: 0.8 }}>{item.name}</span>
-                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '600', whiteSpace: 'nowrap' }}>{item.price}</span>
+                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                            {formatPrice(item.price, currency)}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
@@ -817,10 +828,10 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
                 style={cardStyle}
             >
                 <div style={{
-                    fontSize: '1.25rem',
-                    fontWeight: '700',
-                    color: textColor && textColor !== 'auto' ? textColor : 'var(--white)',
-                    marginBottom: '8px',
+                    display: 'flex',
+                    gap: '15px',
+                    color: textColor && textColor !== 'auto' ? textColor : 'var(--accent)',
+                    marginBottom: '15px'
                 }}>
                     <Phone size={24} />
                     <MessageCircle size={24} />
@@ -992,10 +1003,10 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
     return (
         <>
             <footer style={{
-                padding: '40px 20px 20px',
+                padding: '80px 20px 40px',
                 backgroundColor: 'var(--secondary)',
                 color: 'var(--primary)',
-                borderTop: '1px solid rgba(var(--primary-rgb), 0.1)'
+                borderTop: '1px solid rgba(61, 43, 31, 0.1)'
             }}>
                 <div style={{
                     maxWidth: '1200px',
@@ -1013,60 +1024,84 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                         <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.6', maxWidth: '250px', marginBottom: '25px', fontSize: '0.9rem' }}>
                             {settings.footer_description || "Premium hair styling and aesthetic treatments."}
                         </p>
-                        <a href="#booking" style={{
-                            color: 'var(--text-main)',
-                            fontWeight: '700',
-                            textDecoration: 'none',
-                            borderBottom: '2px solid var(--text-main)',
-                            paddingBottom: '2px',
-                            fontSize: '0.85rem',
-                            letterSpacing: '1px',
-                            textTransform: 'uppercase'
-                        }}>
-                            Book Online
-                        </a>
+                        {(() => {
+                            const bookingSection = pageSections.find(s => s.id === 'booking');
+                            const isSeparate = bookingSection?.is_separate_page;
+                            const style = {
+                                color: 'var(--primary)',
+                                textDecoration: 'none',
+                                fontWeight: '700',
+                                fontSize: '0.85rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '1px',
+                                borderBottom: '1px solid var(--primary)',
+                                width: 'fit-content',
+                                paddingBottom: '2px'
+                            };
+
+                            if (isSeparate) {
+                                return <Link to="/section/booking" style={style}>Book Online</Link>;
+                            }
+                            return isHomePage ? (
+                                <a href="#booking" style={style}>Book Online</a>
+                            ) : (
+                                <Link to="/#booking" style={style}>Book Online</Link>
+                            );
+                        })()}
                     </div>
 
-                    {/* Column 2: Important Links */}
-                    <div>
-                        <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)' }}>Important Links</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            {settings?.show_privacy_section !== 'false' && (
-                                <button
-                                    onClick={() => setIsPrivacyModalOpen(true)}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'var(--text-main)',
-                                        fontSize: '0.95rem',
-                                        cursor: 'pointer',
-                                        textAlign: 'left',
-                                        padding: 0,
-                                        opacity: 0.7,
-                                    }}
-                                >
-                                    {settings?.privacy_menu_name || "Privacy Policy"}
-                                </button>
-                            )}
-                            {settings?.show_terms_section !== 'false' && (
-                                <button
-                                    onClick={() => setIsTermsModalOpen(true)}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'var(--text-main)',
-                                        fontSize: '0.95rem',
-                                        cursor: 'pointer',
-                                        textAlign: 'left',
-                                        padding: 0,
-                                        opacity: 0.7,
-                                    }}
-                                >
-                                    {settings?.terms_menu_name || "Terms & Conditions"}
-                                </button>
-                            )}
+                    {/* Column 2: Links */}
+                    {(settings?.show_privacy_section !== 'false' || settings?.show_terms_section !== 'false') && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <h4 style={{
+                                fontFamily: 'var(--font-heading)',
+                                fontSize: '1.4rem',
+                                margin: 0
+                            }}>Important Links</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {settings?.show_privacy_section !== 'false' && (
+                                    <button
+                                        onClick={() => setIsPrivacyModalOpen(true)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'var(--primary)',
+                                            fontSize: '0.95rem',
+                                            cursor: 'pointer',
+                                            textAlign: 'left',
+                                            padding: 0,
+                                            opacity: 0.8,
+                                            transition: 'opacity 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                                    >
+                                        {settings?.privacy_menu_name || "Privacy Policy"}
+                                    </button>
+                                )}
+                                {settings?.show_terms_section !== 'false' && (
+                                    <button
+                                        onClick={() => setIsTermsModalOpen(true)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'var(--primary)',
+                                            fontSize: '0.95rem',
+                                            cursor: 'pointer',
+                                            textAlign: 'left',
+                                            padding: 0,
+                                            opacity: 0.8,
+                                            transition: 'opacity 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                                    >
+                                        {settings?.terms_menu_name || "Terms & Conditions"}
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Column 3: Contact Us */}
                     <div>
@@ -1089,8 +1124,13 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                             ))}
 
                             {settings.instagram_url && (
-                                <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-main)', display: 'inline-block', marginTop: '5px' }}>
-                                    <Instagram size={24} strokeWidth={1.5} />
+                                <a
+                                    href={settings.instagram_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ color: 'var(--primary)', marginTop: '5px', width: 'fit-content' }}
+                                >
+                                    <Instagram size={20} />
                                 </a>
                             )}
                         </div>

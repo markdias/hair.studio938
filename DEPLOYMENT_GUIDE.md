@@ -233,13 +233,341 @@ SMTP_PASS=abcdabcdabcdabcd
 
 ## Database Schema
 
-## Database Schema
+Run this complete SQL script in Supabase SQL Editor:
+
+```sql
+-- ============================================
+-- Complete Database Setup
+-- ============================================
+
+-- SITE SETTINGS TABLE
+CREATE TABLE IF NOT EXISTS public.site_settings (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    key TEXT UNIQUE NOT NULL,
+    value TEXT
+);
+
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Enable read access for all users" ON public.site_settings
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for authenticated users only" ON public.site_settings
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Enable update for authenticated users only" ON public.site_settings
+    FOR UPDATE USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Enable delete for authenticated users only" ON public.site_settings
+    FOR DELETE USING (auth.role() = 'authenticated');
+
+-- CLIENTS TABLE
+CREATE TABLE IF NOT EXISTS public.clients (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE,
+    phone TEXT,
+    notes TEXT
+);
+
+ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Enable read access for all users" ON public.clients
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert access for all users" ON public.clients
+    FOR INSERT WITH CHECK (true);
 
 The complete database schema is located in:
 `supabase/schema.sql`
 
 This file contains all necessary table definitions without any pre-filled data, allowing for a clean installation.
 
+CREATE INDEX IF NOT EXISTS clients_email_idx ON public.clients (email);
+
+-- APPOINTMENTS TABLE
+CREATE TABLE IF NOT EXISTS public.appointments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE NOT NULL,
+    professional TEXT NOT NULL,
+    service TEXT NOT NULL,
+    duration_minutes INTEGER DEFAULT 60,
+    start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    status TEXT DEFAULT 'confirmed',
+    notes TEXT,
+    google_event_id TEXT
+);
+
+ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Enable read access for all users" ON public.appointments
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert access for all users" ON public.appointments
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Enable update access for all users" ON public.appointments
+    FOR UPDATE USING (true);
+
+CREATE POLICY "Enable delete access for all users" ON public.appointments
+    FOR DELETE USING (true);
+
+CREATE INDEX IF NOT EXISTS appointments_professional_idx ON public.appointments (professional);
+CREATE INDEX IF NOT EXISTS appointments_start_time_idx ON public.appointments (start_time);
+
+-- TESTIMONIALS TABLE
+CREATE TABLE IF NOT EXISTS public.testimonials (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    name TEXT,
+    description TEXT NOT NULL,
+    image_url TEXT,
+    sort_order INTEGER DEFAULT 0
+);
+
+ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Enable read access for all users" ON public.testimonials
+    FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert for authenticated users only" ON public.testimonials
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Enable update for authenticated users only" ON public.testimonials
+    FOR UPDATE USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Enable delete for authenticated users only" ON public.testimonials
+    FOR DELETE USING (auth.role() = 'authenticated');
+
+CREATE INDEX IF NOT EXISTS testimonials_sort_order_idx ON public.testimonials (sort_order);
+
+-- PHONE NUMBERS TABLE
+CREATE TABLE IF NOT EXISTS public.phone_numbers (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    number TEXT NOT NULL,
+    type TEXT NOT NULL CHECK (type IN ('phone', 'whatsapp', 'both')),
+    display_order INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.phone_numbers ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public can view phone numbers" ON public.phone_numbers
+    FOR SELECT USING (true);
+
+CREATE POLICY "Authenticated users can insert phone numbers" ON public.phone_numbers
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Authenticated users can update phone numbers" ON public.phone_numbers
+    FOR UPDATE USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Authenticated users can delete phone numbers" ON public.phone_numbers
+    FOR DELETE USING (auth.role() = 'authenticated');
+
+-- 6. PRICE CATEGORIES
+CREATE TABLE IF NOT EXISTS public.price_categories (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.price_categories ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Public read access' AND tablename = 'price_categories') THEN
+        CREATE POLICY "Public read access" ON public.price_categories FOR SELECT USING (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Auth write access' AND tablename = 'price_categories') THEN
+        CREATE POLICY "Auth write access" ON public.price_categories FOR ALL USING (auth.role() = 'authenticated');
+    END IF;
+END $$;
+
+-- 7. PRICE LIST
+CREATE TABLE IF NOT EXISTS public.price_list (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    category TEXT NOT NULL,
+    item_name TEXT NOT NULL,
+    price TEXT,
+    duration_minutes INTEGER DEFAULT 60,
+    description TEXT,
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.price_list ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Public read access' AND tablename = 'price_list') THEN
+        CREATE POLICY "Public read access" ON public.price_list FOR SELECT USING (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Auth write access' AND tablename = 'price_list') THEN
+        CREATE POLICY "Auth write access" ON public.price_list FOR ALL USING (auth.role() = 'authenticated');
+    END IF;
+END $$;
+
+-- TEAM CALENDARS TABLE
+CREATE TABLE IF NOT EXISTS public.stylist_calendars (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    stylist_name TEXT NOT NULL UNIQUE,
+    calendar_id TEXT NOT NULL,
+    image_url TEXT,
+    role TEXT,
+    provided_services TEXT[],
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.stylist_calendars ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public can view staff calendars" ON public.stylist_calendars
+    FOR SELECT USING (true);
+
+CREATE POLICY "Authenticated users can manage staff calendars" ON public.stylist_calendars
+    FOR ALL USING (auth.role() = 'authenticated');
+
+-- SERVICES OVERVIEW TABLE
+CREATE TABLE IF NOT EXISTS public.services_overview (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.services_overview ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read access" ON public.services_overview FOR SELECT USING (true);
+CREATE POLICY "Auth write access" ON public.services_overview FOR ALL USING (auth.role() = 'authenticated');
+
+-- GALLERY IMAGES TABLE
+CREATE TABLE IF NOT EXISTS public.gallery_images (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    image_url TEXT NOT NULL,
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.gallery_images ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read access" ON public.gallery_images FOR SELECT USING (true);
+CREATE POLICY "Auth write access" ON public.gallery_images FOR ALL USING (auth.role() = 'authenticated');
+
+-- CUSTOM SECTIONS TABLE
+CREATE TABLE IF NOT EXISTS public.custom_sections (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    menu_name TEXT NOT NULL,
+    heading_name TEXT NOT NULL,
+    enabled BOOLEAN DEFAULT true,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    element_limit INTEGER DEFAULT 10,
+    background_color TEXT,
+    text_color TEXT DEFAULT '#2A1D15',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.custom_sections ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read" ON public.custom_sections FOR SELECT USING (enabled = true);
+CREATE POLICY "Auth manage" ON public.custom_sections FOR ALL USING (auth.role() = 'authenticated');
+
+-- CUSTOM SECTION ELEMENTS TABLE
+CREATE TABLE IF NOT EXISTS public.custom_section_elements (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    section_id UUID NOT NULL REFERENCES public.custom_sections(id) ON DELETE CASCADE,
+    element_type TEXT NOT NULL CHECK (element_type IN ('gallery', 'text_box', 'card', 'image', 'video')),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    config JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.custom_section_elements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read" ON public.custom_section_elements FOR SELECT USING (true);
+CREATE POLICY "Auth manage" ON public.custom_section_elements FOR ALL USING (auth.role() = 'authenticated');
+
+-- SITE PAGE SECTIONS (ORDERING)
+CREATE TABLE IF NOT EXISTS public.site_page_sections (
+    id TEXT PRIMARY KEY,
+    label TEXT NOT NULL,
+    is_custom BOOLEAN DEFAULT false,
+    sort_order INTEGER NOT NULL,
+    enabled BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.site_page_sections ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read" ON public.site_page_sections FOR SELECT USING (enabled = true);
+CREATE POLICY "Auth manage" ON public.site_page_sections FOR ALL USING (auth.role() = 'authenticated');
+
+-- DEFAULT SETTINGS
+INSERT INTO public.site_settings (key, value)
+VALUES
+    ('theme_primary', '#3D2B1F'),
+    ('theme_primary_hover', '#4D3B2F'),
+    ('theme_accent', '#EAE0D5'),
+    ('theme_soft_cream', '#F5F1ED'),
+    ('theme_text_dark', '#2A1D15'),
+    ('theme_text_light', '#FFFFFF'),
+    ('intro_video_url', ''),
+    ('footer_description', 'Your premium experience.'),
+    ('terms_and_conditions', ''),
+    ('privacy_policy', ''),
+    ('payment_methods', 'visa,mastercard,paypal'),
+    ('show_privacy_section', 'true'),
+    ('privacy_menu_name', 'Privacy Policy'),
+    ('privacy_heading_name', 'Privacy Policy'),
+    ('show_terms_section', 'true'),
+    ('terms_menu_name', 'Terms & Conditions'),
+    ('terms_heading_name', 'Terms & Conditions'),
+    ('services_menu_name', 'Services'),
+    ('services_heading_name', 'Our Services'),
+    ('services_bg_color', ''),
+    ('services_text_color', ''),
+    ('team_menu_name', 'Team'),
+    ('team_heading_name', 'Meet the Team'),
+    ('team_bg_color', ''),
+    ('team_text_color', ''),
+    ('pricing_menu_name', 'Pricing'),
+    ('pricing_heading_name', 'Service Menu'),
+    ('pricing_bg_color', ''),
+    ('pricing_text_color', ''),
+    ('pricing_currency_symbol', '£'),
+    ('show_opening_hours', 'true'),
+    ('site_enabled', 'true'),
+    ('email_subject', 'Booking Confirmation'),
+    ('testimonials_menu_name', 'Testimonials'),
+    ('testimonials_heading_name', 'Client Stories'),
+    ('testimonials_bg_color', ''),
+    ('testimonials_text_color', ''),
+    ('gallery_menu_name', 'Gallery'),
+    ('gallery_heading_name', 'Our Work'),
+    ('gallery_bg_color', ''),
+    ('gallery_text_color', ''),
+    ('booking_heading_name', 'Book Your Visit'),
+    ('booking_bg_color', ''),
+    ('booking_text_color', ''),
+    ('contact_menu_name', 'Contact'),
+    ('contact_heading_name', 'Contact Us'),
+    ('contact_bg_color', ''),
+    ('contact_text_color', '')
+ON CONFLICT (key) DO NOTHING;
+
+-- INITIAL SEED FOR FIXED SECTIONS
+INSERT INTO public.site_page_sections (id, label, is_custom, sort_order)
+VALUES 
+    ('services', 'Services', false, 10),
+    ('team', 'Team', false, 20),
+    ('pricing', 'Pricing', false, 30),
+    ('testimonials', 'Testimonials', false, 40),
+    ('booking', 'Booking', false, 50),
+    ('gallery', 'Gallery', false, 60),
+    ('contact', 'Contact', false, 70)
+ON CONFLICT (id) DO NOTHING;
+```
 
 ---
 
@@ -247,7 +575,7 @@ This file contains all necessary table definitions without any pre-filled data, 
 
 ### 1. Database Check
 - [ ] Go to Supabase → **Table Editor**
-- [ ] Verify tables exist: `site_settings`, `clients`, `appointments`, `testimonials`, `phone_numbers`, `services_overview`, `price_list`, `price_categories`, `staff_calendars`, `gallery_images`, `custom_sections`, `custom_section_elements`
+- [ ] Verify tables exist: `site_settings`, `clients`, `appointments`, `testimonials`, `phone_numbers`, `services_overview`, `price_list`, `price_categories`, `stylist_calendars`, `gallery_images`, `custom_sections`, `custom_section_elements`
 - [ ] Check `site_settings` has theme values
 
 ### 2. Website Check
@@ -310,10 +638,10 @@ This file contains all necessary table definitions without any pre-filled data, 
 
 ### Multiple Professional Calendars
 To assign different calendars to professionals:
-1. Uncomment the `staff_calendars` table in setup SQL
-2. Insert professional-calendar mappings:
+1. Ensure the `stylist_calendars` table is created (it is included in setup SQL)
+2. Insert professional-calendar mappings in Supabase SQL Editor:
 ```sql
-INSERT INTO staff_calendars (member_name, calendar_id)
+INSERT INTO stylist_calendars (stylist_name, calendar_id)
 VALUES ('Sarah', 'sarah@gmail.com'),
        ('Mike', 'mike@gmail.com');
 ```
