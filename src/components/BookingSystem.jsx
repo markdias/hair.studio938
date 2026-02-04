@@ -507,23 +507,30 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
 
                                     {step === 1 && (
                                         <div style={{ flex: 1 }}>
-                                            <h4 style={{ fontSize: '1.5rem', marginBottom: '30px' }}>Choose Your Professional</h4>
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px' }}>
+                                            <h4 style={{ fontSize: '1.5rem', marginBottom: '30px', textAlign: 'center' }}>Choose Your Professional</h4>
+                                            <div style={{
+                                                display: 'flex',
+                                                flexWrap: 'wrap',
+                                                gap: '20px',
+                                                justifyContent: 'center'
+                                            }}>
                                                 {professionals.map((s) => (
                                                     <button
                                                         key={s.name}
                                                         onClick={() => { setBooking({ ...booking, professional: s }); nextStep(); }}
                                                         style={{
+                                                            width: '200px',
                                                             padding: '20px',
                                                             borderRadius: '12px',
                                                             border: booking.professional?.name === s.name ? '2px solid var(--primary)' : '2px solid transparent',
                                                             backgroundColor: booking.professional?.name === s.name ? 'var(--secondary)' : '#F9F9F9',
                                                             transition: 'all 0.3s ease',
                                                             textAlign: 'center',
-                                                            cursor: 'pointer'
+                                                            cursor: 'pointer',
+                                                            flexShrink: 0
                                                         }}
                                                     >
-                                                        <img src={s.img} alt={s.name} style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '15px', objectFit: 'cover' }} />
+                                                        <img src={s.img} alt={s.name} style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '15px', objectFit: 'cover', margin: '0 auto' }} />
                                                         <div style={{ fontWeight: '700', color: 'var(--primary)' }}>{s.name}</div>
                                                         <div style={{ fontSize: '0.8rem', color: '#666' }}>{s.role.split(' ')[0]}</div>
                                                     </button>
