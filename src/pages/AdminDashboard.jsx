@@ -85,7 +85,7 @@ const AdminDashboard = ({ refreshSiteData }) => {
     const [activeTab, setActiveTab] = useState('general');
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
-    const sidebarOpen = false; // Placeholder if not used elsewhere, or keep state if exists
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const { theme } = useTheme();
     const navigate = useNavigate();
 
@@ -221,7 +221,18 @@ const AdminDashboard = ({ refreshSiteData }) => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-grow overflow-y-auto">
+            <main className="flex-grow overflow-y-auto pt-16 md:pt-0">
+                {/* Mobile Header */}
+                <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center px-4 z-40">
+                    <button
+                        onClick={() => setSidebarOpen(true)}
+                        className="p-2 -ml-2 text-gray-600 hover:text-gray-900"
+                    >
+                        <Menu size={24} />
+                    </button>
+                    <span className="ml-4 font-bold text-stone-800">Admin Dashboard</span>
+                </div>
+
                 <div className="max-w-6xl mx-auto p-8">
                     <AnimatePresence mode="wait">
                         {message.text && (
@@ -1974,7 +1985,7 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings, th
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {localServices.map((s, idx) => (
+                {(localServices || []).map((s, idx) => (
                     <div key={s.id || idx} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-4">
                         <div className="flex items-start justify-between">
                             <div className="w-12 h-12 bg-stone-50 rounded-lg flex items-center justify-center text-stone-800">
@@ -2135,7 +2146,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                     </div>
 
                     <div className="space-y-3">
-                        {localCategories.map((cat, idx) => (
+                        {(localCategories || []).map((cat, idx) => (
                             <div key={cat.id || idx} className="flex items-center justify-between p-3 bg-white border border-stone-200 rounded-lg">
                                 <input
                                     value={cat.name}
@@ -2167,7 +2178,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                         onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
                         className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     >
-                        {localCategories.map(cat => (
+                        {(localCategories || []).map(cat => (
                             <option key={cat.id} value={cat.name}>{cat.name}</option>
                         ))}
                     </select>
@@ -2207,7 +2218,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
             </div>
 
             <div className="space-y-2">
-                {localPricing.map((item, idx) => (
+                {(localPricing || []).map((item, idx) => (
                     <div key={item.id || idx} className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col md:flex-row md:items-center justify-between shadow-sm hover:shadow-md transition-shadow gap-4">
                         <div className="flex-grow flex flex-col md:flex-row md:items-center gap-4">
                             <div className="min-w-[120px]">
@@ -2216,7 +2227,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                                     onChange={(e) => handleFieldChange(idx, 'category', e.target.value)}
                                     className="text-[10px] text-gray-500 uppercase tracking-wider block mb-1 border-none bg-transparent p-0 focus:ring-0 outline-none cursor-pointer"
                                 >
-                                    {localCategories.map(cat => (
+                                    {(localCategories || []).map(cat => (
                                         <option key={cat.id} value={cat.name}>{cat.name}</option>
                                     ))}
                                 </select>
@@ -2271,7 +2282,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
     );
 };
 
-const TeamTab = ({ stylists, services, pricing, settings, setSettings, refresh, showMessage, theme }) => {
+const TeamTab = ({ stylists = [], services = [], pricing = [], settings, setSettings, refresh, showMessage, theme }) => {
     const [localStylists, setLocalStylists] = useState(stylists);
     const [showHelp, setShowHelp] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
@@ -2318,7 +2329,7 @@ const TeamTab = ({ stylists, services, pricing, settings, setSettings, refresh, 
 
     const handleSaveOrder = async () => {
         try {
-            const updates = localStylists.map((s, index) => ({
+            const updates = (localStylists || []).map((s, index) => ({
                 ...s,
                 sort_order: index
             }));
@@ -2436,7 +2447,7 @@ const TeamTab = ({ stylists, services, pricing, settings, setSettings, refresh, 
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">Can provide these services:</label>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 h-40 overflow-y-auto">
-                            {pricing.map(service => (
+                            {(pricing || []).map(service => (
                                 <label key={service.id} className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded transition-colors">
                                     <input
                                         type="checkbox"
@@ -2468,7 +2479,7 @@ const TeamTab = ({ stylists, services, pricing, settings, setSettings, refresh, 
             )}
 
             <Reorder.Group axis="y" values={localStylists} onReorder={setLocalStylists} className="space-y-4">
-                {localStylists.map((s, idx) => (
+                {(localStylists || []).map((s, idx) => (
                     <Reorder.Item key={s.id || idx} value={s} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-4 touch-none relative">
                         <div className="absolute top-4 right-4 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
                             <GripVertical size={20} />
@@ -2503,7 +2514,7 @@ const TeamTab = ({ stylists, services, pricing, settings, setSettings, refresh, 
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">Can provide these services:</label>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-stone-50 rounded-lg border border-stone-200 max-h-48 overflow-y-auto">
-                                {pricing.map(service => (
+                                {(pricing || []).map(service => (
                                     <label key={service.id} className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded transition-colors">
                                         <input
                                             type="checkbox"
@@ -2571,7 +2582,7 @@ const GalleryTab = ({ gallery, refresh, showMessage, settings, setSettings, them
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {gallery.map((img) => (
+                {(gallery || []).map((img) => (
                     <div key={img.id} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm">
                         <img src={img.image_url} className="w-full h-full object-cover" alt="Gallery" />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-colors" />
@@ -4879,7 +4890,7 @@ const TestimonialsTab = ({ testimonials, refresh, showMessage, settings, setSett
 // CUSTOM SECTIONS TAB - Dynamic Section Builder
 // ============================================================
 
-const CustomSectionsTab = ({ customSections, setCustomSections, siteSettings, refresh, showMessage }) => {
+const CustomSectionsTab = ({ customSections = [], setCustomSections, siteSettings, refresh, showMessage }) => {
     const [editingSection, setEditingSection] = useState(null);
 
     const handleAddSection = async () => {
