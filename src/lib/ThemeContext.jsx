@@ -8,13 +8,19 @@ export const useTheme = () => useContext(ThemeContext);
 export const ThemeProvider = ({ children }) => {
 
     const FACOTRY_THEME = {
-        '--primary-brown': '#3D2B1F',
-        '--primary-brown-rgb': '61, 43, 31',
-        '--primary-brown-hover': '#4D3B2F',
-        '--accent-cream': '#EAE0D5',
-        '--soft-cream': '#F5F1ED',
-        '--text-dark': '#2A1D15',
-        '--text-light': '#FFFFFF',
+        '--primary': '#3D2B1F',
+        '--primary-hover': '#4D3B2F',
+        '--accent': '#EAE0D5',
+        '--secondary': '#F5F1ED',
+        '--text-main': '#2A1D15',
+        '--text-contrast': '#FFFFFF',
+        '--white': '#FFFFFF',
+        '--black': '#000000',
+        '--success-green': '#22c55e',
+        '--error-red': '#ef4444',
+        '--booking-card-bg': '#FFFFFF',
+        '--pricing-card-bg': '#EDE4DB',
+        '--input-bg': '#F9F9F9',
         '--font-heading': "'Playfair Display', serif",
         '--font-body': "'Inter', sans-serif",
     };
@@ -24,12 +30,19 @@ export const ThemeProvider = ({ children }) => {
 
     // Map database keys to CSS variable names
     const dbKeyToCssVar = {
-        'theme_primary': '--primary-brown',
-        'theme_primary_hover': '--primary-brown-hover',
-        'theme_accent': '--accent-cream',
-        'theme_soft_cream': '--soft-cream',
-        'theme_text_dark': '--text-dark',
-        'theme_text_light': '--text-light',
+        'theme_primary': '--primary',
+        'theme_primary_hover': '--primary-hover',
+        'theme_accent': '--accent',
+        'theme_soft_cream': '--secondary',
+        'theme_text_dark': '--text-main',
+        'theme_text_light': '--text-contrast',
+        'theme_white': '--white',
+        'theme_black': '--black',
+        'theme_success': '--success-green',
+        'theme_error': '--error-red',
+        'theme_booking_card_bg': '--booking-card-bg',
+        'theme_pricing_card_bg': '--pricing-card-bg',
+        'theme_input_bg': '--input-bg',
         'theme_font_heading': '--font-heading',
         'theme_font_body': '--font-body',
     };
@@ -84,11 +97,11 @@ export const ThemeProvider = ({ children }) => {
         Object.entries(themeSettings).forEach(([property, value]) => {
             root.style.setProperty(property, value);
 
-            // If we are setting primary brown, also set its RGB counter-part for rgba usage
-            if (property === '--primary-brown') {
+            // If the value is a hex color, also set its RGB counter-part for rgba usage
+            if (value && typeof value === 'string' && value.startsWith('#')) {
                 const rgb = hexToRgb(value);
                 if (rgb) {
-                    root.style.setProperty('--primary-brown-rgb', rgb);
+                    root.style.setProperty(`${property}-rgb`, rgb);
                 }
             }
         });

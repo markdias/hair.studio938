@@ -22,11 +22,11 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--soft-cream);
+  background: var(--secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-brown);
+  background: var(--primary);
   border-radius: 5px;
 }
 

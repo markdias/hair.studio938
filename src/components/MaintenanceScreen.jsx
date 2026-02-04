@@ -9,7 +9,7 @@ const MaintenanceScreen = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: 'var(--soft-cream)',
+            backgroundColor: 'var(--secondary)',
             padding: '20px',
             boxSizing: 'border-box'
         }}>
@@ -21,7 +21,7 @@ const MaintenanceScreen = () => {
                 backgroundColor: '#FFFFFF',
                 borderRadius: '16px',
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1)',
-                border: '2px solid var(--primary-brown)'
+                border: '2px solid var(--primary)'
             }}>
                 {/* Icon */}
                 <div style={{
@@ -34,20 +34,20 @@ const MaintenanceScreen = () => {
                         width: '100px',
                         height: '100px',
                         borderRadius: '50%',
-                        backgroundColor: 'var(--soft-cream)',
+                        backgroundColor: 'var(--secondary)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        border: '3px solid var(--primary-brown)'
+                        border: '3px solid var(--primary)'
                     }}>
-                        <Wrench size={48} style={{ color: 'var(--primary-brown)' }} />
+                        <Wrench size={48} style={{ color: 'var(--primary)' }} />
                     </div>
                 </div>
 
                 {/* Title */}
                 <h1 style={{
                     fontSize: '2.5rem',
-                    color: 'var(--primary-brown)',
+                    color: 'var(--primary)',
                     marginBottom: '20px',
                     fontFamily: 'var(--font-heading)',
                     lineHeight: '1.2'
@@ -69,7 +69,7 @@ const MaintenanceScreen = () => {
                 {/* Divider */}
                 <div style={{
                     height: '2px',
-                    backgroundColor: 'var(--soft-cream)',
+                    backgroundColor: 'var(--secondary)',
                     marginBottom: '30px'
                 }} />
 
@@ -100,7 +100,7 @@ const MaintenanceScreen = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                color: 'var(--primary-brown)',
+                                color: 'var(--primary)',
                                 textDecoration: 'none',
                                 fontSize: '0.95rem',
                                 fontWeight: '500',
@@ -119,7 +119,7 @@ const MaintenanceScreen = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                color: 'var(--primary-brown)',
+                                color: 'var(--primary)',
                                 textDecoration: 'none',
                                 fontSize: '0.95rem',
                                 fontWeight: '500',

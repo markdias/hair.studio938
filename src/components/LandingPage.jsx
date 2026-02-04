@@ -62,10 +62,10 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
             justifyContent: 'space-between',
             alignItems: 'center',
             zIndex: 1000,
-            backgroundColor: (isCompact || isMenuOpen) ? 'rgba(var(--primary-brown-rgb), 0.98)' : 'rgba(var(--primary-brown-rgb), 0.8)',
+            backgroundColor: (isCompact || isMenuOpen) ? 'var(--primary)' : 'rgba(var(--primary-rgb), 0.8)',
             backdropFilter: 'blur(10px)',
             transition: 'all 0.4s ease',
-            color: 'var(--accent-cream)',
+            color: 'var(--accent)',
             boxSizing: 'border-box'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -77,7 +77,7 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         width: isCompact ? `${(parseInt(settings.logo_size) || 85) * 0.7}px` : `${parseInt(settings.logo_size) || 85}px`,
                         borderRadius: '50%',
                         objectFit: 'cover',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        border: '1px solid rgba(var(--white-rgb, 255, 255, 255), 0.2)',
                         transition: 'all 0.4s ease'
                     }}
                 />
@@ -162,8 +162,8 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         const isSeparate = bookingSection?.is_separate_page;
                         const style = {
                             padding: '10px 24px',
-                            backgroundColor: 'var(--accent-cream)',
-                            color: 'var(--primary-brown)',
+                            backgroundColor: 'var(--accent)',
+                            color: 'var(--primary)',
                             textDecoration: 'none'
                         };
 
@@ -284,7 +284,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#FFFFFF'
+            color: 'var(--white)'
         }}>
             <div style={{
                 position: 'absolute',
@@ -292,7 +292,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                 left: 0,
                 width: '100%',
                 height: '100%',
-                background: 'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(61, 43, 31, 0.6))',
+                background: 'linear-gradient(to bottom, rgba(var(--black-rgb, 0,0,0), 0.4), rgba(var(--primary-rgb), 0.6))',
                 zIndex: 1
             }} />
 
@@ -316,7 +316,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     marginBottom: '1rem',
                     opacity: 0.8,
                     fontWeight: '600',
-                    color: 'var(--accent-cream)'
+                    color: 'var(--accent)'
                 }}>
                     {settings.business_name || 'STUDIO 938'}
                 </div>
@@ -358,8 +358,8 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                         const servicesSection = pageSections.find(s => s.id === 'services');
                         const isSeparate = servicesSection?.is_separate_page;
                         const style = {
-                            border: '1px solid #FFFFFF',
-                            color: '#FFFFFF',
+                            border: '1px solid var(--white)',
+                            color: 'var(--white)',
                             padding: '12px 32px',
                             borderRadius: '4px',
                             textTransform: 'uppercase',
@@ -386,27 +386,27 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 50px' : '120px 50px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : '#FFFFFF',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--white)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
 
     const headingStyle = {
         fontSize: '3rem',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         marginBottom: '15px'
     };
 
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         margin: '0 auto'
     };
 
     const iconMap = {
-        Calendar: <Calendar style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
-        MapPin: <MapPin style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
-        Phone: <Phone style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
+        Calendar: <Calendar style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        MapPin: <MapPin style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Phone: <Phone style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
     };
 
     const displayServices = services;
@@ -433,7 +433,7 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
                         whileHover={{ y: -10 }}
                         style={{
                             padding: '50px 40px',
-                            backgroundColor: 'var(--soft-cream)',
+                            backgroundColor: 'var(--secondary)',
                             borderRadius: '8px',
                             textAlign: 'center',
                             transition: 'all 0.3s ease'
@@ -442,8 +442,8 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
                         <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
                             {iconMap[service.icon_name] || iconMap.Calendar}
                         </div>
-                        <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }}>{service.title}</h3>
-                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#666', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8' }}>{service.description || service.desc}</p>
+                        <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }}>{service.title}</h3>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--text-main)', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8' }}>{service.description || service.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -458,20 +458,20 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 50px' : '120px 50px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--secondary)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
 
     const headingStyle = {
         fontSize: '3rem',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         marginBottom: '15px'
     };
 
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         margin: '0 auto'
     };
 
@@ -509,15 +509,15 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
                                 borderRadius: '50%',
                                 overflow: 'hidden',
                                 margin: '0 auto 30px',
-                                border: '12px solid #FFFFFF',
-                                boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+                                border: '12px solid var(--white)',
+                                boxShadow: '0 20px 40px rgba(var(--black-rgb, 0,0,0), 0.1)'
                             }}
                         >
                             <img src={member.image_url || member.img} alt={member.stylist_name || member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </motion.div>
-                        <h3 style={{ fontSize: '2rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', marginBottom: '5px' }}>{member.stylist_name || member.name}</h3>
-                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.85rem', marginBottom: '20px', opacity: 0.8 }}>{member.role}</p>
-                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#666', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1.05rem' }}>{member.description || member.desc}</p>
+                        <h3 style={{ fontSize: '2rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', marginBottom: '5px' }}>{member.stylist_name || member.name}</h3>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.85rem', marginBottom: '20px', opacity: 0.8 }}>{member.role}</p>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--text-main)', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1.05rem' }}>{member.description || member.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -532,7 +532,7 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 50px' : '120px 50px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : '#FFFFFF',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--white)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit',
         display: 'flex',
         flexDirection: 'column',
@@ -540,11 +540,11 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
     };
 
     const cardStyle = {
-        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.05)' : '#EDE4DB',
+        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb, 255,255,255), 0.05)' : 'var(--pricing-card-bg)',
         maxWidth: '900px',
         width: '100%',
         padding: '60px 20px',
-        boxShadow: '0 20px 50px rgba(0,0,0,0.05)',
+        boxShadow: '0 20px 50px rgba(var(--black-rgb, 0,0,0), 0.05)',
         position: 'relative',
         boxSizing: 'border-box',
         border: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : 'none'
@@ -553,7 +553,7 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
     const headingStyle = {
         fontFamily: 'var(--font-heading)',
         fontSize: '6rem',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         textAlign: 'center',
         marginBottom: '60px',
         fontWeight: '400',
@@ -593,10 +593,10 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
                                 fontFamily: 'var(--font-heading)',
                                 fontSize: 'clamp(1.1rem, 3vw, 1.4rem)',
                                 fontWeight: '700',
-                                color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+                                color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
                                 letterSpacing: '2px',
                                 marginBottom: '20px',
-                                borderBottom: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(61,43,31,0.1)',
+                                borderBottom: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(var(--primary-rgb), 0.1)',
                                 paddingBottom: '10px'
                             }}>
                                 {cat.title}
@@ -609,8 +609,8 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
                                         alignItems: 'baseline',
                                         gap: '20px'
                                     }}>
-                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', opacity: 0.8 }}>{item.name}</span>
-                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', fontWeight: '600', whiteSpace: 'nowrap' }}>{item.price}</span>
+                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', opacity: 0.8 }}>{item.name}</span>
+                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '600', whiteSpace: 'nowrap' }}>{item.price}</span>
                                     </div>
                                 ))}
                             </div>
@@ -631,21 +631,21 @@ const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) =
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 20px' : '120px 20px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--text-dark)',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--text-main)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--accent)',
         textAlign: 'center'
     };
 
     const headingStyle = {
         fontSize: 'clamp(2.5rem, 8vw, 4rem)',
-        color: textColor && textColor !== 'auto' ? textColor : '#FFF',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--white)',
         marginBottom: '15px'
     };
 
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--accent)',
         margin: '0 auto 40px'
     };
 
@@ -771,8 +771,8 @@ const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) =
                     marginTop: '80px',
                     borderRadius: '20px',
                     overflow: 'hidden',
-                    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)',
-                    border: '1px solid rgba(234, 224, 213, 0.1)'
+                    boxShadow: '0 20px 50px rgba(var(--black-rgb, 0, 0, 0), 0.3)',
+                    border: '1px solid rgba(var(--accent-rgb), 0.1)'
                 }}>
                     <iframe
                         width="100%"
@@ -795,9 +795,9 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
 
     const cardStyle = {
         padding: '40px 30px',
-        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.05)' : 'rgba(234, 224, 213, 0.05)',
+        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb, 255,255,255), 0.05)' : 'rgba(var(--accent-rgb), 0.05)',
         borderRadius: '16px',
-        border: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(234, 224, 213, 0.1)',
+        border: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(var(--accent-rgb), 0.1)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -812,15 +812,15 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
     if (isCombined) {
         return (
             <motion.div
-                whileHover={{ y: -5, backgroundColor: 'rgba(234, 224, 213, 0.08)' }}
+                whileHover={{ y: -5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.08)' : 'rgba(var(--accent-rgb), 0.08)' }}
                 onClick={() => setIsExpanded(!isExpanded)}
                 style={cardStyle}
             >
                 <div style={{
-                    display: 'flex',
-                    gap: '15px',
-                    color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
-                    marginBottom: '15px'
+                    fontSize: '1.25rem',
+                    fontWeight: '700',
+                    color: textColor && textColor !== 'auto' ? textColor : 'var(--white)',
+                    marginBottom: '8px',
                 }}>
                     <Phone size={24} />
                     <MessageCircle size={24} />
@@ -828,7 +828,7 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
                 {!isExpanded ? (
                     <>
                         <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.6, marginBottom: '5px', color: textColor && textColor !== 'auto' ? textColor : 'inherit' }}>{label}</div>
-                        <div style={{ color: textColor && textColor !== 'auto' ? textColor : '#FFF', fontSize: '1.2rem', fontWeight: '600' }}>{value}</div>
+                        <div style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--white)', fontSize: '1.2rem', fontWeight: '600' }}>{value}</div>
                         <div style={{ fontSize: '0.7rem', marginTop: '10px', opacity: 0.4, color: textColor && textColor !== 'auto' ? textColor : 'inherit' }}>Click for options</div>
                     </>
                 ) : (
@@ -848,8 +848,8 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
                                     justifyContent: 'center',
                                     gap: '10px',
                                     padding: '12px',
-                                    backgroundColor: 'var(--accent-cream)',
-                                    color: 'var(--primary-brown)',
+                                    backgroundColor: 'var(--accent)',
+                                    color: 'var(--primary)',
                                     borderRadius: '8px',
                                     textDecoration: 'none',
                                     fontWeight: '600',
@@ -867,15 +867,36 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
 
     return (
         <motion.div
-            whileHover={{ y: -5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.08)' : 'rgba(234, 224, 213, 0.08)' }}
+            whileHover={{ y: -5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.08)' : 'rgba(var(--accent-rgb), 0.08)' }}
             style={cardStyle}
         >
-            <div style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)', marginBottom: '15px' }}>{icon}</div>
+            <div style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--accent)', marginBottom: '15px' }}>{icon}</div>
             <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.6, marginBottom: '5px', color: textColor && textColor !== 'auto' ? textColor : 'inherit' }}>{label}</div>
             <a href={link} target={link.startsWith('http') ? "_blank" : "_self"} rel="noopener noreferrer" style={{ color: textColor && textColor !== 'auto' ? textColor : '#FFF', fontSize: '1.1rem', fontWeight: '600', textDecoration: 'none', wordBreak: 'break-word' }}>{value}</a>
         </motion.div>
     );
 };
+
+const ContactOption = ({ icon, label, value, link, textColor }) => (
+    <motion.div
+        whileHover={{ x: 5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.08)' : 'rgba(var(--accent-rgb), 0.08)' }}
+        style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '15px',
+            padding: '12px 15px',
+            borderRadius: '10px',
+            transition: 'background-color 0.2s ease',
+            textDecoration: 'none'
+        }}
+    >
+        <div style={{ color: textColor && textColor !== 'auto' ? textColor : 'rgba(var(--white-rgb), 0.7)' }}>{icon}</div>
+        <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: '0.8rem', opacity: 0.6, color: textColor && textColor !== 'auto' ? textColor : 'var(--white)', marginBottom: '2px' }}>{label}</div>
+            <a href={link} target={link.startsWith('http') ? "_blank" : "_self"} rel="noopener noreferrer" style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--white)', fontSize: '1.1rem', fontWeight: '600', textDecoration: 'none', wordBreak: 'break-word' }}>{value}</a>
+        </div>
+    </motion.div>
+);
 
 const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false }) => {
     if (settings.show_testimonials_section !== 'true' || testimonials.length === 0) return null;
@@ -884,20 +905,20 @@ const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 20px' : '120px 20px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--secondary)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
 
     const headingStyle = {
         fontSize: '3rem',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         marginBottom: '15px'
     };
 
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         margin: '0 auto'
     };
 
@@ -924,7 +945,7 @@ const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                         style={{
-                            backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.05)' : '#FFFFFF',
+                            backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.05)' : 'var(--white)',
                             padding: '40px',
                             borderRadius: '16px',
                             boxShadow: '0 10px 30px rgba(0,0,0,0.03)',
@@ -940,12 +961,12 @@ const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false
                             </div>
                         )}
                         <div style={{ flex: 1 }}>
-                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#444', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', fontStyle: 'italic', fontSize: '1.1rem', textAlign: 'center' }}>
+                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--text-main)', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', fontStyle: 'italic', fontSize: '1.1rem', textAlign: 'center' }}>
                                 "{t.description}"
                             </p>
                         </div>
                         {t.name && (
-                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', fontWeight: '700', textAlign: 'center', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '700', textAlign: 'center', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                 - {t.name}
                             </p>
                         )}
@@ -971,10 +992,10 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
     return (
         <>
             <footer style={{
-                padding: '80px 20px 40px',
-                backgroundColor: 'var(--soft-cream)',
-                color: 'var(--primary-brown)',
-                borderTop: '1px solid rgba(61, 43, 31, 0.1)'
+                padding: '40px 20px 20px',
+                backgroundColor: 'var(--secondary)',
+                color: 'var(--primary)',
+                borderTop: '1px solid rgba(var(--primary-rgb), 0.1)'
             }}>
                 <div style={{
                     maxWidth: '1200px',
@@ -982,139 +1003,108 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
                     gap: '40px',
-                    textAlign: 'left'
+                    paddingBottom: '20px'
                 }}>
-                    {/* Column 1: About */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <h3 style={{
-                            fontFamily: 'var(--font-heading)',
-                            fontSize: '1.8rem',
-                            margin: 0
-                        }}>{businessName}</h3>
-                        <p style={{
-                            fontSize: '0.95rem',
-                            lineHeight: '1.6',
-                            opacity: 0.8,
-                            maxWidth: '300px'
-                        }}>
-                            {footerDescription}
+                    {/* Column 1: Brand */}
+                    <div style={{ textAlign: 'left' }}>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: '400', fontFamily: 'var(--font-heading)', color: 'var(--text-main)', margin: '0 0 20px 0', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            {settings.business_name || 'Hair Studio 938'}
+                        </h3>
+                        <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.6', maxWidth: '250px', marginBottom: '25px', fontSize: '0.9rem' }}>
+                            {settings.footer_description || "Premium hair styling and aesthetic treatments."}
                         </p>
-                        {(() => {
-                            const bookingSection = pageSections.find(s => s.id === 'booking');
-                            const isSeparate = bookingSection?.is_separate_page;
-                            const style = {
-                                color: 'var(--primary-brown)',
-                                textDecoration: 'none',
-                                fontWeight: '700',
-                                fontSize: '0.85rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: '1px',
-                                borderBottom: '1px solid var(--primary-brown)',
-                                width: 'fit-content',
-                                paddingBottom: '2px'
-                            };
-
-                            if (isSeparate) {
-                                return <Link to="/section/booking" style={style}>Book Online</Link>;
-                            }
-                            return isHomePage ? (
-                                <a href="#booking" style={style}>Book Online</a>
-                            ) : (
-                                <Link to="/#booking" style={style}>Book Online</Link>
-                            );
-                        })()}
+                        <a href="#booking" style={{
+                            color: 'var(--text-main)',
+                            fontWeight: '700',
+                            textDecoration: 'none',
+                            borderBottom: '2px solid var(--text-main)',
+                            paddingBottom: '2px',
+                            fontSize: '0.85rem',
+                            letterSpacing: '1px',
+                            textTransform: 'uppercase'
+                        }}>
+                            Book Online
+                        </a>
                     </div>
 
-                    {/* Column 2: Links */}
-                    {(settings?.show_privacy_section !== 'false' || settings?.show_terms_section !== 'false') && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <h4 style={{
-                                fontFamily: 'var(--font-heading)',
-                                fontSize: '1.4rem',
-                                margin: 0
-                            }}>Important Links</h4>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {settings?.show_privacy_section !== 'false' && (
-                                    <button
-                                        onClick={() => setIsPrivacyModalOpen(true)}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: 'var(--primary-brown)',
-                                            fontSize: '0.95rem',
-                                            cursor: 'pointer',
-                                            textAlign: 'left',
-                                            padding: 0,
-                                            opacity: 0.8,
-                                            transition: 'opacity 0.2s'
-                                        }}
-                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
-                                    >
-                                        {settings?.privacy_menu_name || "Privacy Policy"}
-                                    </button>
-                                )}
-                                {settings?.show_terms_section !== 'false' && (
-                                    <button
-                                        onClick={() => setIsTermsModalOpen(true)}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: 'var(--primary-brown)',
-                                            fontSize: '0.95rem',
-                                            cursor: 'pointer',
-                                            textAlign: 'left',
-                                            padding: 0,
-                                            opacity: 0.8,
-                                            transition: 'opacity 0.2s'
-                                        }}
-                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
-                                    >
-                                        {settings?.terms_menu_name || "Terms & Conditions"}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Column 3: Contact */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <h4 style={{
-                            fontFamily: 'var(--font-heading)',
-                            fontSize: '1.4rem',
-                            margin: 0
-                        }}>Contact Us</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.95rem', opacity: 0.8 }}>
-                            <p style={{ margin: 0 }}>{address}</p>
-                            <p style={{ margin: 0 }}>{email}</p>
-                            <p style={{ margin: 0 }}>{phone}</p>
-                            {settings.instagram_url && (
-                                <a
-                                    href={settings.instagram_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ color: 'var(--primary-brown)', marginTop: '5px', width: 'fit-content' }}
+                    {/* Column 2: Important Links */}
+                    <div>
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)' }}>Important Links</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {settings?.show_privacy_section !== 'false' && (
+                                <button
+                                    onClick={() => setIsPrivacyModalOpen(true)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--text-main)',
+                                        fontSize: '0.95rem',
+                                        cursor: 'pointer',
+                                        textAlign: 'left',
+                                        padding: 0,
+                                        opacity: 0.7,
+                                    }}
                                 >
-                                    <Instagram size={20} />
+                                    {settings?.privacy_menu_name || "Privacy Policy"}
+                                </button>
+                            )}
+                            {settings?.show_terms_section !== 'false' && (
+                                <button
+                                    onClick={() => setIsTermsModalOpen(true)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--text-main)',
+                                        fontSize: '0.95rem',
+                                        cursor: 'pointer',
+                                        textAlign: 'left',
+                                        padding: 0,
+                                        opacity: 0.7,
+                                    }}
+                                >
+                                    {settings?.terms_menu_name || "Terms & Conditions"}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Column 3: Contact Us */}
+                    <div>
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)' }}>Contact Us</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', color: 'var(--text-main)', opacity: 0.7, fontSize: '0.95rem', lineHeight: '1.6' }}>
+                            <p style={{ margin: 0, maxWidth: '200px' }}>
+                                {settings.business_address || "Unit 5, 938 High Road, London, N12 9RT"}
+                            </p>
+                            {settings.business_email && (
+                                <a href={`mailto:${settings.business_email}`} style={{ color: 'inherit', textDecoration: 'none' }}>{settings.business_email}</a>
+                            )}
+                            {settings.business_phone && (
+                                <a href={`tel:${settings.business_phone}`} style={{ color: 'inherit', textDecoration: 'none' }}>{settings.business_phone}</a>
+                            )}
+                            {/* Additional Phones */}
+                            {phoneNumbers.map((phone) => (
+                                <a key={phone.id} href={phone.type === 'whatsapp' ? `https://wa.me/${phone.number.replace(/\+/g, '')}` : `tel:${phone.number}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                    {phone.number}
+                                </a>
+                            ))}
+
+                            {settings.instagram_url && (
+                                <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-main)', display: 'inline-block', marginTop: '5px' }}>
+                                    <Instagram size={24} strokeWidth={1.5} />
                                 </a>
                             )}
                         </div>
                     </div>
 
-                    {/* Column 4: Hours */}
+                    {/* Column 4: Opening Hours */}
                     {settings.show_opening_hours !== 'false' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <h4 style={{
-                                fontFamily: 'var(--font-heading)',
-                                fontSize: '1.4rem',
-                                margin: 0
-                            }}>Opening Hours</h4>
-                            <div style={{ fontSize: '0.95rem', opacity: 0.8 }}>
-                                <p style={{ margin: 0 }}>{settings.opening_hours || ""}</p>
-                            </div>
+                        <div>
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)' }}>Opening Hours</h4>
+                            <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.6', fontSize: '0.95rem' }}>
+                                {settings.opening_hours || "Tue-Sat: 9 AM - 6 PM"}
+                            </p>
                             {/* Dynamic Payment Icons */}
-                            <div style={{ display: 'flex', gap: '15px', marginTop: '10px', opacity: 0.6, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px', opacity: 0.8, flexWrap: 'wrap' }}>
                                 {(() => {
                                     const paymentLogos = {
                                         'visa': 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg',
@@ -1130,7 +1120,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                                             key={method}
                                             src={paymentLogos[method]}
                                             alt={method}
-                                            style={{ height: '20px' }}
+                                            style={{ height: '24px' }}
                                             onError={(e) => e.target.style.display = 'none'}
                                         />
                                     ));
@@ -1143,9 +1133,9 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                 {/* Copyright */}
                 <div style={{
                     maxWidth: '1200px',
-                    margin: '60px auto 0',
+                    margin: '20px auto 0',
                     paddingTop: '20px',
-                    borderTop: '1px solid rgba(61, 43, 31, 0.1)',
+                    borderTop: '1px solid rgba(var(--primary-rgb), 0.1)',
                     textAlign: 'center',
                     fontSize: '0.85rem',
                     opacity: 0.5
@@ -1170,6 +1160,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
         </>
     );
 };
+
 
 
 export { Navbar, Hero, Services, TeamSection, PriceList, Testimonials, Contact, Footer };
