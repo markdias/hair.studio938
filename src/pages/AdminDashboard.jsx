@@ -278,7 +278,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'theme': return <ThemeTab showMessage={showMessage} />;
         case 'services': return <ServicesTab services={data.services} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
         case 'pricing': return <PricingTab pricing={data.pricing} categories={data.priceCategories} refresh={refresh} showMessage={showMessage} settings={data.siteSettings} setSettings={setData.setSiteSettings} theme={theme} />;
-        case 'team': return <TeamTab stylists={data.stylists} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
+        case 'team': return <TeamTab stylists={data.stylists} services={data.services} pricing={data.pricing} priceCategories={data.priceCategories} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
         case 'gallery': return <GalleryTab gallery={data.gallery} settings={data.siteSettings} setSettings={setData.setSiteSettings} refresh={refresh} showMessage={showMessage} theme={theme} />;
         case 'appointments': return <AppointmentsTab appointments={data.appointments} setAppointments={setData.setAppointments} showMessage={showMessage} clients={data.clients} setClients={setData.setClients} services={data.services} stylists={data.stylists} pricing={data.pricing} openingHours={data.siteSettings?.opening_hours} defaultView={data.siteSettings?.default_appointment_view} settings={data.siteSettings} setSettings={setData.setSiteSettings} theme={theme} />;
         case 'clients': return <ClientsTab clients={data.clients} setClients={setData.setClients} showMessage={showMessage} refreshClients={fetchClients} />;
@@ -2189,7 +2189,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                         className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     />
                     <input
-                        placeholder="£50"
+                        placeholder=""
                         value={newItem.price}
                         onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
                         className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
@@ -2282,11 +2282,155 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
     );
 };
 
-const TeamTab = ({ stylists = [], services = [], pricing = [], settings, setSettings, refresh, showMessage, theme }) => {
+const ServiceSelectionModal = ({ isOpen, onClose, onSave, initialSelection = [], pricing = [], categories = [] }) => {
+    const [selected, setSelected] = useState(initialSelection);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    useEffect(() => {
+        setSelected(initialSelection);
+    }, [initialSelection, isOpen]);
+
+    if (!isOpen) return null;
+
+    const allServiceNames = (pricing || []).map(s => s.item_name);
+    const isAllSelected = allServiceNames.length > 0 && allServiceNames.every(name => selected.includes(name));
+
+    const toggleAll = () => {
+        if (isAllSelected) {
+            setSelected([]);
+        } else {
+            setSelected(allServiceNames);
+        }
+    };
+
+    const toggleCategory = (catName) => {
+        const catServices = pricing.filter(s => s.category === catName).map(s => s.item_name);
+        const isCatSelected = catServices.every(name => selected.includes(name));
+
+        if (isCatSelected) {
+            setSelected(prev => prev.filter(name => !catServices.includes(name)));
+        } else {
+            setSelected(prev => [...new Set([...prev, ...catServices])]);
+        }
+    };
+
+    const toggleService = (name) => {
+        setSelected(prev =>
+            prev.includes(name) ? prev.filter(s => s !== name) : [...prev, name]
+        );
+    };
+
+    const filteredPricing = pricing.filter(s =>
+        s.item_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden"
+            >
+                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-xl font-bold text-gray-900">Manage Provided Services</h3>
+                        <p className="text-sm text-gray-500">Select the services this professional can perform</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <div className="p-6 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-4 items-center justify-between">
+                    <div className="relative flex-grow max-w-xs">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                        <input
+                            type="text"
+                            placeholder="Search services..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-stone-800 outline-none"
+                        />
+                    </div>
+                    <button
+                        onClick={toggleAll}
+                        className="px-4 py-2 text-sm font-medium text-stone-800 hover:bg-white rounded-lg border border-transparent hover:border-gray-200 transition-all font-bold"
+                    >
+                        {isAllSelected ? 'Deselect All' : 'Select All'}
+                    </button>
+                </div>
+
+                <div className="flex-grow overflow-y-auto p-6 space-y-8">
+                    {categories.map(cat => {
+                        const catServices = filteredPricing.filter(s => s.category === cat.name);
+                        if (catServices.length === 0) return null;
+
+                        const isCatSelected = catServices.every(s => selected.includes(s.item_name));
+
+                        return (
+                            <div key={cat.id || cat.name} className="space-y-3">
+                                <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                                    <h4 className="font-bold text-stone-800 uppercase tracking-wider text-xs">{cat.name}</h4>
+                                    <button
+                                        onClick={() => toggleCategory(cat.name)}
+                                        className="text-xs font-bold text-stone-600 hover:text-stone-900 underline"
+                                    >
+                                        {isCatSelected ? 'Deselect Category' : 'Select Category'}
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    {catServices.map(service => (
+                                        <label
+                                            key={service.id}
+                                            className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${selected.includes(service.item_name)
+                                                ? 'bg-stone-50 border-stone-800 ring-1 ring-stone-800'
+                                                : 'bg-white border-gray-100 hover:border-gray-300'
+                                                }`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={selected.includes(service.item_name)}
+                                                onChange={() => toggleService(service.item_name)}
+                                                className="rounded border-gray-300 text-stone-800 focus:ring-stone-500"
+                                            />
+                                            <div className="flex-grow">
+                                                <div className="text-sm font-medium text-gray-900">{service.item_name}</div>
+                                                <div className="text-xs text-gray-500">{service.duration_minutes} min • {service.price}</div>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <div className="p-6 border-t border-gray-100 bg-gray-50 flex gap-3">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => { onSave(selected); onClose(); }}
+                        className="flex-1 px-4 py-3 bg-stone-800 text-white rounded-xl font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-stone-200"
+                        style={{ backgroundColor: 'var(--primary-brown)' }}
+                    >
+                        Save Selections
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
+const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories = [], settings, setSettings, refresh, showMessage, theme }) => {
     const [localStylists, setLocalStylists] = useState(stylists);
     const [showHelp, setShowHelp] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [newStylist, setNewStylist] = useState({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0, provided_services: [] });
+    const [serviceModal, setServiceModal] = useState({ isOpen: false, context: null, initialSelection: [] });
 
     useEffect(() => { setLocalStylists(stylists); }, [stylists]);
 
@@ -2445,25 +2589,23 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], settings, setSett
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-sm"
                     />
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Can provide these services:</label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 h-40 overflow-y-auto">
-                            {(pricing || []).map(service => (
-                                <label key={service.id} className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        checked={newStylist.provided_services?.includes(service.item_name)}
-                                        onChange={(e) => {
-                                            const updated = e.target.checked
-                                                ? [...(newStylist.provided_services || []), service.item_name]
-                                                : (newStylist.provided_services || []).filter(s => s !== service.item_name);
-                                            setNewStylist({ ...newStylist, provided_services: updated });
-                                        }}
-                                        className="rounded border-gray-300 text-stone-800 focus:ring-stone-500"
-                                    />
-                                    <span className="text-xs text-gray-600">{service.item_name}</span>
-                                </label>
-                            ))}
-                        </div>
+                        <label className="text-sm font-medium text-gray-700">Service Assignment:</label>
+                        <button
+                            onClick={() => setServiceModal({
+                                isOpen: true,
+                                context: 'new',
+                                initialSelection: newStylist.provided_services || []
+                            })}
+                            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-white hover:border-stone-400 transition-all text-sm group"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Scissors size={18} className="text-stone-600" />
+                                <span className="text-stone-800">
+                                    {newStylist.provided_services?.length || 0} services assigned
+                                </span>
+                            </div>
+                            <Edit size={16} className="text-gray-400 group-hover:text-stone-800" />
+                        </button>
                     </div>
                     <textarea
                         value={newStylist.description}
@@ -2512,25 +2654,26 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], settings, setSett
                             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none font-mono text-gray-700"
                         />
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Can provide these services:</label>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-stone-50 rounded-lg border border-stone-200 max-h-48 overflow-y-auto">
-                                {(pricing || []).map(service => (
-                                    <label key={service.id} className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded transition-colors">
-                                        <input
-                                            type="checkbox"
-                                            checked={s.provided_services?.includes(service.item_name)}
-                                            onChange={(e) => {
-                                                const updated = e.target.checked
-                                                    ? [...(s.provided_services || []), service.item_name]
-                                                    : (s.provided_services || []).filter(item => item !== service.item_name);
-                                                handleFieldChange(idx, 'provided_services', updated);
-                                            }}
-                                            className="rounded border-gray-300 text-stone-800 focus:ring-stone-500"
-                                        />
-                                        <span className="text-xs text-stone-800 truncate">{service.item_name}</span>
-                                    </label>
-                                ))}
-                            </div>
+                            <label className="text-sm font-medium text-gray-700">Service Assignment:</label>
+                            <button
+                                onClick={() => setServiceModal({
+                                    isOpen: true,
+                                    context: idx,
+                                    initialSelection: s.provided_services || []
+                                })}
+                                className="w-full flex items-center justify-between px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg hover:bg-white hover:border-stone-400 transition-all text-sm group"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Scissors size={18} className="text-stone-600" />
+                                    <span className="text-stone-800 font-medium">
+                                        {s.provided_services?.length || 0} services assigned
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-stone-400 group-hover:text-stone-600">Click to manage</span>
+                                    <Edit size={16} className="text-gray-400 group-hover:text-stone-800" />
+                                </div>
+                            </button>
                         </div>
                         <textarea value={s.description || ''} onChange={(e) => handleFieldChange(idx, 'description', e.target.value)} placeholder="Bio" className="w-full text-sm text-gray-600 h-20 resize-none border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
                         <div className="flex gap-2">
@@ -2540,6 +2683,38 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], settings, setSett
                     </Reorder.Item>
                 ))}
             </Reorder.Group>
+
+            <ServiceSelectionModal
+                isOpen={serviceModal.isOpen}
+                onClose={() => setServiceModal(prev => ({ ...prev, isOpen: false }))}
+                initialSelection={serviceModal.initialSelection}
+                pricing={pricing}
+                categories={priceCategories}
+                onSave={async (selected) => {
+                    if (serviceModal.context === 'new') {
+                        setNewStylist(prev => ({ ...prev, provided_services: selected }));
+                    } else {
+                        const idx = serviceModal.context;
+                        const stylistToUpdate = localStylists[idx];
+                        if (!stylistToUpdate) return;
+
+                        // Optimistic update
+                        handleFieldChange(idx, 'provided_services', selected);
+
+                        try {
+                            const { error } = await supabase.from('stylist_calendars').upsert({
+                                ...stylistToUpdate,
+                                provided_services: selected
+                            });
+                            if (error) throw error;
+                            showMessage('success', `Services for ${stylistToUpdate.stylist_name} saved!`);
+                            refresh();
+                        } catch (err) {
+                            showMessage('error', 'Failed to save services: ' + err.message);
+                        }
+                    }
+                }}
+            />
         </motion.div>
     );
 };

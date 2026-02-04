@@ -108,7 +108,8 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                     name: s.stylist_name,
                     role: s.role,
                     img: s.image_url || '/placeholder.png',
-                    calendar_id: s.calendar_id
+                    calendar_id: s.calendar_id,
+                    provided_services: s.provided_services || []
                 }));
                 // Note: user said rename to Professional, but internal state can keep 'professional' for now to avoid massive refactor of booking object
                 setProfessionals(formatted);
@@ -509,7 +510,10 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                             </div>
                                             <div style={{ marginTop: '30px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
                                                 <button
-                                                    onClick={nextStep}
+                                                    onClick={() => {
+                                                        setBooking(prev => ({ ...prev, professional: null }));
+                                                        nextStep();
+                                                    }}
                                                     style={{
                                                         padding: '12px 24px',
                                                         backgroundColor: 'transparent',
@@ -551,72 +555,82 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                         <div style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
                                             <h4 style={{ fontSize: '1.5rem', marginBottom: '30px' }}>Select a Service</h4>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                                {categories.map((cat) => (
-                                                    <div key={cat.title} style={{ borderBottom: '1px solid var(--accent-cream)', pb: '15px' }}>
-                                                        <button
-                                                            onClick={() => toggleCategory(cat.title)}
-                                                            style={{
-                                                                width: '100%',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'between',
-                                                                padding: '15px 0',
-                                                                background: 'none',
-                                                                border: 'none',
-                                                                cursor: 'pointer',
-                                                                textAlign: 'left'
-                                                            }}
-                                                        >
-                                                            <div style={{ fontSize: '0.8rem', letterSpacing: '2px', color: 'var(--primary-brown)', fontWeight: '700', textTransform: 'uppercase' }}>
-                                                                {cat.title}
-                                                            </div>
-                                                            <div style={{ marginLeft: 'auto', color: '#999' }}>
-                                                                {expandedCategories[cat.title] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                                            </div>
-                                                        </button>
+                                                {categories.map((cat) => {
+                                                    // Filter items in this category based on professional's capabilities
+                                                    const filteredItems = booking.professional
+                                                        ? cat.items.filter(item => (booking.professional.provided_services || []).includes(item))
+                                                        : cat.items;
 
-                                                        {expandedCategories[cat.title] && (
-                                                            <motion.div
-                                                                initial={{ height: 0, opacity: 0 }}
-                                                                animate={{ height: 'auto', opacity: 1 }}
-                                                                style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', paddingBottom: '20px' }}
+                                                    if (filteredItems.length === 0) return null;
+
+                                                    return (
+                                                        <div key={cat.title} style={{ borderBottom: '1px solid var(--accent-cream)', pb: '15px' }}>
+                                                            <button
+                                                                onClick={() => toggleCategory(cat.title)}
+                                                                style={{
+                                                                    width: '100%',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'between',
+                                                                    padding: '15px 0',
+                                                                    background: 'none',
+                                                                    border: 'none',
+                                                                    cursor: 'pointer',
+                                                                    textAlign: 'left'
+                                                                }}
                                                             >
-                                                                {cat.items.map(item => (
-                                                                    <button
-                                                                        key={item}
-                                                                        onClick={() => setBooking({
-                                                                            ...booking,
-                                                                            service: item,
-                                                                            duration_minutes: serviceDurations[item] || 60
-                                                                        })}
-                                                                        style={{
-                                                                            padding: '10px 20px',
-                                                                            borderRadius: '30px',
-                                                                            border: '1px solid var(--accent-cream)',
-                                                                            backgroundColor: booking.service === item ? 'var(--primary-brown)' : 'white',
-                                                                            color: booking.service === item ? '#FFF' : 'var(--primary-brown)',
-                                                                            fontSize: '0.9rem',
-                                                                            transition: 'all 0.2s ease',
-                                                                            cursor: 'pointer',
-                                                                            display: 'flex',
-                                                                            alignItems: 'center',
-                                                                            gap: '8px'
-                                                                        }}
-                                                                    >
-                                                                        {item}
-                                                                        {serviceDurations[item] && (
-                                                                            <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>
-                                                                                ({serviceDurations[item] >= 60
-                                                                                    ? `${serviceDurations[item] / 60}h`
-                                                                                    : `${serviceDurations[item]}m`})
-                                                                            </span>
-                                                                        )}
-                                                                    </button>
-                                                                ))}
-                                                            </motion.div>
-                                                        )}
-                                                    </div>
-                                                ))}
+                                                                <div style={{ fontSize: '0.8rem', letterSpacing: '2px', color: 'var(--primary-brown)', fontWeight: '700', textTransform: 'uppercase' }}>
+                                                                    {cat.title}
+                                                                </div>
+                                                                <div style={{ marginLeft: 'auto', color: '#999' }}>
+                                                                    {expandedCategories[cat.title] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                                                </div>
+                                                            </button>
+
+                                                            {expandedCategories[cat.title] && (
+                                                                <motion.div
+                                                                    initial={{ height: 0, opacity: 0 }}
+                                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                                    style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', paddingBottom: '20px' }}
+                                                                >
+                                                                    {filteredItems.map(item => (
+                                                                        <button
+                                                                            key={item}
+                                                                            onClick={() => setBooking({
+                                                                                ...booking,
+                                                                                service: item,
+                                                                                duration_minutes: serviceDurations[item] || 60
+                                                                            })}
+                                                                            style={{
+                                                                                padding: '10px 20px',
+                                                                                borderRadius: '30px',
+                                                                                border: '1px solid var(--accent-cream)',
+                                                                                backgroundColor: booking.service === item ? 'var(--primary-brown)' : 'white',
+                                                                                color: booking.service === item ? '#FFF' : 'var(--primary-brown)',
+                                                                                fontSize: '0.9rem',
+                                                                                transition: 'all 0.2s ease',
+                                                                                cursor: 'pointer',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                gap: '8px',
+                                                                                fontWeight: booking.service === item ? '700' : '400'
+                                                                            }}
+                                                                        >
+                                                                            {item}
+                                                                            {serviceDurations[item] && (
+                                                                                <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>
+                                                                                    ({serviceDurations[item] >= 60
+                                                                                        ? `${Math.floor(serviceDurations[item] / 60)}h${serviceDurations[item] % 60 > 0 ? ` ${serviceDurations[item] % 60}m` : ''}`
+                                                                                        : `${serviceDurations[item]}m`})
+                                                                                </span>
+                                                                            )}
+                                                                        </button>
+                                                                    ))}
+                                                                </motion.div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     )}

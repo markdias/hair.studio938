@@ -122,8 +122,17 @@ export default async function handler(req, res) {
 
         let professionalsToCheck = [];
         if (professional) {
-            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').eq('stylist_name', professional).single();
-            if (data) professionalsToCheck.push(data);
+            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id, provided_services').eq('stylist_name', professional).single();
+            if (data) {
+                // If service is also provided, check if professional does it
+                if (service) {
+                    const canDoService = (data.provided_services || []).includes(service);
+                    if (!canDoService) {
+                        return res.status(200).json({ slots: [], message: `${professional} does not provide the ${service} service.` });
+                    }
+                }
+                professionalsToCheck.push(data);
+            }
         } else if (service) {
             // Find professionals who provide this service
             const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id, provided_services').contains('provided_services', [service]);
