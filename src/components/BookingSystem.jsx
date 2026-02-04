@@ -190,6 +190,8 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                 setStep(1);
                 setIsSuccess(false);
                 setError(null);
+                setTimeSlots([]);
+                setFullTimeSlots([]);
             }
         };
         window.addEventListener('hashchange', handleHashChange);
@@ -460,7 +462,13 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                     </p>
 
                                     <button
-                                        onClick={() => { setIsSuccess(false); setStep(1); setBooking({ professional: null, service: null, date: null, time: null, duration_minutes: null, name: '', email: '', phone: '' }); }}
+                                        onClick={() => {
+                                            setIsSuccess(false);
+                                            setStep(1);
+                                            setBooking({ professional: null, service: null, date: null, time: null, duration_minutes: null, name: '', email: '', phone: '' });
+                                            setTimeSlots([]);
+                                            setFullTimeSlots([]);
+                                        }}
                                         className="btn-primary"
                                     >
                                         Book Another
@@ -525,7 +533,11 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
 
                                                 {booking.service || booking.date || booking.time ? (
                                                     <button
-                                                        onClick={() => setBooking({ professional: null, service: null, date: null, time: null, duration_minutes: null, name: '', email: '', phone: '' })}
+                                                        onClick={() => {
+                                                            setBooking({ professional: null, service: null, date: null, time: null, duration_minutes: null, name: '', email: '', phone: '' });
+                                                            setTimeSlots([]);
+                                                            setFullTimeSlots([]);
+                                                        }}
                                                         style={{ fontSize: '0.8rem', color: '#999', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                                                     >
                                                         Clear previous selections
