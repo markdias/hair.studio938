@@ -43,9 +43,24 @@ export default async function handler(req, res) {
         let stylistsToCheck = [];
         let finalStylistName = typeof stylist === 'string' ? stylist : stylist?.name;
 
+        if (finalStylistName) {
+            // Specific stylist requested
+            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').eq('stylist_name', finalStylistName).single();
+            if (data) stylistsToCheck.push(data);
+        } else if (service) {
+            // "Any" professional - find all who can do this service
+            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').contains('provided_services', [service]);
+            stylistsToCheck = data || [];
 
-        if (stylistsToCheck.length === 0) {
-            return res.status(400).json({ error: 'No professionals available for this service.' });
+            // FALLBACK: If no one has this service assigned, check everyone
+            if (stylistsToCheck.length === 0) {
+                console.log('No stylists assigned to service in book API, falling back to all');
+                const { data: allStylists } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id');
+                stylistsToCheck = allStylists || [];
+            }
+        } else {
+            // Fallback to default
+            stylistsToCheck.push({ stylist_name: 'Default', calendar_id: calendarId });
         }
 
         // --- RE-VERIFY AVAILABILITY & ASSIGN STYLIST ---
