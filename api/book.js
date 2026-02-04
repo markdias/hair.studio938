@@ -201,7 +201,7 @@ export default async function handler(req, res) {
                 let html = settings.email_template || defaultTemplate;
 
                 // Get subject from settings or use default
-                const emailSubject = settings.email_subject || 'Booking Confirmation - Studio 938';
+                const emailSubject = settings.email_subject;
                 console.log(`Sending email with subject: "${emailSubject}"`);
 
                 // Replace placeholders
@@ -221,7 +221,7 @@ export default async function handler(req, res) {
                 });
 
                 const mailOptions = {
-                    from: `"${settings.business_name || 'Studio 938'}" <${smtpUser}>`,
+                    from: `"${settings.business_name}" <${smtpUser}>`,
                     to: email, // Customer
                     bcc: smtpUser, // Salon Copy
                     subject: emailSubject,

@@ -33,6 +33,8 @@ export const ThemeProvider = ({ children }) => {
         'theme_text_light': '--text-contrast',
         'theme_font_heading': '--font-heading',
         'theme_font_body': '--font-body',
+        'theme_navbar_bg': '--navbar-bg',
+        'theme_navbar_text': '--navbar-text',
     };
 
     const cssVarToDbKey = Object.fromEntries(
@@ -82,6 +84,15 @@ export const ThemeProvider = ({ children }) => {
     };
 
     const hexToRgb = (hex) => {
+        if (!hex) return null;
+        hex = hex.trim();
+
+        // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+        const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+        hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+            return r + r + g + g + b + b;
+        });
+
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result
             ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
@@ -90,17 +101,18 @@ export const ThemeProvider = ({ children }) => {
 
     const applyTheme = (themeSettings) => {
         const root = document.documentElement;
+        // console.log('Applying theme:', themeSettings); // Debug logging
         Object.entries(themeSettings).forEach(([property, value]) => {
             root.style.setProperty(property, value);
 
-            // If we are setting primary, also set its RGB counter-part for rgba usage
-            if (property === '--primary') {
+            // Handle RGB counterparts for transparent usage
+            if (property === '--primary' || property === '--navbar-bg') {
                 const rgb = hexToRgb(value);
                 if (rgb) {
-                    root.style.setProperty('--primary-rgb', rgb);
+                    const rgbVar = property === '--primary' ? '--primary-rgb' : '--navbar-bg-rgb';
+                    root.style.setProperty(rgbVar, rgb);
                 }
             }
-            // Also handle accent rgb if needed, but primary is most critical
             if (property === '--accent') {
                 const rgb = hexToRgb(value);
                 if (rgb) {

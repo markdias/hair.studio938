@@ -104,7 +104,7 @@ const SectionPage = ({ siteData }) => {
         <div className="section-page min-h-screen transition-colors duration-300" style={{ backgroundColor: styles.backgroundColor }}>
             <Navbar settings={siteData.settings} customSections={siteData.customSections} pageSections={siteData.pageSections} />
             <Breadcrumbs label={section.label} textColor={styles.color} />
-            <div className="section-content">
+            <div className="section-content flex-grow">
                 {renderSection()}
             </div>
             <Footer settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} pageSections={siteData.pageSections} />

@@ -427,11 +427,28 @@ const SectionConfig = ({ sectionId, settings, setSettings, showMessage, defaultM
 
     const handleSaveSetting = async (key, value) => {
         try {
+            // 1. Save to site_settings
             const { error } = await supabase
                 .from('site_settings')
-                .upsert({ key, value });
+                .upsert({ key, value }, { onConflict: 'key' });
 
             if (error) throw error;
+
+            // 2. If this is a visibility toggle, sync with site_page_sections
+            if (key === showKey) {
+                const isEnabled = value !== 'false';
+                await supabase
+                    .from('site_page_sections')
+                    .update({ enabled: isEnabled })
+                    .eq('id', sectionId);
+
+                // Also sync custom_sections if applicable
+                await supabase
+                    .from('custom_sections')
+                    .update({ enabled: isEnabled })
+                    .eq('id', sectionId);
+            }
+
             setSettings(prev => ({ ...prev, [key]: value }));
             showMessage('success', `${sectionId.charAt(0).toUpperCase() + sectionId.slice(1)} setting updated!`);
         } catch (err) {
@@ -810,7 +827,7 @@ const OpeningHoursTab = ({ settings, setSettings, showMessage }) => {
         try {
             const { error } = await supabase
                 .from('site_settings')
-                .upsert({ key: 'opening_hours', value: formattedHours });
+                .upsert({ key: 'opening_hours', value: formattedHours }, { onConflict: 'key' });
             if (error) throw error;
             showMessage('success', 'Opening hours updated!');
             setSettings(prev => ({ ...prev, opening_hours: formattedHours }));
@@ -823,7 +840,7 @@ const OpeningHoursTab = ({ settings, setSettings, showMessage }) => {
         try {
             const { error } = await supabase
                 .from('site_settings')
-                .upsert({ key: 'show_opening_hours', value: String(enabled) });
+                .upsert({ key: 'show_opening_hours', value: String(enabled) }, { onConflict: 'key' });
             if (error) throw error;
             setSettings(prev => ({ ...prev, show_opening_hours: String(enabled) }));
             showMessage('success', `Opening hours ${enabled ? 'enabled' : 'disabled'} on site`);
@@ -924,7 +941,7 @@ const PhoneNumbersEditor = ({ showMessage, settings, setSettings }) => {
                 // Sync to site_settings.phone for backward compatibility
                 const phoneObj = phoneNumbers.find(p => p.id === id);
                 if (phoneObj && phoneObj.number) {
-                    await supabase.from('site_settings').upsert({ key: 'phone', value: phoneObj.number });
+                    await supabase.from('site_settings').upsert({ key: 'phone', value: phoneObj.number }, { onConflict: 'key' });
                     if (setSettings) setSettings(prev => ({ ...prev, phone: phoneObj.number }));
                 }
 
@@ -950,7 +967,7 @@ const PhoneNumbersEditor = ({ showMessage, settings, setSettings }) => {
             // If updating number and it is primary, sync to site_settings
             const updatedPhone = phoneNumbers.find(p => p.id === id);
             if (field === 'number' && updatedPhone?.is_primary) {
-                await supabase.from('site_settings').upsert({ key: 'phone', value: value });
+                await supabase.from('site_settings').upsert({ key: 'phone', value: value }, { onConflict: 'key' });
                 if (setSettings) setSettings(prev => ({ ...prev, phone: value }));
             }
 
@@ -1110,7 +1127,7 @@ const PrivacyPolicyEditor = ({ settings, setSettings, showMessage, theme }) => {
             setSaving(true);
             const { error } = await supabase
                 .from('site_settings')
-                .upsert({ key: 'privacy_policy', value: content });
+                .upsert({ key: 'privacy_policy', value: content }, { onConflict: 'key' });
 
             if (error) throw error;
             showMessage('success', 'Privacy policy updated successfully!');
@@ -1232,7 +1249,7 @@ const TermsAndConditionsEditor = ({ settings, setSettings, showMessage, theme })
             setSaving(true);
             const { error } = await supabase
                 .from('site_settings')
-                .upsert({ key: 'terms_and_conditions', value: content });
+                .upsert({ key: 'terms_and_conditions', value: content }, { onConflict: 'key' });
 
             if (error) throw error;
             showMessage('success', 'Terms and conditions updated successfully!');
@@ -1400,6 +1417,8 @@ const ThemeTab = ({ showMessage }) => {
         { label: 'Primary Hover Color', var: '--primary-hover' },
         { label: 'Accent Color', var: '--accent' },
         { label: 'Background Color', var: '--secondary' },
+        { label: 'Navbar Background', var: '--navbar-bg' },
+        { label: 'Navbar Text Color', var: '--navbar-text' },
         { label: 'Headings & Dark Text', var: '--text-main' },
         { label: 'Light Text', var: '--text-contrast' },
     ];
@@ -1622,7 +1641,7 @@ const GeneralTab = ({ settings, setSettings, showMessage, theme }) => {
         try {
             const { error } = await supabase
                 .from('site_settings')
-                .upsert({ key, value });
+                .upsert({ key, value }, { onConflict: 'key' });
             if (error) throw error;
             showMessage('success', `${key.replace('_', ' ')} updated!`);
             setSettings(prev => ({ ...prev, [key]: value }));
@@ -1879,7 +1898,7 @@ const ContactTab = ({ settings, setSettings, showMessage, theme }) => {
         try {
             const { error } = await supabase
                 .from('site_settings')
-                .upsert({ key, value });
+                .upsert({ key, value }, { onConflict: 'key' });
             if (error) throw error;
             showMessage('success', `${key.replace('_', ' ')} updated!`);
             setSettings(prev => ({ ...prev, [key]: value }));
@@ -2094,6 +2113,15 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
         setLocalPricing(updated);
     };
 
+    const saveSetting = async (key, value) => {
+        try {
+            const { error } = await supabase.from('site_settings').upsert({ key, value }, { onConflict: 'key' });
+            if (error) throw error;
+            setSettings(prev => ({ ...prev, [key]: value }));
+            showMessage('success', 'Setting updated');
+        } catch (err) { showMessage('error', err.message); }
+    };
+
     const handleSaveItem = async (item) => {
         try {
             const { error } = await supabase.from('price_list').upsert(item);
@@ -2168,12 +2196,25 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                 description="Enable or disable the pricing list section and customize its heading."
             />
 
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-semibold text-gray-900">Price List</h2>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-primary/10 shadow-sm">
+                    <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium text-stone-600">Currency Symbol:</label>
+                        <input
+                            value={settings.pricing_currency_symbol || ''}
+                            onChange={(e) => saveSetting('pricing_currency_symbol', e.target.value)}
+                            placeholder="e.g. £"
+                            className="w-16 px-3 py-1.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm"
+                        />
+                    </div>
+                    <p className="text-[10px] text-stone-500 italic max-w-[200px]">This will be prepended to all prices. Leave empty if you type symbols manually.</p>
+                </div>
+
                 <button
                     onClick={() => setIsManagingCategories(!isManagingCategories)}
-                    className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
+                    className="px-6 py-2.5 bg-secondary text-primary border border-primary/20 rounded-xl hover:bg-primary hover:text-white transition-all text-sm font-medium flex items-center justify-center gap-2"
                 >
+                    <List size={18} />
                     {isManagingCategories ? 'Close Category Manager' : 'Manage Service Categories'}
                 </button>
             </div>
@@ -2224,7 +2265,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
             )}
 
             <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm">
-                <h3 className="text-sm font-medium text-gray-700 mb-4">Add New Service</h3>
+                <h3 className="text-sm font-medium text-gray-700 mb-4 text-center">Add New Service Item</h3>
                 <div className="flex flex-wrap gap-4">
                     <select
                         value={newItem.category}
@@ -2236,16 +2277,16 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                         ))}
                     </select>
                     <input
-                        placeholder="Service Name"
+                        placeholder="Service Name (e.g. Balayage)"
                         value={newItem.item_name}
                         onChange={(e) => setNewItem({ ...newItem, item_name: e.target.value })}
                         className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     />
                     <input
-                        placeholder=""
+                        placeholder="Price (e.g. 100 or From 100)"
                         value={newItem.price}
                         onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
-                        className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                        className="w-48 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     />
                     <select
                         value={newItem.duration_minutes}
@@ -2265,7 +2306,7 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                         onClick={handleAdd}
                         className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all flex items-center gap-2" style={{ backgroundColor: "var(--primary)" }}
                     >
-                        <Plus size={18} /> Add
+                        <Plus size={18} /> Add Item
                     </button>
                 </div>
             </div>
@@ -2294,7 +2335,8 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
                                 <input
                                     value={item.price}
                                     onChange={(e) => handleFieldChange(idx, 'price', e.target.value)}
-                                    className="text-primary font-semibold border-none p-0 focus:ring-0 outline-none w-24"
+                                    placeholder="Price"
+                                    className="text-primary font-semibold border-none p-0 focus:ring-0 outline-none min-w-[100px] w-auto"
                                 />
                                 <select
                                     value={item.duration_minutes || 60}
@@ -2484,6 +2526,7 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
     const [isAdding, setIsAdding] = useState(false);
     const [newStylist, setNewStylist] = useState({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0, provided_services: [] });
     const [serviceModal, setServiceModal] = useState({ isOpen: false, context: null, initialSelection: [] });
+    const [assigningServices, setAssigningServices] = useState(null);
 
     useEffect(() => { setLocalStylists(stylists); }, [stylists]);
 
@@ -2740,12 +2783,6 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
                         <textarea value={s.description || ''} onChange={(e) => handleFieldChange(idx, 'description', e.target.value)} placeholder="Bio" className="w-full text-sm text-gray-600 h-20 resize-none border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-transparent outline-none" />
                         <div className="flex gap-2">
                             <button onClick={() => handleSave(s)} className="flex-grow bg-primary text-white py-2 rounded-lg hover:bg-opacity-90 transition-all font-medium" style={{ backgroundColor: "var(--primary)" }}>Save Details</button>
-                            <button
-                                onClick={() => setAssigningServices(s)}
-                                className="px-4 bg-secondary text-primary/90 rounded-lg hover:bg-stone-200 transition-all font-medium"
-                            >
-                                Services
-                            </button>
                             <button onClick={() => handleDelete(s.id)} className="px-4 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-all font-medium">Delete</button>
                         </div>
                     </Reorder.Item>
@@ -3463,6 +3500,16 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <SectionConfig
+                sectionId="booking"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultMenuName="Booking"
+                defaultHeadingName="Book Your Visit"
+                description="Enable or disable the booking section and customize its heading."
+                theme={theme}
+            />
             <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
                 <h2 className="text-xl md:text-2xl font-semibold text-gray-900">Appointments</h2>
                 <div className="flex flex-wrap items-center gap-2">
@@ -4701,13 +4748,13 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
             // Save template
             const { error: templateError } = await supabase
                 .from('site_settings')
-                .upsert({ key: 'email_template', value: contentToSave });
+                .upsert({ key: 'email_template', value: contentToSave }, { onConflict: 'key' });
             if (templateError) throw templateError;
 
             // Save subject
             const { error: subjectError } = await supabase
                 .from('site_settings')
-                .upsert({ key: 'email_subject', value: subject });
+                .upsert({ key: 'email_subject', value: subject }, { onConflict: 'key' });
             if (subjectError) throw subjectError;
 
             showMessage('success', 'Email settings updated!');
@@ -4738,8 +4785,8 @@ const MessagesTab = ({ settings, setSettings, showMessage, refresh }) => {
             // We need to save both
             setIsSaving(true);
             try {
-                await supabase.from('site_settings').upsert({ key: 'email_template', value: content });
-                await supabase.from('site_settings').upsert({ key: 'email_subject', value: defaultSubject });
+                await supabase.from('site_settings').upsert({ key: 'email_template', value: content }, { onConflict: 'key' });
+                await supabase.from('site_settings').upsert({ key: 'email_subject', value: defaultSubject }, { onConflict: 'key' });
                 showMessage('success', 'Reset to defaults!');
                 refresh();
             } catch (err) {
@@ -5087,7 +5134,7 @@ const TestimonialsTab = ({ testimonials, refresh, showMessage, settings, setSett
 
     const handleSaveSetting = async (key, value) => {
         try {
-            const { error } = await supabase.from('site_settings').upsert({ key, value });
+            const { error } = await supabase.from('site_settings').upsert({ key, value }, { onConflict: 'key' });
             if (error) throw error;
             setSettings(prev => ({ ...prev, [key]: value }));
             showMessage('success', 'Setting updated!');
@@ -5497,10 +5544,34 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
 
             if (error) throw error;
 
+            // Define default sections that SHOULD exist
+            const DEFAULT_PAGE_SECTIONS = [
+                { id: 'services', label: 'Services', sort_order: 10 },
+                { id: 'team', label: 'Our Team', sort_order: 20 },
+                { id: 'pricing', label: 'Pricing', sort_order: 30 },
+                { id: 'testimonials', label: 'Testimonials', sort_order: 40 },
+                { id: 'booking', label: 'Booking', sort_order: 50 },
+                { id: 'gallery', label: 'Gallery', sort_order: 60 },
+                { id: 'contact', label: 'Contact', sort_order: 70, is_separate_page: true }
+            ];
+
             // Merge with current custom sections to ensure all are present
             let merged = [...(data || [])];
             let changed = false;
 
+            // 1. Ensure all default sections are present
+            DEFAULT_PAGE_SECTIONS.forEach(def => {
+                if (!merged.find(ps => ps.id === def.id)) {
+                    merged.push({
+                        ...def,
+                        is_custom: false,
+                        enabled: true
+                    });
+                    changed = true;
+                }
+            });
+
+            // 2. Ensure all custom sections are present
             customSections.forEach(cs => {
                 if (!merged.find(ps => ps.id === cs.id)) {
                     merged.push({
@@ -5514,8 +5585,11 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
                 }
             });
 
-            // Remove sections that no longer exist (custom sections only)
-            const activeIds = merged.filter(m => !m.is_custom || customSections.find(cs => cs.id === m.id));
+            // 3. Remove sections that no longer exist (custom sections only)
+            const activeIds = merged.filter(m =>
+                !m.is_custom || customSections.find(cs => cs.id === m.id)
+            );
+
             if (activeIds.length !== merged.length) {
                 merged = activeIds;
                 changed = true;
@@ -5523,14 +5597,15 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
 
             if (changed) {
                 // Upsert back to keep it in sync
-                await supabase.from('site_page_sections').upsert(merged.map(m => ({
+                const { error: upsertError } = await supabase.from('site_page_sections').upsert(merged.map(m => ({
                     id: m.id,
                     label: m.label,
-                    is_custom: m.is_custom,
+                    is_custom: !!m.is_custom,
                     sort_order: m.sort_order,
-                    enabled: m.enabled,
-                    is_separate_page: m.is_separate_page || false
+                    enabled: m.enabled !== false,
+                    is_separate_page: !!m.is_separate_page
                 })));
+                if (upsertError) console.error('Error upserting sections:', upsertError);
             }
 
             setPageSections(merged.sort((a, b) => a.sort_order - b.sort_order));
@@ -5573,6 +5648,8 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
     const handleToggleEnabled = async (id, currentStatus) => {
         try {
             const newStatus = !currentStatus;
+
+            // 1. Update site_page_sections
             const { error } = await supabase
                 .from('site_page_sections')
                 .update({ enabled: newStatus })
@@ -5580,7 +5657,13 @@ const PageFlowTab = ({ customSections, showMessage, refreshSiteData }) => {
 
             if (error) throw error;
 
-            // Also update custom_sections if this is a custom section to keep in sync
+            // 2. Sync with site_settings
+            const showKey = `show_${id}_section`;
+            await supabase
+                .from('site_settings')
+                .upsert({ key: showKey, value: String(newStatus) }, { onConflict: 'key' });
+
+            // 3. Update custom_sections if applicable
             const section = pageSections.find(s => s.id === id);
             if (section && section.is_custom) {
                 await supabase

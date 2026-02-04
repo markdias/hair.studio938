@@ -77,6 +77,8 @@ const parseOpeningHours = (text) => {
 };
 
 const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
+    if (settings.show_booking_section === 'false') return null;
+
     const [professionals, setProfessionals] = useState([]);
     const [isLoadingProfessionals, setIsLoadingProfessionals] = useState(true);
     const [openingHours, setOpeningHours] = useState(null);
@@ -143,9 +145,12 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                     });
                     setServiceDurations(durations);
 
-                    // Fetch stylist services mapping
+                    /* 
+                    // Fetch stylist services mapping - This currently causes a ReferenceError as state is not defined
+                    // and the system uses provided_services array on the stylist record instead.
                     const { data: stlSrvs } = await supabase.from('stylist_services').select('*');
                     if (stlSrvs) setStylistServiceMaps(stlSrvs);
+                    */
 
                     // Group price_list by categories
                     const grouped = catsRes.data.map(cat => ({

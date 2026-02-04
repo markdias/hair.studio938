@@ -523,9 +523,12 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
 };
 
 const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
-    if (settings.show_pricing_section === 'false') return null;
+    // Show on separate page even if section is hidden on landing page
+    if (!isSeparatePage && settings.show_pricing_section === 'false') return null;
+
     const bgColor = settings.pricing_bg_color;
     const textColor = settings.pricing_text_color;
+    const currency = settings.pricing_currency_symbol || '';
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 50px' : '120px 50px',
@@ -607,7 +610,9 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
                                         gap: '20px'
                                     }}>
                                         <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', opacity: 0.8 }}>{item.name}</span>
-                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '600', whiteSpace: 'nowrap' }}>{item.price}</span>
+                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                            {currency}{item.price}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
