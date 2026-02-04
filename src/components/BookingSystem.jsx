@@ -83,6 +83,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
     const [categories, setCategories] = useState([]);
     const [expandedCategories, setExpandedCategories] = useState({});
     const [serviceDurations, setServiceDurations] = useState({});
+    const [fullTimeSlots, setFullTimeSlots] = useState([]);
     const [step, setStep] = useState(1);
     const [booking, setBooking] = useState({
         stylist: null,
@@ -109,6 +110,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                     img: s.image_url || '/placeholder.png',
                     calendar_id: s.calendar_id
                 }));
+                // Note: user said rename to Professional, but internal state can keep 'stylist' for now to avoid massive refactor of booking object
                 setStylists(formatted);
             }
             setIsLoadingStylists(false);
@@ -231,7 +233,11 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
 
             const data = await response.json();
             if (data.slots) {
-                setTimeSlots(data.slots);
+                // Keep the full objects for auto-assignment
+                setFullTimeSlots(data.slots);
+                // Extract just times for the simplified timeSlots state
+                const times = data.slots.map(s => typeof s === 'string' ? s : s.time);
+                setTimeSlots(times);
             } else {
                 setError('Could not load time slots');
             }
@@ -281,9 +287,9 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
 
             const data = await response.json();
             if (data.success) {
-                if (data.assignedStylist && !booking.stylist) {
-                    const stylistObj = stylists.find(s => s.name === data.assignedStylist.name) || { name: data.assignedStylist.name };
-                    setBooking(prev => ({ ...prev, stylist: stylistObj }));
+                if (data.assignedProfessional && !booking.stylist) {
+                    const profObj = stylists.find(s => s.name === data.assignedProfessional.name) || { name: data.assignedProfessional.name };
+                    setBooking(prev => ({ ...prev, stylist: profObj }));
                 }
                 setIsSuccess(true);
             } else {
@@ -349,7 +355,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                         <div>
                             <h3 style={{ fontSize: '1.8rem', marginBottom: '30px', color: '#FFF' }}>Your Selection</h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-                                <SelectionItem icon={<User size={20} />} label="Stylist" value={booking.stylist?.name || 'Not selected'} />
+                                <SelectionItem icon={<User size={20} />} label="Professional" value={booking.stylist?.name || 'Not selected'} />
                                 <SelectionItem icon={<Scissors size={20} />} label="Service" value={booking.service || 'Not selected'} />
                                 <SelectionItem icon={<CalendarIcon size={20} />} label="Date" value={booking.date || 'Not selected'} />
                                 <SelectionItem icon={<Clock size={20} />} label="Time" value={booking.time || 'Not selected'} />
@@ -384,7 +390,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                         <h4 style={{ fontSize: '1rem', color: 'var(--primary-brown)', marginBottom: '15px', fontWeight: '700' }}>Your Appointment</h4>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
-                                                <span style={{ color: '#666', fontSize: '0.85rem' }}>Stylist:</span>
+                                                <span style={{ color: '#666', fontSize: '0.85rem' }}>Professional:</span>
                                                 <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.stylist?.name}</span>
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
@@ -434,7 +440,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
 
                                     {step === 1 && (
                                         <div style={{ flex: 1 }}>
-                                            <h4 style={{ fontSize: '1.5rem', marginBottom: '30px' }}>Choose Your Stylist</h4>
+                                            <h4 style={{ fontSize: '1.5rem', marginBottom: '30px' }}>Choose Your Professional</h4>
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px' }}>
                                                 {stylists.map((s) => (
                                                     <button
@@ -476,7 +482,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                         e.target.style.backgroundColor = 'transparent';
                                                     }}
                                                 >
-                                                    Skip - I'll take any available stylist
+                                                    Skip - I'll take any available professional
                                                 </button>
                                             </div>
                                         </div>
@@ -609,7 +615,18 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                 timeSlots.map(t => (
                                                                     <button
                                                                         key={t}
-                                                                        onClick={() => setBooking({ ...booking, time: t })}
+                                                                        onClick={() => {
+                                                                            const slotData = fullTimeSlots.find(s => (typeof s === 'string' ? s : s.time) === t);
+                                                                            const availableProfs = slotData?.professionals || [];
+
+                                                                            if (!booking.stylist && availableProfs.length > 0) {
+                                                                                // Auto-assign the first available professional
+                                                                                const prof = stylists.find(s => s.name === availableProfs[0]);
+                                                                                setBooking({ ...booking, time: t, stylist: prof });
+                                                                            } else {
+                                                                                setBooking({ ...booking, time: t });
+                                                                            }
+                                                                        }}
                                                                         style={{
                                                                             padding: '12px 0',
                                                                             borderRadius: '10px',

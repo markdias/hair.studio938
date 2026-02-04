@@ -141,7 +141,7 @@ export default async function handler(req, res) {
             calendarId: calendarId,
             resource: {
                 summary: `[938] ${service} - ${name}`,
-                description: `Stylist: ${stylistName}\nService: ${service}\nPhone: ${phone}\nEmail: ${email}`,
+                description: `Professional: ${finalStylistName}\nService: ${service}\nPhone: ${phone}\nEmail: ${email}`,
                 start: { dateTime: startDateTime, timeZone: 'Europe/London' },
                 end: { dateTime: endDateTime, timeZone: 'Europe/London' },
                 reminders: { useDefault: true },
@@ -176,7 +176,7 @@ export default async function handler(req, res) {
     
     <div style="background-color: #FDFBF9; padding: 15px; border-radius: 8px; margin: 20px 0;">
         <p style="margin: 5px 0;"><strong>Service:</strong> {{service}}</p>
-        <p style="margin: 5px 0;"><strong>Stylist:</strong> {{stylist}}</p>
+        <p style="margin: 5px 0;"><strong>Professional:</strong> {{stylist}}</p>
         <p style="margin: 5px 0;"><strong>Date:</strong> {{date}}</p>
         <p style="margin: 5px 0;"><strong>Time:</strong> {{time}}</p>
     </div>
@@ -201,7 +201,7 @@ export default async function handler(req, res) {
                 const replacements = {
                     '{{name}}': name,
                     '{{service}}': service,
-                    '{{stylist}}': finalStylistName,
+                    '{{professional}}': finalStylistName,
                     '{{date}}': formattedDate,
                     '{{time}}': time,
                     '{{salon_phone}}': settings.phone || '020 8445 1122',
@@ -233,7 +233,7 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true,
             eventId: calendarResponse.data.id,
-            assignedStylist: {
+            assignedProfessional: {
                 name: finalStylistName
             },
             message: 'Booking confirmed and added to calendar.'

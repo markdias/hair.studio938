@@ -51,7 +51,7 @@ const CONTACT_FIELDS = [
 const EMAIL_VARIABLES = [
     { tag: '{{name}}', desc: 'Customer Name' },
     { tag: '{{service}}', desc: 'Service Name' },
-    { tag: '{{stylist}}', desc: 'Stylist Name' },
+    { tag: '{{professional}}', desc: 'Professional Name' },
     { tag: '{{date}}', desc: 'Date of Appointment' },
     { tag: '{{time}}', desc: 'Time of Appointment' },
     { tag: '{{salon_phone}}', desc: 'Salon Phone Number' },
@@ -66,7 +66,7 @@ const DEFAULT_EMAIL_TEMPLATE = `
 
     <div style="background-color: #FDFBF9; padding: 15px; border-radius: 8px; margin: 20px 0;">
         <p style="margin: 5px 0;"><strong>Service:</strong> {{service}}</p>
-        <p style="margin: 5px 0;"><strong>Stylist:</strong> {{stylist}}</p>
+        <p style="margin: 5px 0;"><strong>Professional:</strong> {{professional}}</p>
         <p style="margin: 5px 0;"><strong>Date:</strong> {{date}}</p>
         <p style="margin: 5px 0;"><strong>Time:</strong> {{time}}</p>
     </div>
@@ -2371,7 +2371,7 @@ const TeamTab = ({ stylists, services, pricing, settings, setSettings, refresh, 
                         onClick={() => setIsAdding(!isAdding)}
                         className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}
                     >
-                        <Plus size={18} /> Add Stylist
+                        <Plus size={18} /> Add Professional
                     </button>
                 </div>
             </div>
@@ -2380,11 +2380,11 @@ const TeamTab = ({ stylists, services, pricing, settings, setSettings, refresh, 
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-6">
                     <h3 className="font-semibold text-amber-900 mb-3 flex items-center gap-2">
                         <Info size={18} />
-                        How to Set Up Google Calendar for a Stylist
+                        How to Set Up Google Calendar for a Professional
                     </h3>
                     <div className="text-sm text-amber-900 space-y-3">
                         <div>
-                            <p className="font-medium mb-1">1. Create or Access the Stylist's Google Calendar</p>
+                            <p className="font-medium mb-1">1. Create or Access the Professional's Google Calendar</p>
                             <p className="text-amber-800 ml-4">Go to <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer" className="underline">calendar.google.com</a> and create a new calendar for the stylist or use an existing one.</p>
                         </div>
                         <div>
@@ -2414,7 +2414,7 @@ const TeamTab = ({ stylists, services, pricing, settings, setSettings, refresh, 
 
             {isAdding && (
                 <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm space-y-4">
-                    <h3 className="text-sm font-medium text-gray-700">New Stylist</h3>
+                    <h3 className="text-sm font-medium text-gray-700">New Professional</h3>
                     <div className="flex items-center gap-4">
                         <ImageUploader
                             folder="team"
@@ -2461,7 +2461,7 @@ const TeamTab = ({ stylists, services, pricing, settings, setSettings, refresh, 
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg h-20 resize-none focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none"
                     />
                     <div className="flex gap-4">
-                        <button onClick={handleAdd} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Create Stylist</button>
+                        <button onClick={handleAdd} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Create Professional</button>
                         <button onClick={() => setIsAdding(false)} className="px-8 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all">Cancel</button>
                     </div>
                 </div>
@@ -3090,13 +3090,13 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
             <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 mb-4 md:mb-6 space-y-3 md:space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     <div className="flex-1">
-                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Filter by Stylist</label>
+                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Filter by Professional</label>
                         <select
                             value={filterStylist}
                             onChange={(e) => setFilterStylist(e.target.value)}
                             className="w-full px-3 md:px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none h-[42px]"
                         >
-                            <option value="all">All Stylists</option>
+                            <option value="all">All Professionals</option>
                             {uniqueStylists.map(s => (
                                 <option key={s} value={s}>{s}</option>
                             ))}
@@ -3128,7 +3128,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                                     <th className="px-6 py-3">Date & Time</th>
                                     <th className="px-6 py-3">Customer</th>
                                     <th className="px-6 py-3">Service</th>
-                                    <th className="px-6 py-3">Stylist</th>
+                                    <th className="px-6 py-3">Professional</th>
                                     <th className="px-6 py-3 text-right">Actions</th>
                                 </tr>
                             </thead>

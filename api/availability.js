@@ -178,20 +178,25 @@ export default async function handler(req, res) {
                 if (duration > 30 && mins === 30 && hour < 20 && !openingSlots[dayIndex + 1]) continue;
                 if (duration > 60 && hour < 19 && !openingSlots[dayIndex + 2]) continue;
 
-                const anyoneFree = allBusySlots.some(st => {
+                const availableProfessionals = allBusySlots.filter(st => {
                     const isBusy = st.busy.some(busy => {
                         const overlapStart = slotStart > busy.start ? slotStart : busy.start;
                         const overlapEnd = slotEnd < busy.end ? slotEnd : busy.end;
                         return overlapStart < overlapEnd;
                     });
                     return !isBusy;
-                });
+                }).map(st => st.stylist_name);
 
-                if (anyoneFree) availableSlots.push(format(slotStart, 'HH:mm'));
+                if (availableProfessionals.length > 0) {
+                    availableSlots.push({
+                        time: format(slotStart, 'HH:mm'),
+                        professionals: availableProfessionals
+                    });
+                }
             }
         }
 
-        return res.status(200).json({ slots: [...new Set(availableSlots)].sort() });
+        return res.status(200).json({ slots: availableSlots });
     } catch (error) {
         console.error('Availability API Error:', error);
         return res.status(500).json({ error: 'Failed to fetch availability', details: error.message });
