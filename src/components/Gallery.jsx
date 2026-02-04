@@ -2,27 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Instagram } from 'lucide-react';
 
-const images = [
-    '/instagram/img7.jpg',
-    '/instagram/img2.jpg',
-    '/instagram/img3.jpg',
-    '/instagram/img4.jpg',
-    '/instagram/img5.jpg',
-    '/instagram/img6.jpg',
-];
+// Gallery images are fetched from the database in App.jsx and passed as a prop
 
 const Gallery = ({ images = [], settings = {}, isSeparatePage = false }) => {
     if (settings.show_gallery_section === 'false') return null;
-    const defaultImages = [
-        '/instagram/img7.jpg',
-        '/instagram/img2.jpg',
-        '/instagram/img3.jpg',
-        '/instagram/img4.jpg',
-        '/instagram/img5.jpg',
-        '/instagram/img6.jpg',
-    ];
-
-    const displayImages = images.length > 0 ? images.map(img => img.image_url) : defaultImages;
+    const displayImages = images.length > 0 ? images.map(img => img.image_url) : [];
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0);
 
@@ -105,7 +89,7 @@ const Gallery = ({ images = [], settings = {}, isSeparatePage = false }) => {
                     <h2 style={headingStyle}>{settings.gallery_heading_name || 'Gallery'}</h2>
                     <div style={lineStyle}></div>
                     <a
-                        href="https://www.instagram.com/hair.studio938/"
+                        href={settings.instagram_url || ""}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
@@ -118,7 +102,7 @@ const Gallery = ({ images = [], settings = {}, isSeparatePage = false }) => {
                             letterSpacing: '1px'
                         }}
                     >
-                        <Instagram size={20} /> @hair.studio938
+                        <Instagram size={20} /> {settings.instagram_handle || ''}
                     </a>
                 </div>
 

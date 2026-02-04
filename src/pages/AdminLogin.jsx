@@ -11,7 +11,7 @@ const AdminLogin = () => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    const [businessName, setBusinessName] = useState('938 Salon Management');
+    const [businessName, setBusinessName] = useState('938 Management Dashboard');
 
     useEffect(() => {
         const fetchBusinessName = async () => {

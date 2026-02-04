@@ -95,7 +95,7 @@ const MaintenanceScreen = () => {
                         justifyContent: 'center'
                     }}>
                         <a
-                            href="tel:02084451234"
+                            href={settings.phone ? `tel:${settings.phone.replace(/\s/g, '')}` : "#"}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -110,11 +110,11 @@ const MaintenanceScreen = () => {
                             onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                         >
                             <Phone size={18} />
-                            <span>Call Us</span>
+                            <span>{settings.phone || 'Call Us'}</span>
                         </a>
 
                         <a
-                            href="mailto:hair.studio938@gmail.com"
+                            href={settings.email ? `mailto:${settings.email}` : "#"}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -129,7 +129,7 @@ const MaintenanceScreen = () => {
                             onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                         >
                             <Mail size={18} />
-                            <span>Email Us</span>
+                            <span>{settings.email || 'Email Us'}</span>
                         </a>
                     </div>
                 </div>

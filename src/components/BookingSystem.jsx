@@ -105,6 +105,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
             if (!error && data) {
                 // Transform to match previous structure
                 const formatted = data.map(s => ({
+                    id: s.id,
                     name: s.stylist_name,
                     role: s.role,
                     img: s.image_url || '/placeholder.png',
@@ -141,6 +142,10 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                         durations[s.item_name] = s.duration_minutes || 60;
                     });
                     setServiceDurations(durations);
+
+                    // Fetch stylist services mapping
+                    const { data: stlSrvs } = await supabase.from('stylist_services').select('*');
+                    if (stlSrvs) setStylistServiceMaps(stlSrvs);
 
                     // Group price_list by categories
                     const grouped = catsRes.data.map(cat => ({
@@ -200,6 +205,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
     }, []);
 
     const [timeSlots, setTimeSlots] = useState([]);
+    const [priceList, setPriceList] = useState([]);
     const [isLoadingSlots, setIsLoadingSlots] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -263,9 +269,8 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
             const response = await fetch(`/api/availability?date=${recordDate}${professionalParam}${serviceParam}${durationParam}`);
 
             if (!response.ok) {
-                // Fallback for local development where /api is not served by vite
-                console.warn('API not found, falling back to dummy data');
-                setTimeSlots(['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00']);
+                console.warn('API error');
+                setTimeSlots([]);
                 return;
             }
 
@@ -280,8 +285,8 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                 setError('Could not load time slots');
             }
         } catch (err) {
-            console.warn('Fetch error (likely local dev), using fallback slots:', err);
-            setTimeSlots(['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00']);
+            console.warn('Fetch error:', err);
+            setTimeSlots([]);
         } finally {
             setIsLoadingSlots(false);
         }
@@ -314,13 +319,18 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
             });
 
             if (!response.ok) {
-                // Fallback for local development
-                console.warn('API not found, simulating success');
-                setTimeout(() => {
-                    setIsSubmitting(false);
-                    setIsSuccess(true);
-                }, 1500);
-                return;
+                // For 404, we assume local dev without the backend function
+                if (response.status === 404) {
+                    console.warn('API not found (404), simulating success for local development');
+                    setTimeout(() => {
+                        setIsSubmitting(false);
+                        setIsSuccess(true);
+                    }, 1500);
+                    return;
+                }
+
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || errorData.details || `Booking failed: Server error ${response.status}`);
             }
 
             const data = await response.json();
@@ -336,11 +346,17 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                 setError(data.error || 'Failed to create booking');
             }
         } catch (err) {
-            console.warn('Booking error (likely local dev), simulating success');
-            setTimeout(() => {
-                setIsSubmitting(false);
-                setIsSuccess(true);
-            }, 1500);
+            console.error('Booking failure:', err);
+            // On network errors (failed to fetch), we assume local dev
+            if (err.message.includes('Failed to fetch') || err.name === 'TypeError') {
+                console.warn('Network error, simulating success for local development');
+                setTimeout(() => {
+                    setIsSubmitting(false);
+                    setIsSuccess(true);
+                }, 1500);
+            } else {
+                setError(err.message);
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -772,6 +788,11 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                     </div>
                                                 )}
                                             </div>
+                                            {error && (
+                                                <div style={{ marginTop: '20px', padding: '12px 15px', backgroundColor: '#FFF5F5', border: '1px solid #FC8181', borderRadius: '8px', color: '#C53030', fontSize: '0.85rem', fontWeight: '500' }}>
+                                                    {error}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
