@@ -16,44 +16,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Check for Google credentials
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-    const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    let calendarId = process.env.GOOGLE_CALENDAR_ID;
-
-    // Check for Email credentials
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
-
-    // Fetch stylist-specific calendar if provided
-    const stylistName = typeof stylist === 'string' ? stylist : stylist?.name;
-    if (stylistName) {
-        try {
-            const { data, error } = await supabase
-                .from('stylist_calendars')
-                .select('calendar_id')
-                .eq('stylist_name', stylistName)
-                .single();
-
-            if (data?.calendar_id) {
-                calendarId = data.calendar_id;
-                console.log(`Using specific calendar for ${stylistName}: ${calendarId}`);
-            }
-        } catch (err) {
-            console.warn(`Could not fetch calendar for ${stylistName}, falling back to default:`, err.message);
-        }
-    }
-
-    const timeZone = 'Europe/London';
-
-    // If Google credentials are missing, simulate success (local/preview)
-    if (!privateKey || !clientEmail || !calendarId) {
-        console.warn('Google Calendar credentials missing. Configuration required in Vercel.');
-        return res.status(200).json({
-            success: true,
-            message: 'Simulated success. Please add GOOGLE_PRIVATE_KEY, GOOGLE_SERVICE_ACCOUNT_EMAIL, and GOOGLE_CALENDAR_ID to Vercel.'
-        });
-    }
+    const timezone = 'Europe/London';
 
     try {
         const cleanKey = (key) => {
@@ -63,14 +26,11 @@ export default async function handler(req, res) {
                 try {
                     const decoded = Buffer.from(cleaned, 'base64').toString('utf8');
                     if (decoded.includes('BEGIN PRIVATE KEY')) cleaned = decoded;
-                } catch (e) { /* not base64 */ }
+                } catch (e) { }
             }
-            cleaned = cleaned.replace(/^["']|["']$/g, '');
-            cleaned = cleaned.replace(/\\n/g, '\n');
+            cleaned = cleaned.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
             if (cleaned.includes('BEGIN PRIVATE KEY') && !cleaned.includes('\n')) {
-                cleaned = cleaned
-                    .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
-                    .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
+                cleaned = cleaned.replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n').replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
             }
             return cleaned.trim();
         };
@@ -79,11 +39,74 @@ export default async function handler(req, res) {
         const auth = new google.auth.JWT(clientEmail, null, cleanedKey, SCOPES);
         const calendar = google.calendar({ version: 'v3', auth });
 
-        // Build ISO strings for start and end
+        // Identify which stylists/calendars to check
+        let stylistsToCheck = [];
+        let finalStylistName = typeof stylist === 'string' ? stylist : stylist?.name;
+
+        if (finalStylistName) {
+            // Specific stylist requested
+            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').eq('stylist_name', finalStylistName).single();
+            if (data) stylistsToCheck.push(data);
+        } else if (service) {
+            // "Any" professional - find all who can do this service
+            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').contains('provided_services', [service]);
+            stylistsToCheck = data || [];
+        } else {
+            // Fallback to default
+            stylistsToCheck.push({ stylist_name: 'Default', calendar_id: calendarId });
+        }
+
+        if (stylistsToCheck.length === 0) {
+            return res.status(400).json({ error: 'No professionals available for this service.' });
+        }
+
+        // --- RE-VERIFY AVAILABILITY & ASSIGN STYLIST ---
         const startDateTime = new Date(`${date}T${time}:00`).toISOString();
         const endDateTime = new Date(new Date(`${date}T${time}:00`).getTime() + duration * 60 * 1000).toISOString();
 
-        console.log(`Creating event: ${service} for ${name} at ${startDateTime}`);
+        // Check each eligible stylist until we find one who is free
+        let assignedStylist = null;
+
+        // Shuffle stylistsToCheck to randomize assignment among available professionals
+        const shuffledStylists = stylistsToCheck.sort(() => 0.5 - Math.random());
+
+        for (const st of shuffledStylists) {
+            if (!st.calendar_id) continue;
+
+            try {
+                const checkRes = await calendar.events.list({
+                    calendarId: st.calendar_id,
+                    timeMin: startDateTime,
+                    timeMax: endDateTime,
+                    singleEvents: true,
+                    maxResults: 1
+                });
+
+                const events = checkRes.data.items || [];
+                if (events.length === 0) {
+                    assignedStylist = st;
+                    break; // Found a free professional!
+                }
+            } catch (err) {
+                console.error(`Error checking availability for ${st.stylist_name}:`, err.message);
+            }
+        }
+
+        if (!assignedStylist) {
+            return res.status(400).json({ error: 'Sorry, the requested time slot is no longer available. Please choose another time.' });
+        }
+
+        finalStylistName = assignedStylist.stylist_name;
+        calendarId = assignedStylist.calendar_id;
+
+        console.log(`Assigned booking to ${finalStylistName} (${calendarId})`);
+
+        // Proceed with simulated success check if credentials are still missing for the assigned calendar 
+        // (though in reality, if we're here, we usually have them)
+        if (!privateKey || !clientEmail || !calendarId) {
+            return res.status(200).json({ success: true, message: 'Simulated success (missing credentials)' });
+        }
+
 
         // 0. UPSERT CLIENT
         // Check if client exists, if not create, if yes update phone/name

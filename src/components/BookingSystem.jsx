@@ -212,12 +212,15 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
         return false; // Day not found in opening hours = closed
     };
 
-    const fetchAvailability = async (date, stylistName) => {
+    const fetchAvailability = async (recordDate, stylistName) => {
         setIsLoadingSlots(true);
         setError(null);
         try {
             const stylistParam = stylistName ? `&stylist=${encodeURIComponent(stylistName)}` : '';
-            const response = await fetch(`/api/availability?date=${date}${stylistParam}`);
+            const serviceParam = booking.service ? `&service=${encodeURIComponent(booking.service)}` : '';
+            const durationParam = booking.duration_minutes ? `&duration=${booking.duration_minutes}` : '';
+
+            const response = await fetch(`/api/availability?date=${recordDate}${stylistParam}${serviceParam}${durationParam}`);
 
             if (!response.ok) {
                 // Fallback for local development where /api is not served by vite
@@ -254,13 +257,10 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
         setIsSubmitting(true);
         setError(null);
 
-        // If no stylist selected, pick one randomly
+        // If no stylist selected, pick one randomly (Backend does this now, but we keep structure)
         let finalBooking = { ...booking };
-        if (!finalBooking.stylist && stylists.length > 0) {
-            const randomStylist = stylists[Math.floor(Math.random() * stylists.length)];
-            finalBooking.stylist = randomStylist;
-            setBooking(finalBooking);
-        }
+        // Backend handles assignment for "any professional" (stylist === null)
+        // Ensure finalBooking.stylist is what we want to send
 
         try {
             const response = await fetch('/api/book', {

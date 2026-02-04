@@ -9,13 +9,15 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { date, stylist } = req.query;
+    const { date, stylist, service, duration: durationMinutes } = req.query;
+    const duration = parseInt(durationMinutes) || 60;
 
     if (!date) {
         return res.status(400).json({ error: 'Date is required' });
     }
 
     // Check opening hours first
+    let openingSlots = [];
     try {
         const { data: settingsData, error: settingsError } = await supabase
             .from('site_settings')
@@ -96,49 +98,28 @@ export default async function handler(req, res) {
             };
 
             const parsedHours = parseOpeningHours(settingsData.opening_hours);
-            const slots = parsedHours[dayName];
+            openingSlots = parsedHours[dayName];
 
-            // If salon is closed on this day (no slots or all slots are false), return empty slots
-            if (!slots || !slots.some(s => s)) {
+            // If salon is closed on this day (no slots or all slots are false)
+            if (!openingSlots || !openingSlots.some(s => s)) {
                 return res.status(200).json({ slots: [], closed: true });
             }
         }
     } catch (err) {
         console.warn('Could not fetch opening hours:', err.message);
-        // Continue anyway if opening hours check fails
     }
 
     // Check for credentials
     const privateKey = process.env.GOOGLE_PRIVATE_KEY;
     const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    let calendarId = process.env.GOOGLE_CALENDAR_ID;
+    const defaultCalendarId = process.env.GOOGLE_CALENDAR_ID;
 
-    // Fetch stylist-specific calendar if provided
-    if (stylist) {
-        try {
-            const { data, error } = await supabase
-                .from('stylist_calendars')
-                .select('calendar_id')
-                .eq('stylist_name', stylist)
-                .single();
-
-            if (data?.calendar_id) {
-                calendarId = data.calendar_id;
-                console.log(`Using specific calendar for ${stylist}: ${calendarId}`);
-            }
-        } catch (err) {
-            console.warn(`Could not fetch calendar for ${stylist}, falling back to default:`, err.message);
-        }
-    }
-
-    if (!privateKey || !clientEmail || !calendarId) {
-        // Return dummy data if credentials are not configured yet, 
-        // but include a warning in the response
+    if (!privateKey || !clientEmail) {
         console.warn('Google Calendar credentials not configured. Returning dummy data.');
         const dummySlots = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
         return res.status(200).json({
             slots: dummySlots,
-            warning: 'Config required. Visit Vercel settings to add GOOGLE_PRIVATE_KEY, GOOGLE_SERVICE_ACCOUNT_EMAIL, and GOOGLE_CALENDAR_ID.'
+            warning: 'Config required.'
         });
     }
 
@@ -146,89 +127,109 @@ export default async function handler(req, res) {
         const cleanKey = (key) => {
             if (!key) return null;
             let cleaned = key.trim();
-
-            // 1. Handle Base64 encoding (very robust for Vercel)
             if (!cleaned.startsWith('-')) {
                 try {
                     const decoded = Buffer.from(cleaned, 'base64').toString('utf8');
-                    if (decoded.includes('BEGIN PRIVATE KEY')) {
-                        console.log('Decoded Base64 key successfully');
-                        cleaned = decoded;
-                    }
-                } catch (e) { /* not base64 */ }
+                    if (decoded.includes('BEGIN PRIVATE KEY')) cleaned = decoded;
+                } catch (e) { }
             }
-
-            // 2. Remove any surrounding quotes
-            cleaned = cleaned.replace(/^["']|["']$/g, '');
-
-            // 3. Handle literal \n characters
-            cleaned = cleaned.replace(/\\n/g, '\n');
-
-            // 4. Ensure PEM structure (add newlines if missing in one-liner)
+            cleaned = cleaned.replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
             if (cleaned.includes('BEGIN PRIVATE KEY') && !cleaned.includes('\n')) {
-                cleaned = cleaned
-                    .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
-                    .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
+                cleaned = cleaned.replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n').replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
             }
-
             return cleaned.trim();
         };
 
-        const cleanedKey = cleanKey(privateKey);
-        console.log('Diagnostic - Key info:', {
-            length: cleanedKey?.length,
-            startsWithHeader: cleanedKey?.startsWith('-----BEGIN'),
-            endsWithHeader: cleanedKey?.endsWith('KEY-----'),
-            lineCount: cleanedKey?.split('\n').length
-        });
-
-        const auth = new google.auth.JWT(
-            clientEmail,
-            null,
-            cleanedKey,
-            SCOPES
-        );
-
+        const auth = new google.auth.JWT(clientEmail, null, cleanKey(privateKey), SCOPES);
         const calendar = google.calendar({ version: 'v3', auth });
 
-        // Define search interval for the given date
+        // Identify which stylists/calendars to check
+        let stylistsToCheck = [];
+
+        if (stylist) {
+            // Specific stylist
+            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').eq('stylist_name', stylist).single();
+            if (data) stylistsToCheck.push(data);
+        } else if (service) {
+            // Any professional who can do this service
+            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').contains('provided_services', [service]);
+            stylistsToCheck = data || [];
+        } else {
+            // Fallback to default calendar if no stylist or service specified
+            stylistsToCheck.push({ stylist_name: 'Default', calendar_id: defaultCalendarId });
+        }
+
+        if (stylistsToCheck.length === 0) {
+            return res.status(200).json({ slots: [], message: 'No professionals available for this service.' });
+        }
+
+        // Fetch availability from all relevant calendars
         const timeMin = startOfDay(parseISO(date)).toISOString();
         const timeMax = endOfDay(parseISO(date)).toISOString();
 
-        const response = await calendar.events.list({
-            calendarId,
-            timeMin,
-            timeMax,
-            singleEvents: true,
-            orderBy: 'startTime',
-        });
-
-        const busySlots = response.data.items.map(event => ({
-            start: parseISO(event.start.dateTime || event.start.date),
-            end: parseISO(event.end.dateTime || event.end.date)
+        const allBusySlots = await Promise.all(stylistsToCheck.map(async (st) => {
+            if (!st.calendar_id) return { stylist: st.stylist_name, busy: [] };
+            try {
+                const response = await calendar.events.list({
+                    calendarId: st.calendar_id,
+                    timeMin,
+                    timeMax,
+                    singleEvents: true,
+                });
+                return {
+                    stylist: st.stylist_name,
+                    busy: response.data.items.map(event => ({
+                        start: parseISO(event.start.dateTime || event.start.date),
+                        end: parseISO(event.end.dateTime || event.end.date)
+                    }))
+                };
+            } catch (err) {
+                console.error(`Error fetching calendar for ${st.stylist_name}:`, err.message);
+                return { stylist: st.stylist_name, busy: [] };
+            }
         }));
 
-        // Generate possible slots (Opening hours: 9:00 - 18:00)
-        const allSlots = [];
-        let current = addMinutes(startOfDay(parseISO(date)), 9 * 60); // 9:00 AM
-        const dayEnd = addMinutes(startOfDay(parseISO(date)), 18 * 60); // 6:00 PM
+        // Generate and evaluate slots
+        const availableSlots = [];
+        const baseDate = startOfDay(parseISO(date));
 
-        while (current < dayEnd) {
-            const slotTime = current;
-            const isBusy = busySlots.some(busy =>
-                isWithinInterval(slotTime, { start: busy.start, end: addMinutes(busy.end, -1) }) ||
-                isWithinInterval(addMinutes(slotTime, 59), { start: addMinutes(busy.start, 1), end: busy.end })
-            );
+        // Check every 30 minutes for potential starts (to offer more flexibility)
+        // Opening hours assumed 8:00 to 21:00 (based on openingSlots indexing 8AM-8PM + 1)
+        for (let hour = 8; hour < 21; hour++) {
+            for (let mins of [0, 30]) {
+                const slotStart = addMinutes(baseDate, hour * 60 + mins);
+                const slotEnd = addMinutes(slotStart, duration);
 
-            if (!isBusy) {
-                allSlots.push(format(slotTime, 'HH:mm'));
+                // Check if the entire slot is within opening hours
+                const dayIndex = hour - 8;
+                // Simple check for opening hours (assuming full hour blocks in openingSlots)
+                // If it starts at :30, we check both this hour and the next if necessary
+                if (!openingSlots[dayIndex]) continue;
+                if (mins === 30 && hour < 20 && !openingSlots[dayIndex + 1]) continue;
+
+                // Check if AT LEAST ONE stylist is free for the entire duration
+                const anyoneFree = allBusySlots.some(st => {
+                    const isBusy = st.busy.some(busy => {
+                        // Check for overlap: max(start) < min(end)
+                        const overlapStart = slotStart > busy.start ? slotStart : busy.start;
+                        const overlapEnd = slotEnd < busy.end ? slotEnd : busy.end;
+                        return overlapStart < overlapEnd;
+                    });
+                    return !isBusy;
+                });
+
+                if (anyoneFree) {
+                    availableSlots.push(format(slotStart, 'HH:mm'));
+                }
             }
-            current = addMinutes(current, 60); // 1 hour slots
         }
 
-        return res.status(200).json({ slots: allSlots });
+        // Return unique, sorted slots
+        const uniqueSlots = [...new Set(availableSlots)].sort();
+        return res.status(200).json({ slots: uniqueSlots });
+
     } catch (error) {
-        console.error('Calendar API Error:', error);
+        console.error('Availability API Error:', error);
         return res.status(500).json({ error: 'Failed to fetch availability', details: error.message });
     }
 }

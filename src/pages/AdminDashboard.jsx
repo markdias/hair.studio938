@@ -2271,11 +2271,11 @@ const PricingTab = ({ pricing, categories, refresh, showMessage, settings, setSe
     );
 };
 
-const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme }) => {
+const TeamTab = ({ stylists, services, pricing, settings, setSettings, refresh, showMessage, theme }) => {
     const [localStylists, setLocalStylists] = useState(stylists);
     const [showHelp, setShowHelp] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
-    const [newStylist, setNewStylist] = useState({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0 });
+    const [newStylist, setNewStylist] = useState({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0, provided_services: [] });
 
     useEffect(() => { setLocalStylists(stylists); }, [stylists]);
 
@@ -2299,7 +2299,7 @@ const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme 
         try {
             const { error } = await supabase.from('stylist_calendars').insert([newStylist]);
             if (error) throw error;
-            setNewStylist({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0 });
+            setNewStylist({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0, provided_services: [] });
             setIsAdding(false);
             refresh();
             showMessage('success', 'New stylist added!');
@@ -2433,6 +2433,27 @@ const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme 
                         placeholder="Google Calendar ID (e.g., example@group.calendar.google.com)"
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none text-sm"
                     />
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Can provide these services:</label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 h-40 overflow-y-auto">
+                            {pricing.map(service => (
+                                <label key={service.id} className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        checked={newStylist.provided_services?.includes(service.item_name)}
+                                        onChange={(e) => {
+                                            const updated = e.target.checked
+                                                ? [...(newStylist.provided_services || []), service.item_name]
+                                                : (newStylist.provided_services || []).filter(s => s !== service.item_name);
+                                            setNewStylist({ ...newStylist, provided_services: updated });
+                                        }}
+                                        className="rounded border-gray-300 text-stone-800 focus:ring-stone-500"
+                                    />
+                                    <span className="text-xs text-gray-600">{service.item_name}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
                     <textarea
                         value={newStylist.description}
                         onChange={e => setNewStylist({ ...newStylist, description: e.target.value })}
@@ -2479,6 +2500,27 @@ const TeamTab = ({ stylists, settings, setSettings, refresh, showMessage, theme 
                             placeholder="Calendar ID"
                             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none font-mono text-gray-700"
                         />
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Can provide these services:</label>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-stone-50 rounded-lg border border-stone-200 max-h-48 overflow-y-auto">
+                                {pricing.map(service => (
+                                    <label key={service.id} className="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded transition-colors">
+                                        <input
+                                            type="checkbox"
+                                            checked={s.provided_services?.includes(service.item_name)}
+                                            onChange={(e) => {
+                                                const updated = e.target.checked
+                                                    ? [...(s.provided_services || []), service.item_name]
+                                                    : (s.provided_services || []).filter(item => item !== service.item_name);
+                                                handleFieldChange(idx, 'provided_services', updated);
+                                            }}
+                                            className="rounded border-gray-300 text-stone-800 focus:ring-stone-500"
+                                        />
+                                        <span className="text-xs text-stone-800 truncate">{service.item_name}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
                         <textarea value={s.description || ''} onChange={(e) => handleFieldChange(idx, 'description', e.target.value)} placeholder="Bio" className="w-full text-sm text-gray-600 h-20 resize-none border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-stone-800 focus:border-transparent outline-none" />
                         <div className="flex gap-2">
                             <button onClick={() => handleSave(s)} className="flex-grow bg-stone-800 text-white py-2 rounded-lg hover:bg-opacity-90 transition-all" style={{ backgroundColor: "#3D2B1F" }}>Save Details</button>
