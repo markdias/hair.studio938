@@ -77,8 +77,8 @@ const parseOpeningHours = (text) => {
 };
 
 const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
-    const [stylists, setStylists] = useState([]);
-    const [isLoadingStylists, setIsLoadingStylists] = useState(true);
+    const [professionals, setProfessionals] = useState([]);
+    const [isLoadingProfessionals, setIsLoadingProfessionals] = useState(true);
     const [openingHours, setOpeningHours] = useState(null);
     const [categories, setCategories] = useState([]);
     const [expandedCategories, setExpandedCategories] = useState({});
@@ -86,7 +86,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
     const [fullTimeSlots, setFullTimeSlots] = useState([]);
     const [step, setStep] = useState(1);
     const [booking, setBooking] = useState({
-        stylist: null,
+        professional: null,
         service: null,
         date: null,
         time: null,
@@ -97,7 +97,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
     });
 
     useEffect(() => {
-        const fetchStylists = async () => {
+        const fetchProfessionals = async () => {
             const { data, error } = await supabase
                 .from('stylist_calendars')
                 .select('*')
@@ -110,10 +110,10 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                     img: s.image_url || '/placeholder.png',
                     calendar_id: s.calendar_id
                 }));
-                // Note: user said rename to Professional, but internal state can keep 'stylist' for now to avoid massive refactor of booking object
-                setStylists(formatted);
+                // Note: user said rename to Professional, but internal state can keep 'professional' for now to avoid massive refactor of booking object
+                setProfessionals(formatted);
             }
-            setIsLoadingStylists(false);
+            setIsLoadingProfessionals(false);
         };
 
         const fetchOpeningHours = async () => {
@@ -156,9 +156,22 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
             }
         };
 
-        fetchStylists();
+        fetchProfessionals();
         fetchOpeningHours();
         fetchServicesData();
+
+        // Reset booking state on mount to ensure a clean start
+        setBooking({
+            professional: null,
+            service: null,
+            date: null,
+            time: null,
+            duration_minutes: null,
+            name: '',
+            email: '',
+            phone: ''
+        });
+        setStep(1);
     }, []);
 
     const [timeSlots, setTimeSlots] = useState([]);
@@ -171,13 +184,13 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
         if (booking.date) {
             const isOpen = checkIfOpen(booking.date);
             if (isOpen) {
-                fetchAvailability(booking.date, booking.stylist?.name);
+                fetchAvailability(booking.date, booking.professional?.name);
             } else {
                 setTimeSlots([]);
                 setError('Sorry, we are closed on this day. Please select another date.');
             }
         }
-    }, [booking.date, booking.stylist?.name, openingHours]);
+    }, [booking.date, booking.professional?.name, openingHours]);
 
     const checkIfOpen = (dateStr) => {
         if (!openingHours) return true; // If no hours set, allow booking
@@ -214,15 +227,15 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
         return false; // Day not found in opening hours = closed
     };
 
-    const fetchAvailability = async (recordDate, stylistName) => {
+    const fetchAvailability = async (recordDate, professionalName) => {
         setIsLoadingSlots(true);
         setError(null);
         try {
-            const stylistParam = stylistName ? `&stylist=${encodeURIComponent(stylistName)}` : '';
+            const professionalParam = professionalName ? `&professional=${encodeURIComponent(professionalName)}` : '';
             const serviceParam = booking.service ? `&service=${encodeURIComponent(booking.service)}` : '';
             const durationParam = booking.duration_minutes ? `&duration=${booking.duration_minutes}` : '';
 
-            const response = await fetch(`/api/availability?date=${recordDate}${stylistParam}${serviceParam}${durationParam}`);
+            const response = await fetch(`/api/availability?date=${recordDate}${professionalParam}${serviceParam}${durationParam}`);
 
             if (!response.ok) {
                 // Fallback for local development where /api is not served by vite
@@ -263,10 +276,10 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
         setIsSubmitting(true);
         setError(null);
 
-        // If no stylist selected, pick one randomly (Backend does this now, but we keep structure)
+        // If no professional selected, pick one randomly (Backend does this now, but we keep structure)
         let finalBooking = { ...booking };
-        // Backend handles assignment for "any professional" (stylist === null)
-        // Ensure finalBooking.stylist is what we want to send
+        // Backend handles assignment for "any professional" (professional === null)
+        // Ensure finalBooking.professional is what we want to send
 
         try {
             const response = await fetch('/api/book', {
@@ -288,10 +301,12 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
             const data = await response.json();
             if (data.success) {
                 if (data.assignedProfessional) {
-                    const profObj = stylists.find(s => s.name === data.assignedProfessional.name) || { name: data.assignedProfessional.name };
-                    setBooking(prev => ({ ...prev, stylist: profObj }));
+                    const profObj = professionals.find(s => s.name === data.assignedProfessional.name) || { name: data.assignedProfessional.name };
+                    setBooking(prev => ({ ...prev, professional: profObj }));
+                    setIsSuccess(true); // Call it after state update is queued
+                } else {
+                    setIsSuccess(true);
                 }
-                setIsSuccess(true);
             } else {
                 setError(data.error || 'Failed to create booking');
             }
@@ -355,7 +370,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                         <div>
                             <h3 style={{ fontSize: '1.8rem', marginBottom: '30px', color: '#FFF' }}>Your Selection</h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-                                <SelectionItem icon={<User size={20} />} label="Professional" value={booking.stylist?.name || 'Not selected'} />
+                                <SelectionItem icon={<User size={20} />} label="Professional" value={booking.professional?.name || 'Not selected'} />
                                 <SelectionItem icon={<Scissors size={20} />} label="Service" value={booking.service || 'Not selected'} />
                                 <SelectionItem icon={<CalendarIcon size={20} />} label="Date" value={booking.date || 'Not selected'} />
                                 <SelectionItem icon={<Clock size={20} />} label="Time" value={booking.time || 'Not selected'} />
@@ -391,7 +406,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
                                                 <span style={{ color: '#666', fontSize: '0.85rem' }}>Professional:</span>
-                                                <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.stylist?.name}</span>
+                                                <span style={{ fontWeight: '600', color: '#333', fontSize: '0.85rem' }}>{booking.professional?.name}</span>
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid #E5E5E5' }}>
                                                 <span style={{ color: '#666', fontSize: '0.85rem' }}>Service:</span>
@@ -423,7 +438,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                     </p>
 
                                     <button
-                                        onClick={() => { setIsSuccess(false); setStep(1); setBooking({ stylist: null, service: null, date: null, time: null, duration_minutes: null, name: '', email: '', phone: '' }); }}
+                                        onClick={() => { setIsSuccess(false); setStep(1); setBooking({ professional: null, service: null, date: null, time: null, duration_minutes: null, name: '', email: '', phone: '' }); }}
                                         className="btn-primary"
                                     >
                                         Book Another
@@ -442,15 +457,15 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                         <div style={{ flex: 1 }}>
                                             <h4 style={{ fontSize: '1.5rem', marginBottom: '30px' }}>Choose Your Professional</h4>
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px' }}>
-                                                {stylists.map((s) => (
+                                                {professionals.map((s) => (
                                                     <button
                                                         key={s.name}
-                                                        onClick={() => { setBooking({ ...booking, stylist: s }); nextStep(); }}
+                                                        onClick={() => { setBooking({ ...booking, professional: s }); nextStep(); }}
                                                         style={{
                                                             padding: '20px',
                                                             borderRadius: '12px',
-                                                            border: booking.stylist?.name === s.name ? '2px solid var(--primary-brown)' : '2px solid transparent',
-                                                            backgroundColor: booking.stylist?.name === s.name ? 'var(--soft-cream)' : '#F9F9F9',
+                                                            border: booking.professional?.name === s.name ? '2px solid var(--primary-brown)' : '2px solid transparent',
+                                                            backgroundColor: booking.professional?.name === s.name ? 'var(--soft-cream)' : '#F9F9F9',
                                                             transition: 'all 0.3s ease',
                                                             textAlign: 'center',
                                                             cursor: 'pointer'
@@ -462,7 +477,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                     </button>
                                                 ))}
                                             </div>
-                                            <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                                            <div style={{ marginTop: '30px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
                                                 <button
                                                     onClick={nextStep}
                                                     style={{
@@ -473,7 +488,8 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                         borderRadius: '8px',
                                                         fontSize: '0.9rem',
                                                         cursor: 'pointer',
-                                                        transition: 'all 0.2s ease'
+                                                        transition: 'all 0.2s ease',
+                                                        width: 'fit-content'
                                                     }}
                                                     onMouseEnter={(e) => {
                                                         e.target.style.backgroundColor = 'var(--soft-cream)';
@@ -484,6 +500,15 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                 >
                                                     Skip - I'll take any available professional
                                                 </button>
+
+                                                {booking.service || booking.date || booking.time ? (
+                                                    <button
+                                                        onClick={() => setBooking({ professional: null, service: null, date: null, time: null, duration_minutes: null, name: '', email: '', phone: '' })}
+                                                        style={{ fontSize: '0.8rem', color: '#999', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                                                    >
+                                                        Clear previous selections
+                                                    </button>
+                                                ) : null}
                                             </div>
                                         </div>
                                     )}
@@ -616,22 +641,18 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                     <button
                                                                         key={t}
                                                                         onClick={() => {
-                                                                            const slotData = fullTimeSlots.find(s => (typeof s === 'string' ? s : s.time) === t);
-                                                                            const availableProfs = slotData?.professionals || [];
-
+                                                                            const sData = fullTimeSlots.find(slot => (typeof slot === "string" ? slot : slot.time) === t);
+                                                                            const avProfs = sData?.professionals || [];
                                                                             setBooking(prev => {
                                                                                 const newBooking = { ...prev, time: t };
-                                                                                const slotData = fullTimeSlots.find(s => (typeof s === "string" ? s : s.time) === t);
-                                                                                const availableProfs = slotData?.professionals || [];
-                                                                                if (!prev.stylist && availableProfs.length > 0) {
-                                                                                    const profName = availableProfs[0];
-                                                                                    const profObj = stylists.find(s => s.name.trim().toLowerCase() === profName.trim().toLowerCase()) || { name: profName };
-                                                                                    newBooking.stylist = profObj;
+                                                                                if (!prev.professional && avProfs.length > 0) {
+                                                                                    const pName = avProfs[0];
+                                                                                    const pObj = professionals.find(p => p.name && pName && p.name.trim().toLowerCase() === pName.trim().toLowerCase()) || { name: pName };
+                                                                                    newBooking.professional = pObj;
                                                                                 }
                                                                                 return newBooking;
                                                                             });
-                                                                            setTimeout(() => nextStep(), 100);
-                                                                        }}
+                                                                            setTimeout(() => setStep(4), 100);
                                                                         style={{
                                                                             padding: '12px 0',
                                                                             borderRadius: '10px',

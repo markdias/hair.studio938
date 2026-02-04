@@ -9,7 +9,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { date, stylist, service, duration: durationMinutes } = req.query;
+    const { date, professional, service, duration: durationMinutes } = req.query;
     const duration = parseInt(durationMinutes) || 60;
 
     if (!date) {
@@ -120,34 +120,34 @@ export default async function handler(req, res) {
         const auth = new google.auth.JWT(clientEmail, null, cleanKey(privateKey), SCOPES);
         const calendar = google.calendar({ version: 'v3', auth });
 
-        let stylistsToCheck = [];
-        if (stylist) {
-            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').eq('stylist_name', stylist).single();
-            if (data) stylistsToCheck.push(data);
+        let professionalsToCheck = [];
+        if (professional) {
+            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').eq('stylist_name', professional).single();
+            if (data) professionalsToCheck.push(data);
         } else if (service) {
-            // Find stylists who provide this service
+            // Find professionals who provide this service
             const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id, provided_services').contains('provided_services', [service]);
-            stylistsToCheck = data || [];
+            professionalsToCheck = data || [];
 
             // FALLBACK: If NO stylists have this service assigned yet, assume ALL stylists can do it
             // This prevents the system from being "broken" before the admin configures it.
-            if (stylistsToCheck.length === 0) {
+            if (professionalsToCheck.length === 0) {
                 console.log('No stylists explicitly assigned to service, falling back to all stylists');
-                const { data: allStylists } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id');
-                stylistsToCheck = allStylists || [];
+                const { data: allProfessionals } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id');
+                professionalsToCheck = allProfessionals || [];
             }
         } else {
-            stylistsToCheck.push({ stylist_name: 'Default', calendar_id: defaultCalendarId });
+            professionalsToCheck.push({ stylist_name: 'Default', calendar_id: defaultCalendarId });
         }
 
-        if (stylistsToCheck.length === 0) {
+        if (professionalsToCheck.length === 0) {
             return res.status(200).json({ slots: [], message: 'No professionals available.' });
         }
 
         const timeMin = startOfDay(parseISO(date)).toISOString();
         const timeMax = endOfDay(parseISO(date)).toISOString();
 
-        const allBusySlots = await Promise.all(stylistsToCheck.map(async (st) => {
+        const allBusySlots = await Promise.all(professionalsToCheck.map(async (st) => {
             if (!st.calendar_id) return { stylist: st.stylist_name, busy: [] };
             try {
                 const response = await calendar.events.list({ calendarId: st.calendar_id, timeMin, timeMax, singleEvents: true });

@@ -9,7 +9,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { stylist, service, date, time, name, email, phone, duration_minutes, send_email = true } = req.body;
+    const { professional, service, date, time, name, email, phone, duration_minutes, send_email = true } = req.body;
     const duration = parseInt(duration_minutes) || 60;
 
     if (!date || !time || !name || !email) {
@@ -45,41 +45,41 @@ export default async function handler(req, res) {
         const auth = new google.auth.JWT(clientEmail, null, cleanedKey, SCOPES);
         const calendar = google.calendar({ version: 'v3', auth });
 
-        // Identify which stylists/calendars to check
-        let stylistsToCheck = [];
-        let finalStylistName = typeof stylist === 'string' ? stylist : stylist?.name;
+        // Identify which professionals/calendars to check
+        let professionalsToCheck = [];
+        let finalProfessionalName = typeof professional === 'string' ? professional : professional?.name;
 
-        if (finalStylistName) {
-            // Specific stylist requested
-            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').eq('stylist_name', finalStylistName).single();
-            if (data) stylistsToCheck.push(data);
+        if (finalProfessionalName) {
+            // Specific professional requested
+            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').eq('stylist_name', finalProfessionalName).single();
+            if (data) professionalsToCheck.push(data);
         } else if (service) {
             // "Any" professional - find all who can do this service
             const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').contains('provided_services', [service]);
-            stylistsToCheck = data || [];
+            professionalsToCheck = data || [];
 
             // FALLBACK: If no one has this service assigned, check everyone
-            if (stylistsToCheck.length === 0) {
-                console.log('No stylists assigned to service in book API, falling back to all');
-                const { data: allStylists } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id');
-                stylistsToCheck = allStylists || [];
+            if (professionalsToCheck.length === 0) {
+                console.log('No professionals assigned to service in book API, falling back to all');
+                const { data: allProfessionals } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id');
+                professionalsToCheck = allProfessionals || [];
             }
         } else {
             // Fallback to default
-            stylistsToCheck.push({ stylist_name: 'Default', calendar_id: calendarId });
+            professionalsToCheck.push({ stylist_name: 'Default', calendar_id: calendarId });
         }
 
         // --- RE-VERIFY AVAILABILITY & ASSIGN STYLIST ---
         const startDateTime = new Date(`${date}T${time}:00`).toISOString();
         const endDateTime = new Date(new Date(`${date}T${time}:00`).getTime() + duration * 60 * 1000).toISOString();
 
-        // Check each eligible stylist until we find one who is free
-        let assignedStylist = null;
+        // Check each eligible professional until we find one who is free
+        let assignedProfessional = null;
 
-        // Shuffle stylistsToCheck to randomize assignment among available professionals
-        const shuffledStylists = stylistsToCheck.sort(() => 0.5 - Math.random());
+        // Shuffle professionalsToCheck to randomize assignment among available professionals
+        const shuffledProfessionals = professionalsToCheck.sort(() => 0.5 - Math.random());
 
-        for (const st of shuffledStylists) {
+        for (const st of shuffledProfessionals) {
             if (!st.calendar_id) continue;
 
             try {
@@ -93,7 +93,7 @@ export default async function handler(req, res) {
 
                 const events = checkRes.data.items || [];
                 if (events.length === 0) {
-                    assignedStylist = st;
+                    assignedProfessional = st;
                     break; // Found a free professional!
                 }
             } catch (err) {
@@ -101,14 +101,15 @@ export default async function handler(req, res) {
             }
         }
 
-        if (!assignedStylist) {
+        if (!assignedProfessional) {
+            console.warn(`No available professional found for ${startDateTime} among ${shuffledProfessionals.length} options`);
             return res.status(400).json({ error: 'Sorry, the requested time slot is no longer available. Please choose another time.' });
         }
 
-        finalStylistName = assignedStylist.stylist_name;
-        calendarId = assignedStylist.calendar_id;
+        finalProfessionalName = assignedProfessional.stylist_name;
+        calendarId = assignedProfessional.calendar_id;
 
-        console.log(`Assigned booking to ${finalStylistName} (${calendarId})`);
+        console.log(`Assigned booking to ${finalProfessionalName} (${calendarId})`);
 
         // Proceed with simulated success check if credentials are still missing for the assigned calendar 
         // (though in reality, if we're here, we usually have them)
@@ -141,7 +142,7 @@ export default async function handler(req, res) {
             calendarId: calendarId,
             resource: {
                 summary: `[938] ${service} - ${name}`,
-                description: `Professional: ${finalStylistName}\nService: ${service}\nPhone: ${phone}\nEmail: ${email}`,
+                description: `Professional: ${finalProfessionalName}\nService: ${service}\nPhone: ${phone}\nEmail: ${email}`,
                 start: { dateTime: startDateTime, timeZone: 'Europe/London' },
                 end: { dateTime: endDateTime, timeZone: 'Europe/London' },
                 reminders: { useDefault: true },
@@ -176,7 +177,7 @@ export default async function handler(req, res) {
     
     <div style="background-color: #FDFBF9; padding: 15px; border-radius: 8px; margin: 20px 0;">
         <p style="margin: 5px 0;"><strong>Service:</strong> {{service}}</p>
-        <p style="margin: 5px 0;"><strong>Professional:</strong> {{stylist}}</p>
+        <p style="margin: 5px 0;"><strong>Professional:</strong> {{professional}}</p>
         <p style="margin: 5px 0;"><strong>Date:</strong> {{date}}</p>
         <p style="margin: 5px 0;"><strong>Time:</strong> {{time}}</p>
     </div>
@@ -201,7 +202,7 @@ export default async function handler(req, res) {
                 const replacements = {
                     '{{name}}': name,
                     '{{service}}': service,
-                    '{{professional}}': finalStylistName,
+                    '{{professional}}': finalProfessionalName,
                     '{{date}}': formattedDate,
                     '{{time}}': time,
                     '{{salon_phone}}': settings.phone || '020 8445 1122',
@@ -234,7 +235,7 @@ export default async function handler(req, res) {
             success: true,
             eventId: calendarResponse.data.id,
             assignedProfessional: {
-                name: finalStylistName
+                name: finalProfessionalName
             },
             message: 'Booking confirmed and added to calendar.'
         });
