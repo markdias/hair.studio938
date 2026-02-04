@@ -17,7 +17,12 @@ export default async function handler(req, res) {
     }
 
     // Check opening hours first
-    let openingSlots = new Array(13).fill(true); // Default to all open (8 AM - 9 PM) as fallback
+    const hoursCount = 13; // 8 AM to 8 PM
+    let openingSlots = new Array(hoursCount).fill(false); // Closed by default
+
+    // Sensible default if parsing fails but we want to show SOMETHING (9 AM - 6 PM)
+    const fallbackSlots = new Array(hoursCount).fill(false);
+    for (let i = 1; i <= 10; i++) fallbackSlots[i] = true; // Index 1 is 9 AM, Index 10 is 6 PM (starts at 8 AM)
     try {
         const { data: settingsData, error: settingsError } = await supabase
             .from('site_settings')
@@ -86,10 +91,17 @@ export default async function handler(req, res) {
 
             const parsedHours = parseOpeningHours(settingsData.opening_hours);
             const slotsForDay = parsedHours[dayName];
-            if (slotsForDay) openingSlots = slotsForDay;
 
-            // If salon is strictly marked as closed on this day
-            if (openingSlots && !openingSlots.some(s => s)) {
+            if (slotsForDay && slotsForDay.some(s => s)) {
+                openingSlots = slotsForDay;
+            } else if (settingsData.opening_hours && settingsData.opening_hours.toLowerCase() !== 'closed') {
+                // If it's not explicitly 'closed' but parsing failed, use fallback
+                console.warn('Opening hours parsing failed or returned no slots for', dayName, '- using fallback');
+                openingSlots = fallbackSlots;
+            }
+
+            // If salon is strictly marked as closed on this day (either by parsing or if settings say 'closed')
+            if (!openingSlots.some(s => s)) {
                 return res.status(200).json({ slots: [], closed: true });
             }
         }

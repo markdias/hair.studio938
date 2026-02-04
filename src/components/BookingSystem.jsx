@@ -281,6 +281,10 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
 
             const data = await response.json();
             if (data.success) {
+                if (data.assignedStylist && !booking.stylist) {
+                    const stylistObj = stylists.find(s => s.name === data.assignedStylist.name) || { name: data.assignedStylist.name };
+                    setBooking(prev => ({ ...prev, stylist: stylistObj }));
+                }
                 setIsSuccess(true);
             } else {
                 setError(data.error || 'Failed to create booking');

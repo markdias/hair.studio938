@@ -227,6 +227,9 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true,
             eventId: calendarResponse.data.id,
+            assignedStylist: {
+                name: finalStylistName
+            },
             message: 'Booking confirmed and added to calendar.'
         });
 
