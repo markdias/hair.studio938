@@ -367,34 +367,47 @@ CREATE POLICY "Authenticated users can update phone numbers" ON public.phone_num
 CREATE POLICY "Authenticated users can delete phone numbers" ON public.phone_numbers
     FOR DELETE USING (auth.role() = 'authenticated');
 
--- PRICE CATEGORIES TABLE
+-- 6. PRICE CATEGORIES
 CREATE TABLE IF NOT EXISTS public.price_categories (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    title TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     sort_order INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 ALTER TABLE public.price_categories ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public read access" ON public.price_categories FOR SELECT USING (true);
-CREATE POLICY "Auth write access" ON public.price_categories FOR ALL USING (auth.role() = 'authenticated');
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Public read access' AND tablename = 'price_categories') THEN
+        CREATE POLICY "Public read access" ON public.price_categories FOR SELECT USING (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Auth write access' AND tablename = 'price_categories') THEN
+        CREATE POLICY "Auth write access" ON public.price_categories FOR ALL USING (auth.role() = 'authenticated');
+    END IF;
+END $$;
 
--- PRICE LIST TABLE
+-- 7. PRICE LIST
 CREATE TABLE IF NOT EXISTS public.price_list (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    category_id UUID REFERENCES public.price_categories(id),
+    category TEXT NOT NULL,
     item_name TEXT NOT NULL,
-    price DECIMAL(10,2),
+    price TEXT,
     duration_minutes INTEGER DEFAULT 60,
     description TEXT,
+    sort_order INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 ALTER TABLE public.price_list ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public read access" ON public.price_list FOR SELECT USING (true);
-CREATE POLICY "Auth write access" ON public.price_list FOR ALL USING (auth.role() = 'authenticated');
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Public read access' AND tablename = 'price_list') THEN
+        CREATE POLICY "Public read access" ON public.price_list FOR SELECT USING (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Auth write access' AND tablename = 'price_list') THEN
+        CREATE POLICY "Auth write access" ON public.price_list FOR ALL USING (auth.role() = 'authenticated');
+    END IF;
+END $$;
 
 -- TEAM CALENDARS TABLE
 CREATE TABLE IF NOT EXISTS public.staff_calendars (
