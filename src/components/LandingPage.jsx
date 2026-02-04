@@ -1007,10 +1007,10 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                 }}>
                     {/* Column 1: Brand */}
                     <div style={{ textAlign: 'left' }}>
-                        <h3 style={{ fontSize: '2rem', fontWeight: '400', fontFamily: 'var(--font-heading)', color: 'var(--primary)', margin: '0 0 20px 0' }}>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: '400', fontFamily: 'var(--font-heading)', color: 'var(--text-main)', margin: '0 0 20px 0', textTransform: 'uppercase', letterSpacing: '1px' }}>
                             {settings.business_name || 'Hair Studio 938'}
                         </h3>
-                        <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.6', maxWidth: '250px', marginBottom: '25px' }}>
+                        <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.6', maxWidth: '250px', marginBottom: '25px', fontSize: '0.9rem' }}>
                             {settings.footer_description || "Premium hair styling and aesthetic treatments."}
                         </p>
                         <a href="#booking" style={{
@@ -1019,7 +1019,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                             textDecoration: 'none',
                             borderBottom: '2px solid var(--text-main)',
                             paddingBottom: '2px',
-                            fontSize: '0.9rem',
+                            fontSize: '0.85rem',
                             letterSpacing: '1px',
                             textTransform: 'uppercase'
                         }}>
@@ -1072,9 +1072,9 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                     <div>
                         <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)' }}>Contact Us</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', color: 'var(--text-main)', opacity: 0.7, fontSize: '0.95rem', lineHeight: '1.6' }}>
-                            {settings.business_address && (
-                                <p style={{ margin: 0, maxWidth: '200px' }}>{settings.business_address}</p>
-                            )}
+                            <p style={{ margin: 0, maxWidth: '200px' }}>
+                                {settings.business_address || "Unit 5, 938 High Road, London, N12 9RT"}
+                            </p>
                             {settings.business_email && (
                                 <a href={`mailto:${settings.business_email}`} style={{ color: 'inherit', textDecoration: 'none' }}>{settings.business_email}</a>
                             )}
