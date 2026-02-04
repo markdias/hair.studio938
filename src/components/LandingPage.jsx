@@ -992,7 +992,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
     return (
         <>
             <footer style={{
-                padding: '80px 20px 40px',
+                padding: '40px 20px 20px',
                 backgroundColor: 'var(--secondary)',
                 color: 'var(--primary)',
                 borderTop: '1px solid rgba(var(--primary-rgb), 0.1)'
@@ -1003,7 +1003,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
                     gap: '40px',
-                    paddingBottom: '60px'
+                    paddingBottom: '20px'
                 }}>
                     {/* Column 1: Brand */}
                     <div style={{ textAlign: 'left' }}>
@@ -1133,7 +1133,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                 {/* Copyright */}
                 <div style={{
                     maxWidth: '1200px',
-                    margin: '60px auto 0',
+                    margin: '20px auto 0',
                     paddingTop: '20px',
                     borderTop: '1px solid rgba(var(--primary-rgb), 0.1)',
                     textAlign: 'center',
