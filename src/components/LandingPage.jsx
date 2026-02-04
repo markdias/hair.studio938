@@ -1003,8 +1003,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
                     gap: '40px',
-                    paddingBottom: '60px',
-                    borderBottom: '1px solid rgba(var(--primary-rgb), 0.1)'
+                    paddingBottom: '60px'
                 }}>
                     {/* Column 1: Brand */}
                     <div style={{ textAlign: 'left' }}>
