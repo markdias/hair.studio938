@@ -3,7 +3,7 @@ import { ChevronRight, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Breadcrumbs = ({ label, textColor }) => {
-    const finalTextColor = textColor || 'var(--accent-cream)';
+    const finalTextColor = textColor || 'var(--accent)';
 
     return (
         <nav className="flex items-center gap-2 text-sm opacity-80 mb-2 max-w-[1200px] mx-auto px-5 pt-28" style={{ color: finalTextColor }}>

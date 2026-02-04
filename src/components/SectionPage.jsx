@@ -13,8 +13,8 @@ const SectionPage = ({ siteData }) => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-[var(--primary-brown)]">
-                <Loader2 size={40} className="animate-spin text-[var(--accent-cream)]" />
+            <div className="flex items-center justify-center min-h-screen bg-[var(--primary)]">
+                <Loader2 size={40} className="animate-spin text-[var(--accent)]" />
             </div>
         );
     }
@@ -26,43 +26,43 @@ const SectionPage = ({ siteData }) => {
 
     // Helper to determine styles based on section ID and settings
     const getSectionStyles = (id) => {
-        let bgColor = 'var(--primary-brown)';
-        let textColor = 'var(--accent-cream)'; // Default for dark backgrounds like primary-brown
+        let bgColor = 'var(--primary)';
+        let textColor = 'var(--accent)'; // Default for dark backgrounds like primary
 
         switch (id) {
             case 'services':
                 bgColor = (settings.services_bg_color && settings.services_bg_color !== 'auto') ? settings.services_bg_color : '#FFFFFF';
-                textColor = (settings.services_text_color && settings.services_text_color !== 'auto') ? settings.services_text_color : 'var(--primary-brown)';
+                textColor = (settings.services_text_color && settings.services_text_color !== 'auto') ? settings.services_text_color : 'var(--primary)';
                 break;
             case 'team':
-                bgColor = (settings.team_bg_color && settings.team_bg_color !== 'auto') ? settings.team_bg_color : 'var(--soft-cream)';
-                textColor = (settings.team_text_color && settings.team_text_color !== 'auto') ? settings.team_text_color : 'var(--primary-brown)';
+                bgColor = (settings.team_bg_color && settings.team_bg_color !== 'auto') ? settings.team_bg_color : 'var(--secondary)';
+                textColor = (settings.team_text_color && settings.team_text_color !== 'auto') ? settings.team_text_color : 'var(--primary)';
                 break;
             case 'pricing':
                 bgColor = (settings.pricing_bg_color && settings.pricing_bg_color !== 'auto') ? settings.pricing_bg_color : '#FFFFFF';
-                textColor = (settings.pricing_text_color && settings.pricing_text_color !== 'auto') ? settings.pricing_text_color : 'var(--primary-brown)';
+                textColor = (settings.pricing_text_color && settings.pricing_text_color !== 'auto') ? settings.pricing_text_color : 'var(--primary)';
                 break;
             case 'testimonials':
-                bgColor = (settings.testimonials_bg_color && settings.testimonials_bg_color !== 'auto') ? settings.testimonials_bg_color : 'var(--soft-cream)';
-                textColor = (settings.testimonials_text_color && settings.testimonials_text_color !== 'auto') ? settings.testimonials_text_color : 'var(--primary-brown)';
+                bgColor = (settings.testimonials_bg_color && settings.testimonials_bg_color !== 'auto') ? settings.testimonials_bg_color : 'var(--secondary)';
+                textColor = (settings.testimonials_text_color && settings.testimonials_text_color !== 'auto') ? settings.testimonials_text_color : 'var(--primary)';
                 break;
             case 'contact':
-                bgColor = (settings.contact_bg_color && settings.contact_bg_color !== 'auto') ? settings.contact_bg_color : 'var(--text-dark)';
-                textColor = (settings.contact_text_color && settings.contact_text_color !== 'auto') ? settings.contact_text_color : 'var(--accent-cream)';
+                bgColor = (settings.contact_bg_color && settings.contact_bg_color !== 'auto') ? settings.contact_bg_color : 'var(--text-main)';
+                textColor = (settings.contact_text_color && settings.contact_text_color !== 'auto') ? settings.contact_text_color : 'var(--accent)';
                 break;
             case 'gallery':
-                bgColor = (settings.gallery_bg_color && settings.gallery_bg_color !== 'auto') ? settings.gallery_bg_color : 'var(--primary-brown)';
-                textColor = (settings.gallery_text_color && settings.gallery_text_color !== 'auto') ? settings.gallery_text_color : 'var(--accent-cream)';
+                bgColor = (settings.gallery_bg_color && settings.gallery_bg_color !== 'auto') ? settings.gallery_bg_color : 'var(--primary)';
+                textColor = (settings.gallery_text_color && settings.gallery_text_color !== 'auto') ? settings.gallery_text_color : 'var(--accent)';
                 break;
             case 'booking':
-                bgColor = (settings.booking_bg_color && settings.booking_bg_color !== 'auto') ? settings.booking_bg_color : 'var(--soft-cream)';
-                textColor = (settings.booking_text_color && settings.booking_text_color !== 'auto') ? settings.booking_text_color : 'var(--primary-brown)';
+                bgColor = (settings.booking_bg_color && settings.booking_bg_color !== 'auto') ? settings.booking_bg_color : 'var(--secondary)';
+                textColor = (settings.booking_text_color && settings.booking_text_color !== 'auto') ? settings.booking_text_color : 'var(--primary)';
                 break;
             default:
                 const custom = customSections.find(s => s.id === id);
                 if (custom) {
                     bgColor = custom.background_color || '#FFFFFF'; // Default custom sections to white base if not set
-                    textColor = custom.text_color || 'var(--primary-brown)';
+                    textColor = custom.text_color || 'var(--primary)';
                     // Special case: if background is transparent/missing, assume landing page default (soft cream/white)
                     if (!custom.background_color || custom.background_color === 'transparent') {
                         bgColor = '#FFFFFF';

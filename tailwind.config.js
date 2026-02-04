@@ -7,11 +7,12 @@ export default {
     theme: {
         extend: {
             colors: {
-                'primary-brown': 'var(--primary-brown)',
-                'primary-brown-hover': 'var(--primary-brown-hover)',
-                'accent-cream': 'var(--accent-cream)',
-                'soft-cream': 'var(--soft-cream)',
-                'text-dark': 'var(--text-dark)',
+                'primary': 'var(--primary)',
+                'primary-hover': 'var(--primary-hover)',
+                'accent': 'var(--accent)',
+                'secondary': 'var(--secondary)',
+                'text-main': 'var(--text-main)',
+                'text-contrast': 'var(--text-contrast)',
             },
             fontFamily: {
                 sans: ['var(--font-body)', 'sans-serif'],

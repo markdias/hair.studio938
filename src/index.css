@@ -2,22 +2,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700&family=Lato:wght@300;400;700&family=Merriweather:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;600;700&family=Playfair+Display:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
 
 @theme {
-  --color-primary-brown: #3D2B1F;
-  --color-primary-brown-hover: #4D3B2F;
-  --color-accent-cream: #EAE0D5;
-  --color-soft-cream: #F5F1ED;
-  --color-text-dark: #2A1D15;
+  --color-primary: #3D2B1F;
+  --color-primary-hover: #4D3B2F;
+  --color-accent: #EAE0D5;
+  --color-secondary: #F5F1ED;
+  --color-text-main: #2A1D15;
 }
 
 :root {
   /* Default values, overridden by ThemeContext */
-  --primary-brown: #3D2B1F;
-  --primary-brown-hover: #4D3B2F;
-  --primary-brown-rgb: 61, 43, 31;
-  --accent-cream: #EAE0D5;
-  --soft-cream: #F5F1ED;
-  --text-dark: #2A1D15;
-  --text-light: #FFFFFF;
+  --primary: #3D2B1F;
+  --primary-hover: #4D3B2F;
+  --primary-rgb: 61, 43, 31;
+  --accent: #EAE0D5;
+  --secondary: #F5F1ED;
+  --text-main: #2A1D15;
+  --text-contrast: #FFFFFF;
   --font-heading: 'Playfair Display', serif;
   --font-body: 'Inter', sans-serif;
   --glass: rgba(61, 43, 31, 0.8);
@@ -28,8 +28,8 @@
   font-weight: 400;
 
   color-scheme: light;
-  color: var(--text-dark);
-  background-color: var(--soft-cream);
+  color: var(--text-main);
+  background-color: var(--secondary);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -79,8 +79,8 @@ button {
 }
 
 .btn-primary {
-  background-color: var(--primary-brown);
-  color: var(--accent-cream);
+  background-color: var(--primary);
+  color: var(--accent);
   padding: 12px 32px;
   border-radius: 4px;
   font-weight: 600;
@@ -90,9 +90,9 @@ button {
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-brown-hover);
+  background-color: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(var(--primary-brown-rgb), 0.2);
+  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
   /* Consider making shadow dynamic or keeping generic */
 }
 
@@ -102,7 +102,7 @@ button {
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--primary-brown);
+  background: var(--primary);
   z-index: 100;
   display: flex;
   align-items: center;
@@ -115,15 +115,15 @@ button {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--soft-cream);
+  background: var(--secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-brown);
+  background: var(--primary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-brown-hover);
+  background: var(--primary-hover);
 }
 
 .booking-card {
@@ -132,7 +132,7 @@ button {
   height: 750px;
   background-color: var(--booking-card-bg);
   border-radius: 20px;
-  box-shadow: 0 40px 100px rgba(var(--primary-brown-rgb), 0.08);
+  box-shadow: 0 40px 100px rgba(var(--primary-rgb), 0.08);
   overflow: hidden;
 }
 
@@ -149,7 +149,7 @@ button {
     left: 0;
     width: 100%;
     height: 100vh;
-    background-color: var(--primary-brown);
+    background-color: var(--primary);
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -169,7 +169,7 @@ button {
 
   .nav-links-mobile a {
     font-size: 1.5rem;
-    color: var(--accent-cream);
+    color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 2px;
   }

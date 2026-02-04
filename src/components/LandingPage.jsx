@@ -62,10 +62,10 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
             justifyContent: 'space-between',
             alignItems: 'center',
             zIndex: 1000,
-            backgroundColor: (isCompact || isMenuOpen) ? 'var(--primary-brown)' : 'rgba(var(--primary-brown-rgb), 0.8)',
+            backgroundColor: (isCompact || isMenuOpen) ? 'var(--primary)' : 'rgba(var(--primary-rgb), 0.8)',
             backdropFilter: 'blur(10px)',
             transition: 'all 0.4s ease',
-            color: 'var(--accent-cream)',
+            color: 'var(--accent)',
             boxSizing: 'border-box'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -162,8 +162,8 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         const isSeparate = bookingSection?.is_separate_page;
                         const style = {
                             padding: '10px 24px',
-                            backgroundColor: 'var(--accent-cream)',
-                            color: 'var(--primary-brown)',
+                            backgroundColor: 'var(--accent)',
+                            color: 'var(--primary)',
                             textDecoration: 'none'
                         };
 
@@ -292,7 +292,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                 left: 0,
                 width: '100%',
                 height: '100%',
-                background: 'linear-gradient(to bottom, rgba(var(--black-rgb, 0,0,0), 0.4), rgba(var(--primary-brown-rgb), 0.6))',
+                background: 'linear-gradient(to bottom, rgba(var(--black-rgb, 0,0,0), 0.4), rgba(var(--primary-rgb), 0.6))',
                 zIndex: 1
             }} />
 
@@ -316,7 +316,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     marginBottom: '1rem',
                     opacity: 0.8,
                     fontWeight: '600',
-                    color: 'var(--accent-cream)'
+                    color: 'var(--accent)'
                 }}>
                     {settings.business_name || 'STUDIO 938'}
                 </div>
@@ -392,21 +392,21 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
 
     const headingStyle = {
         fontSize: '3rem',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         marginBottom: '15px'
     };
 
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         margin: '0 auto'
     };
 
     const iconMap = {
-        Calendar: <Calendar style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
-        MapPin: <MapPin style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
-        Phone: <Phone style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }} />,
+        Calendar: <Calendar style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        MapPin: <MapPin style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Phone: <Phone style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
     };
 
     const displayServices = services;
@@ -433,7 +433,7 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
                         whileHover={{ y: -10 }}
                         style={{
                             padding: '50px 40px',
-                            backgroundColor: 'var(--soft-cream)',
+                            backgroundColor: 'var(--secondary)',
                             borderRadius: '8px',
                             textAlign: 'center',
                             transition: 'all 0.3s ease'
@@ -442,8 +442,8 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
                         <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
                             {iconMap[service.icon_name] || iconMap.Calendar}
                         </div>
-                        <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)' }}>{service.title}</h3>
-                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--text-dark)', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8' }}>{service.description || service.desc}</p>
+                        <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }}>{service.title}</h3>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--text-main)', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8' }}>{service.description || service.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -458,20 +458,20 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 50px' : '120px 50px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--secondary)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
 
     const headingStyle = {
         fontSize: '3rem',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         marginBottom: '15px'
     };
 
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         margin: '0 auto'
     };
 
@@ -515,9 +515,9 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
                         >
                             <img src={member.image_url || member.img} alt={member.stylist_name || member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </motion.div>
-                        <h3 style={{ fontSize: '2rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', marginBottom: '5px' }}>{member.stylist_name || member.name}</h3>
-                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.85rem', marginBottom: '20px', opacity: 0.8 }}>{member.role}</p>
-                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--text-dark)', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1.05rem' }}>{member.description || member.desc}</p>
+                        <h3 style={{ fontSize: '2rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', marginBottom: '5px' }}>{member.stylist_name || member.name}</h3>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.85rem', marginBottom: '20px', opacity: 0.8 }}>{member.role}</p>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--text-main)', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1.05rem' }}>{member.description || member.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -553,7 +553,7 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
     const headingStyle = {
         fontFamily: 'var(--font-heading)',
         fontSize: '6rem',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         textAlign: 'center',
         marginBottom: '60px',
         fontWeight: '400',
@@ -593,10 +593,10 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
                                 fontFamily: 'var(--font-heading)',
                                 fontSize: 'clamp(1.1rem, 3vw, 1.4rem)',
                                 fontWeight: '700',
-                                color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+                                color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
                                 letterSpacing: '2px',
                                 marginBottom: '20px',
-                                borderBottom: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(var(--primary-brown-rgb), 0.1)',
+                                borderBottom: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(var(--primary-rgb), 0.1)',
                                 paddingBottom: '10px'
                             }}>
                                 {cat.title}
@@ -609,8 +609,8 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
                                         alignItems: 'baseline',
                                         gap: '20px'
                                     }}>
-                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', opacity: 0.8 }}>{item.name}</span>
-                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', fontWeight: '600', whiteSpace: 'nowrap' }}>{item.price}</span>
+                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', opacity: 0.8 }}>{item.name}</span>
+                                        <span style={{ fontSize: '1rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '600', whiteSpace: 'nowrap' }}>{item.price}</span>
                                     </div>
                                 ))}
                             </div>
@@ -631,8 +631,8 @@ const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) =
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 20px' : '120px 20px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--text-dark)',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--text-main)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--accent)',
         textAlign: 'center'
     };
 
@@ -645,7 +645,7 @@ const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) =
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--accent)',
         margin: '0 auto 40px'
     };
 
@@ -772,7 +772,7 @@ const Contact = ({ settings = {}, phoneNumbers = [], isSeparatePage = false }) =
                     borderRadius: '20px',
                     overflow: 'hidden',
                     boxShadow: '0 20px 50px rgba(var(--black-rgb, 0, 0, 0), 0.3)',
-                    border: '1px solid rgba(var(--accent-cream-rgb), 0.1)'
+                    border: '1px solid rgba(var(--accent-rgb), 0.1)'
                 }}>
                     <iframe
                         width="100%"
@@ -795,9 +795,9 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
 
     const cardStyle = {
         padding: '40px 30px',
-        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb, 255,255,255), 0.05)' : 'rgba(var(--accent-cream-rgb), 0.05)',
+        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb, 255,255,255), 0.05)' : 'rgba(var(--accent-rgb), 0.05)',
         borderRadius: '16px',
-        border: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(var(--accent-cream-rgb), 0.1)',
+        border: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(var(--accent-rgb), 0.1)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -812,7 +812,7 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
     if (isCombined) {
         return (
             <motion.div
-                whileHover={{ y: -5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.08)' : 'rgba(var(--accent-cream-rgb), 0.08)' }}
+                whileHover={{ y: -5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.08)' : 'rgba(var(--accent-rgb), 0.08)' }}
                 onClick={() => setIsExpanded(!isExpanded)}
                 style={cardStyle}
             >
@@ -848,8 +848,8 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
                                     justifyContent: 'center',
                                     gap: '10px',
                                     padding: '12px',
-                                    backgroundColor: 'var(--accent-cream)',
-                                    color: 'var(--primary-brown)',
+                                    backgroundColor: 'var(--accent)',
+                                    color: 'var(--primary)',
                                     borderRadius: '8px',
                                     textDecoration: 'none',
                                     fontWeight: '600',
@@ -867,10 +867,10 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
 
     return (
         <motion.div
-            whileHover={{ y: -5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.08)' : 'rgba(var(--accent-cream-rgb), 0.08)' }}
+            whileHover={{ y: -5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.08)' : 'rgba(var(--accent-rgb), 0.08)' }}
             style={cardStyle}
         >
-            <div style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)', marginBottom: '15px' }}>{icon}</div>
+            <div style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--accent)', marginBottom: '15px' }}>{icon}</div>
             <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.6, marginBottom: '5px', color: textColor && textColor !== 'auto' ? textColor : 'inherit' }}>{label}</div>
             <a href={link} target={link.startsWith('http') ? "_blank" : "_self"} rel="noopener noreferrer" style={{ color: textColor && textColor !== 'auto' ? textColor : '#FFF', fontSize: '1.1rem', fontWeight: '600', textDecoration: 'none', wordBreak: 'break-word' }}>{value}</a>
         </motion.div>
@@ -879,7 +879,7 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
 
 const ContactOption = ({ icon, label, value, link, textColor }) => (
     <motion.div
-        whileHover={{ x: 5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.08)' : 'rgba(var(--accent-cream-rgb), 0.08)' }}
+        whileHover={{ x: 5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.08)' : 'rgba(var(--accent-rgb), 0.08)' }}
         style={{
             display: 'flex',
             alignItems: 'center',
@@ -905,20 +905,20 @@ const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 20px' : '120px 20px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--soft-cream)',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--secondary)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
 
     const headingStyle = {
         fontSize: '3rem',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         marginBottom: '15px'
     };
 
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
         margin: '0 auto'
     };
 
@@ -961,12 +961,12 @@ const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false
                             </div>
                         )}
                         <div style={{ flex: 1 }}>
-                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--text-dark)', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', fontStyle: 'italic', fontSize: '1.1rem', textAlign: 'center' }}>
+                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--text-main)', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', fontStyle: 'italic', fontSize: '1.1rem', textAlign: 'center' }}>
                                 "{t.description}"
                             </p>
                         </div>
                         {t.name && (
-                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary-brown)', fontWeight: '700', textAlign: 'center', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '700', textAlign: 'center', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                                 - {t.name}
                             </p>
                         )}
@@ -993,9 +993,9 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
         <>
             <footer style={{
                 padding: '80px 20px 40px',
-                backgroundColor: 'var(--soft-cream)',
-                color: 'var(--primary-brown)',
-                borderTop: '1px solid rgba(var(--primary-brown-rgb), 0.1)'
+                backgroundColor: 'var(--secondary)',
+                color: 'var(--primary)',
+                borderTop: '1px solid rgba(var(--primary-rgb), 0.1)'
             }}>
                 <div style={{
                     maxWidth: '1200px',
@@ -1004,30 +1004,30 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                     gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
                     gap: '40px',
                     paddingBottom: '60px',
-                    borderBottom: '1px solid rgba(var(--primary-brown-rgb), 0.1)'
+                    borderBottom: '1px solid rgba(var(--primary-rgb), 0.1)'
                 }}>
                     <div style={{ textAlign: 'left' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
                             <img src={settings.logo_url || "/logo.png"} alt="938 Logo" style={{ height: '50px', width: '50px', borderRadius: '50%', objectFit: 'cover' }} />
-                            <span style={{ fontSize: '1.5rem', fontWeight: '700', fontFamily: 'var(--font-heading)', color: 'var(--primary-brown)' }}>{settings.business_name || 'STUDIO 938'}</span>
+                            <span style={{ fontSize: '1.5rem', fontWeight: '700', fontFamily: 'var(--font-heading)', color: 'var(--primary)' }}>{settings.business_name || 'STUDIO 938'}</span>
                         </div>
-                        <p style={{ color: 'var(--text-dark)', opacity: 0.7, lineHeight: '1.8', maxWidth: '350px' }}>
+                        <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.8', maxWidth: '350px' }}>
                             {settings.footer_description || "Premium hair styling and aesthetic treatments in a relaxing, boutique environment."}
                         </p>
                     </div>
 
                     <div>
-                        <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary-brown)', marginBottom: '25px', textTransform: 'uppercase', letterSpacing: '1px' }}>Quick Links</h4>
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '25px', textTransform: 'uppercase', letterSpacing: '1px' }}>Quick Links</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <a href="#services" style={{ color: 'var(--text-dark)', opacity: 0.8, textDecoration: 'none' }}>Services</a>
-                            <a href="#booking" style={{ color: 'var(--text-dark)', opacity: 0.8, textDecoration: 'none' }}>Book Now</a>
-                            <a href="#pricing" style={{ color: 'var(--text-dark)', opacity: 0.8, textDecoration: 'none' }}>Price List</a>
-                            <a href="#contact" style={{ color: 'var(--text-dark)', opacity: 0.8, textDecoration: 'none' }}>Contact Us</a>
+                            <a href="#services" style={{ color: 'var(--text-main)', opacity: 0.8, textDecoration: 'none' }}>Services</a>
+                            <a href="#booking" style={{ color: 'var(--text-main)', opacity: 0.8, textDecoration: 'none' }}>Book Now</a>
+                            <a href="#pricing" style={{ color: 'var(--text-main)', opacity: 0.8, textDecoration: 'none' }}>Price List</a>
+                            <a href="#contact" style={{ color: 'var(--text-main)', opacity: 0.8, textDecoration: 'none' }}>Contact Us</a>
                         </div>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary-brown)', marginBottom: '25px', textTransform: 'uppercase', letterSpacing: '1px' }}>Legal</h4>
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '25px', textTransform: 'uppercase', letterSpacing: '1px' }}>Legal</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {settings?.show_privacy_section !== 'false' && (
                                 <button
@@ -1035,7 +1035,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                                     style={{
                                         background: 'none',
                                         border: 'none',
-                                        color: 'var(--text-dark)',
+                                        color: 'var(--text-main)',
                                         fontSize: '0.95rem',
                                         cursor: 'pointer',
                                         textAlign: 'left',
@@ -1052,7 +1052,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                                     style={{
                                         background: 'none',
                                         border: 'none',
-                                        color: 'var(--text-dark)',
+                                        color: 'var(--text-main)',
                                         fontSize: '0.95rem',
                                         cursor: 'pointer',
                                         textAlign: 'left',
@@ -1068,8 +1068,8 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
 
                     {settings.show_opening_hours !== 'false' && (
                         <div>
-                            <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary-brown)', marginBottom: '25px', textTransform: 'uppercase', letterSpacing: '1px' }}>Opening Hours</h4>
-                            <p style={{ color: 'var(--text-dark)', opacity: 0.8, lineHeight: '1.8' }}>
+                            <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)', marginBottom: '25px', textTransform: 'uppercase', letterSpacing: '1px' }}>Opening Hours</h4>
+                            <p style={{ color: 'var(--text-main)', opacity: 0.8, lineHeight: '1.8' }}>
                                 {settings.opening_hours || ""}
                             </p>
                             {/* Dynamic Payment Icons */}
@@ -1104,7 +1104,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                     maxWidth: '1200px',
                     margin: '60px auto 0',
                     paddingTop: '20px',
-                    borderTop: '1px solid rgba(var(--primary-brown-rgb), 0.1)',
+                    borderTop: '1px solid rgba(var(--primary-rgb), 0.1)',
                     textAlign: 'center',
                     fontSize: '0.85rem',
                     opacity: 0.5

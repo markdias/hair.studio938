@@ -182,8 +182,8 @@ const MainSite = ({ siteData }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[var(--primary-brown)]">
-        <Loader2 size={40} className="animate-spin text-[var(--accent-cream)]" />
+      <div className="flex items-center justify-center min-h-screen bg-[var(--primary)]">
+        <Loader2 size={40} className="animate-spin text-[var(--accent)]" />
       </div>
     );
   }

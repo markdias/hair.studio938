@@ -8,12 +8,12 @@ export const useTheme = () => useContext(ThemeContext);
 export const ThemeProvider = ({ children }) => {
 
     const FACOTRY_THEME = {
-        '--primary-brown': '#3D2B1F',
-        '--primary-brown-hover': '#4D3B2F',
-        '--accent-cream': '#EAE0D5',
-        '--soft-cream': '#F5F1ED',
-        '--text-dark': '#2A1D15',
-        '--text-light': '#FFFFFF',
+        '--primary': '#3D2B1F',
+        '--primary-hover': '#4D3B2F',
+        '--accent': '#EAE0D5',
+        '--secondary': '#F5F1ED',
+        '--text-main': '#2A1D15',
+        '--text-contrast': '#FFFFFF',
         '--white': '#FFFFFF',
         '--black': '#000000',
         '--success-green': '#22c55e',
@@ -30,12 +30,12 @@ export const ThemeProvider = ({ children }) => {
 
     // Map database keys to CSS variable names
     const dbKeyToCssVar = {
-        'theme_primary': '--primary-brown',
-        'theme_primary_hover': '--primary-brown-hover',
-        'theme_accent': '--accent-cream',
-        'theme_soft_cream': '--soft-cream',
-        'theme_text_dark': '--text-dark',
-        'theme_text_light': '--text-light',
+        'theme_primary': '--primary',
+        'theme_primary_hover': '--primary-hover',
+        'theme_accent': '--accent',
+        'theme_soft_cream': '--secondary',
+        'theme_text_dark': '--text-main',
+        'theme_text_light': '--text-contrast',
         'theme_white': '--white',
         'theme_black': '--black',
         'theme_success': '--success-green',

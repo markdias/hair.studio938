@@ -63,7 +63,7 @@ const Gallery = ({ images = [], settings = {}, isSeparatePage = false }) => {
 
     const sectionStyle = {
         padding: isSeparatePage ? '40px 0' : '120px 0',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--primary-brown)',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--primary)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit',
         overflow: 'hidden',
         position: 'relative'
@@ -71,14 +71,14 @@ const Gallery = ({ images = [], settings = {}, isSeparatePage = false }) => {
 
     const headingStyle = {
         fontSize: 'clamp(2.5rem, 8vw, 4rem)',
-        color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+        color: textColor && textColor !== 'auto' ? textColor : 'var(--accent)',
         marginBottom: '15px'
     };
 
     const lineStyle = {
         width: '60px',
         height: '2px',
-        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+        backgroundColor: textColor && textColor !== 'auto' ? textColor : 'var(--accent)',
         margin: '0 auto 20px'
     };
 
@@ -96,7 +96,7 @@ const Gallery = ({ images = [], settings = {}, isSeparatePage = false }) => {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '8px',
-                            color: textColor && textColor !== 'auto' ? textColor : 'var(--accent-cream)',
+                            color: textColor && textColor !== 'auto' ? textColor : 'var(--accent)',
                             opacity: 0.8,
                             fontSize: '1rem',
                             letterSpacing: '1px'
@@ -163,7 +163,7 @@ const Gallery = ({ images = [], settings = {}, isSeparatePage = false }) => {
                             style={{
                                 backgroundColor: 'rgba(234, 224, 213, 0.2)',
                                 backdropFilter: 'blur(5px)',
-                                color: 'var(--accent-cream)',
+                                color: 'var(--accent)',
                                 width: '50px',
                                 height: '50px',
                                 borderRadius: '50%',
@@ -182,7 +182,7 @@ const Gallery = ({ images = [], settings = {}, isSeparatePage = false }) => {
                             style={{
                                 backgroundColor: 'rgba(234, 224, 213, 0.2)',
                                 backdropFilter: 'blur(5px)',
-                                color: 'var(--accent-cream)',
+                                color: 'var(--accent)',
                                 width: '50px',
                                 height: '50px',
                                 borderRadius: '50%',
@@ -217,7 +217,7 @@ const Gallery = ({ images = [], settings = {}, isSeparatePage = false }) => {
                                 width: idx === currentIndex ? '30px' : '10px',
                                 height: '10px',
                                 borderRadius: '5px',
-                                backgroundColor: idx === currentIndex ? 'var(--accent-cream)' : 'rgba(234, 224, 213, 0.3)',
+                                backgroundColor: idx === currentIndex ? 'var(--accent)' : 'rgba(234, 224, 213, 0.3)',
                                 transition: 'all 0.3s ease'
                             }}
                         />
