@@ -43,18 +43,6 @@ export default async function handler(req, res) {
         let stylistsToCheck = [];
         let finalStylistName = typeof stylist === 'string' ? stylist : stylist?.name;
 
-        if (finalStylistName) {
-            // Specific stylist requested
-            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').eq('stylist_name', finalStylistName).single();
-            if (data) stylistsToCheck.push(data);
-        } else if (service) {
-            // "Any" professional - find all who can do this service
-            const { data } = await supabase.from('stylist_calendars').select('stylist_name, calendar_id').contains('provided_services', [service]);
-            stylistsToCheck = data || [];
-        } else {
-            // Fallback to default
-            stylistsToCheck.push({ stylist_name: 'Default', calendar_id: calendarId });
-        }
 
         if (stylistsToCheck.length === 0) {
             return res.status(400).json({ error: 'No professionals available for this service.' });
