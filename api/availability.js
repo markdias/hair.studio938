@@ -185,7 +185,7 @@ export default async function handler(req, res) {
                         return overlapStart < overlapEnd;
                     });
                     return !isBusy;
-                }).map(st => st.stylist_name);
+                }).map(st => st.stylist_name.trim());
 
                 if (availableProfessionals.length > 0) {
                     availableSlots.push({

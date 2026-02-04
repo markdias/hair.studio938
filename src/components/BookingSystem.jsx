@@ -287,7 +287,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
 
             const data = await response.json();
             if (data.success) {
-                if (data.assignedProfessional && !booking.stylist) {
+                if (data.assignedProfessional) {
                     const profObj = stylists.find(s => s.name === data.assignedProfessional.name) || { name: data.assignedProfessional.name };
                     setBooking(prev => ({ ...prev, stylist: profObj }));
                 }
@@ -619,13 +619,18 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                             const slotData = fullTimeSlots.find(s => (typeof s === 'string' ? s : s.time) === t);
                                                                             const availableProfs = slotData?.professionals || [];
 
-                                                                            if (!booking.stylist && availableProfs.length > 0) {
-                                                                                // Auto-assign the first available professional
-                                                                                const prof = stylists.find(s => s.name === availableProfs[0]);
-                                                                                setBooking({ ...booking, time: t, stylist: prof });
-                                                                            } else {
-                                                                                setBooking({ ...booking, time: t });
-                                                                            }
+                                                                            setBooking(prev => {
+                                                                                const newBooking = { ...prev, time: t };
+                                                                                const slotData = fullTimeSlots.find(s => (typeof s === "string" ? s : s.time) === t);
+                                                                                const availableProfs = slotData?.professionals || [];
+                                                                                if (!prev.stylist && availableProfs.length > 0) {
+                                                                                    const profName = availableProfs[0];
+                                                                                    const profObj = stylists.find(s => s.name.trim().toLowerCase() === profName.trim().toLowerCase()) || { name: profName };
+                                                                                    newBooking.stylist = profObj;
+                                                                                }
+                                                                                return newBooking;
+                                                                            });
+                                                                            setTimeout(() => nextStep(), 100);
                                                                         }}
                                                                         style={{
                                                                             padding: '12px 0',
@@ -662,7 +667,10 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                     <User size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#999' }} />
                                                     <input
                                                         type="text" placeholder="Full Name"
-                                                        value={booking.name} onChange={(e) => setBooking({ ...booking, name: e.target.value })}
+                                                        value={booking.name} onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            setBooking(prev => ({ ...prev, name: val }));
+                                                        }}
                                                         style={{ padding: '15px 15px 15px 45px', width: '100%', border: '1px solid var(--accent-cream)', borderRadius: '8px', boxSizing: 'border-box', maxWidth: '100%' }}
                                                     />
                                                 </div>
@@ -670,7 +678,10 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                     <Mail size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#999' }} />
                                                     <input
                                                         type="email" placeholder="Email Address"
-                                                        value={booking.email} onChange={(e) => setBooking({ ...booking, email: e.target.value })}
+                                                        value={booking.email} onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            setBooking(prev => ({ ...prev, email: val }));
+                                                        }}
                                                         style={{ padding: '15px 15px 15px 45px', width: '100%', border: '1px solid var(--accent-cream)', borderRadius: '8px', boxSizing: 'border-box', maxWidth: '100%' }}
                                                     />
                                                 </div>
@@ -678,7 +689,10 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                     <Phone size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#999' }} />
                                                     <input
                                                         type="tel" placeholder="Phone Number"
-                                                        value={booking.phone} onChange={(e) => setBooking({ ...booking, phone: e.target.value })}
+                                                        value={booking.phone} onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            setBooking(prev => ({ ...prev, phone: val }));
+                                                        }}
                                                         style={{ padding: '15px 15px 15px 45px', width: '100%', border: '1px solid var(--accent-cream)', borderRadius: '8px', boxSizing: 'border-box', maxWidth: '100%' }}
                                                     />
                                                 </div>
