@@ -7,6 +7,8 @@
   --color-accent: var(--accent);
   --color-secondary: var(--secondary);
   --color-text-main: var(--text-main);
+  --color-bg-primary: #F8F5F1;
+  --color-bg-secondary: #EFEBE7;
 }
 
 :root {
@@ -23,6 +25,8 @@
   --text-main: #1A1A1A;
   --text-muted: #666666;
   --bg-main: var(--secondary);
+  --bg-primary: #F8F5F1;
+  --bg-secondary: #EFEBE7;
   --input-bg: var(--white);
   --booking-card-bg: var(--white);
 
@@ -34,7 +38,8 @@
 
   font-family: var(--font-body);
   line-height: 1.6;
-  font-weight: 400;
+  font-weight: 300;
+  /* Lighter body as per Nova */
 
   color-scheme: light;
   color: var(--text-main);

@@ -355,9 +355,11 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                         gap: '12px',
                         marginBottom: '2.5rem',
                         opacity: 0.8,
-                        fontSize: '0.95rem',
+                        fontSize: '12px',
                         textTransform: 'uppercase',
-                        letterSpacing: '1px'
+                        letterSpacing: '2.4px',
+                        fontWeight: '500',
+                        fontFamily: 'var(--font-body)'
                     }}>
                         <Calendar size={18} />
                         <span>{settings.opening_hours}</span>
@@ -408,8 +410,8 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
     const textColor = settings.services_text_color;
 
     const sectionStyle = {
-        padding: isSeparatePage ? '40px 50px' : '120px 50px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--white)',
+        padding: isSeparatePage ? '64px 40px' : '128px 40px',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--bg-primary)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
 
@@ -456,12 +458,12 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
                         whileHover={{ y: -10, boxShadow: '0 20px 40px rgba(var(--primary-rgb), 0.1)', borderColor: 'rgba(var(--primary-rgb), 0.3)' }}
                         style={{
                             padding: '60px 40px',
-                            backgroundColor: 'var(--secondary)',
-                            borderRadius: '12px',
+                            backgroundColor: 'var(--bg-secondary)',
+                            borderRadius: '4px',
                             textAlign: 'center',
-                            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                            border: '1px solid var(--accent)',
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
+                            transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
+                            border: '1px solid rgba(var(--accent-rgb), 0.3)',
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
                         }}
                     >
                         <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
@@ -482,8 +484,8 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
     const textColor = settings.team_text_color;
 
     const sectionStyle = {
-        padding: isSeparatePage ? '40px 50px' : '120px 50px',
-        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--secondary)',
+        padding: isSeparatePage ? '64px 40px' : '128px 40px',
+        backgroundColor: bgColor && bgColor !== 'auto' ? bgColor : 'var(--bg-secondary)',
         color: textColor && textColor !== 'auto' ? textColor : 'inherit'
     };
 
@@ -578,15 +580,15 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
     };
 
     const cardStyle = {
-        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.05)' : 'var(--accent)',
-        maxWidth: '900px',
+        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.05)' : 'var(--white)',
+        maxWidth: '960px',
         width: '100%',
-        padding: '80px 40px',
-        boxShadow: '0 30px 60px rgba(var(--black-rgb, 0,0,0), 0.08)',
+        padding: '100px 60px',
+        boxShadow: '0 40px 80px rgba(0,0,0,0.04)',
         position: 'relative',
         boxSizing: 'border-box',
-        border: '1px solid rgba(var(--primary-rgb), 0.05)',
-        borderRadius: '12px'
+        border: '1px solid rgba(var(--accent-rgb), 0.2)',
+        borderRadius: '4px'
     };
 
     const headingStyle = {

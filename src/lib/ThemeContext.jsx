@@ -69,8 +69,9 @@ export const ThemeProvider = ({ children }) => {
                 setTheme(newTheme);
                 setMaintenance(false);
             } else {
-                // No theme settings found - trigger maintenance mode
-                setMaintenance(true);
+                // No theme settings found - seed with Factory Theme automatically
+                console.log('No theme settings found, seeding default theme...');
+                await updateTheme(FACOTRY_THEME);
             }
         } catch (err) {
             console.error('Error fetching theme:', err);
