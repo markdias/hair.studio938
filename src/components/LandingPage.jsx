@@ -479,6 +479,7 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
 };
 
 const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
+    const [hoveredMember, setHoveredMember] = useState(null);
     if (settings.show_team_section === 'false') return null;
     const bgColor = settings.team_bg_color;
     const textColor = settings.team_text_color;
@@ -530,6 +531,8 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
                     >
                         <motion.div
                             whileHover={{ scale: 1.05 }}
+                            onHoverStart={() => setHoveredMember(index)}
+                            onHoverEnd={() => setHoveredMember(null)}
                             style={{
                                 width: 'min(280px, 70vw)',
                                 height: 'min(280px, 70vw)',
@@ -541,7 +544,34 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
                                 position: 'relative'
                             }}
                         >
-                            <img src={member.image_url || member.img} alt={member.stylist_name || member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img
+                                src={member.image_url || member.img}
+                                alt={member.stylist_name || member.name}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    opacity: hoveredMember === index && member.hover_video_url ? 0 : 1,
+                                    transition: 'opacity 0.4s ease'
+                                }}
+                            />
+                            {member.hover_video_url && hoveredMember === index && (
+                                <video
+                                    src={member.hover_video_url}
+                                    autoPlay
+                                    muted
+                                    loop
+                                    playsInline
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover'
+                                    }}
+                                />
+                            )}
                         </motion.div>
                         <h3 style={{ fontSize: '1.8rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>{member.stylist_name || member.name}</h3>
                         <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '4px', fontSize: '0.75rem', marginBottom: '20px', opacity: 0.7 }}>{member.role}</p>
