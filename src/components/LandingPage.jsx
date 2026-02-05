@@ -969,12 +969,14 @@ const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false
                             backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.05)' : 'var(--white)',
                             padding: '40px',
                             borderRadius: '16px',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.03)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
                             display: 'flex',
                             flexDirection: 'column',
                             gap: '20px',
-                            border: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(0,0,0,0.05)'
+                            border: '1px solid rgba(var(--primary-rgb), 0.08)',
+                            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
+                        whileHover={{ y: -10, boxShadow: '0 20px 40px rgba(var(--primary-rgb), 0.1)', borderColor: 'rgba(var(--primary-rgb), 0.3)' }}
                     >
                         {t.image_url && (
                             <div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto' }}>

@@ -140,7 +140,8 @@ button {
   height: 750px;
   background-color: var(--booking-card-bg);
   border-radius: 20px;
-  box-shadow: 0 40px 100px rgba(var(--primary-rgb), 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(var(--primary-rgb), 0.08);
   overflow: hidden;
 }
 
