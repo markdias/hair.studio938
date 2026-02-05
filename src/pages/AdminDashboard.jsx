@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Users, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft, GripVertical, Type, Star } from 'lucide-react';
+import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Info, Save, Trash2, Plus, Image, ChevronUp, ChevronDown, List, Settings, Tag, User, Users, Palette, Shield, Loader2, Maximize2, AlertTriangle, Monitor, Smartphone, Layout, LogOut, Search, Clock, Database, Edit, Check, ChevronLeft, ChevronRight, ArrowRightLeft, GripVertical, Type, Star, Sparkles, Feather, Droplet, Wind, Sun, Moon, Zap, Heart, Smile, Ban } from 'lucide-react';
 import AntdDatePicker from '../components/AntdDatePicker';
 import { useTheme } from '../lib/ThemeContext';
 
@@ -1987,10 +1987,29 @@ const ContactTab = ({ settings, setSettings, showMessage, theme }) => {
     );
 };
 
+const ICON_OPTIONS = [
+    { value: '', label: 'None', icon: <Ban size={18} className="text-gray-400" /> },
+    { value: 'Calendar', label: 'Calendar', icon: <Calendar size={18} /> },
+    { value: 'Scissors', label: 'Scissors', icon: <Scissors size={18} /> },
+    { value: 'MapPin', label: 'Location', icon: <MapPin size={18} /> },
+    { value: 'Phone', label: 'Phone', icon: <Phone size={18} /> },
+    { value: 'Star', label: 'Star', icon: <Star size={18} /> },
+    { value: 'Sparkles', label: 'Sparkles', icon: <Sparkles size={18} /> },
+    { value: 'Palette', label: 'Palette', icon: <Palette size={18} /> },
+    { value: 'Feather', label: 'Feather', icon: <Feather size={18} /> },
+    { value: 'Droplet', label: 'Water/Wash', icon: <Droplet size={18} /> },
+    { value: 'Wind', label: 'Blow Dry', icon: <Wind size={18} /> },
+    { value: 'Sun', label: 'Light', icon: <Sun size={18} /> },
+    { value: 'Moon', label: 'Dark', icon: <Moon size={18} /> },
+    { value: 'Zap', label: 'Energy', icon: <Zap size={18} /> },
+    { value: 'Heart', label: 'Heart', icon: <Heart size={18} /> },
+    { value: 'Smile', label: 'Smile', icon: <Smile size={18} /> },
+];
+
 const ServicesTab = ({ services, refresh, showMessage, settings, setSettings, theme }) => {
     const [localServices, setLocalServices] = useState(services);
     const [showAddForm, setShowAddForm] = useState(false);
-    const [newService, setNewService] = useState({ title: '', description: '' });
+    const [newService, setNewService] = useState({ title: '', description: '', icon_name: 'Calendar' });
 
     useEffect(() => {
         setLocalServices(services);
@@ -2019,7 +2038,7 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings, th
         try {
             const { error } = await supabase.from('services_overview').insert([newService]);
             if (error) throw error;
-            setNewService({ title: '', description: '' });
+            setNewService({ title: '', description: '', icon_name: 'Calendar' });
             setShowAddForm(false);
             refresh();
             showMessage('success', 'Service added!');
@@ -2061,18 +2080,74 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings, th
             {showAddForm && (
                 <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-4 mb-6">
                     <h3 className="font-semibold text-gray-900">New Service</h3>
-                    <input
-                        placeholder="Service Title"
-                        value={newService.title}
-                        onChange={(e) => setNewService({ ...newService, title: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
-                    <textarea
-                        placeholder="Description"
-                        value={newService.description}
-                        onChange={(e) => setNewService({ ...newService, description: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg h-32 resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
+                    <div className="flex gap-4">
+                        <div className="flex-grow space-y-4">
+                            <input
+                                placeholder="Service Title"
+                                value={newService.title}
+                                onChange={(e) => setNewService({ ...newService, title: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            />
+                            <textarea
+                                placeholder="Description"
+                                value={newService.description}
+                                onChange={(e) => setNewService({ ...newService, description: e.target.value })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg h-32 resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            />
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm font-medium text-gray-700">Icon</label>
+                                <div className="relative">
+                                    <select
+                                        value={newService.icon_name}
+                                        onChange={(e) => setNewService({ ...newService, icon_name: e.target.value })}
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent appearance-none"
+                                    >
+                                        {ICON_OPTIONS.map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-500">
+                                        {ICON_OPTIONS.find(opt => opt.value === newService.icon_name)?.icon || <Calendar size={18} />}
+                                    </div>
+                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400">
+                                        <ChevronDown size={14} />
+                                    </div>
+                                </div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                    Select 'None' to hide icon
+                                </div>
+                            </div>
+                        </div>
+                        <div className="w-1/3 flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-700">Service Image</label>
+                            {newService.image_url ? (
+                                <div className="flex flex-col gap-2 w-full">
+                                    <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200">
+                                        <img src={newService.image_url} alt="Service Preview" className="w-full h-full object-cover" />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            setNewService({ ...newService, image_url: null });
+                                        }}
+                                        className="w-full py-1.5 px-3 bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-100 transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                                    >
+                                        <Trash2 size={12} color="currentColor" /> Remove Image
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="w-full aspect-video rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center bg-gray-50">
+                                    <ImageUploader
+                                        onUpload={(url) => setNewService({ ...newService, image_url: url })}
+                                        folder="services"
+                                        showMessage={showMessage}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
                     <button
                         onClick={() => handleAdd()}
                         className="w-full bg-primary text-white font-medium py-3 rounded-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2" style={{ backgroundColor: "var(--primary)" }}
@@ -2086,8 +2161,23 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings, th
                 {(localServices || []).map((s, idx) => (
                     <div key={s.id || idx} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm space-y-4">
                         <div className="flex items-start justify-between">
-                            <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center text-primary">
-                                <Scissors size={24} />
+                            <div className="relative mb-6">
+                                <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center text-primary border border-primary/10">
+                                    {ICON_OPTIONS.find(opt => opt.value === s.icon_name)?.icon || <Scissors size={24} />}
+                                </div>
+                                <select
+                                    value={s.icon_name || ''}
+                                    onChange={(e) => handleFieldChange(idx, 'icon_name', e.target.value)}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    title="Click to change icon"
+                                >
+                                    {ICON_OPTIONS.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                                <div className="absolute -bottom-6 left-0 text-[10px] text-gray-400 whitespace-nowrap pointer-events-none w-32">
+                                    Click icon to edit
+                                </div>
                             </div>
                             {s.id && (
                                 <button
@@ -2098,6 +2188,40 @@ const ServicesTab = ({ services, refresh, showMessage, settings, setSettings, th
                                 </button>
                             )}
                         </div>
+
+                        {/* Image Upload for Existing Service */}
+                        <div className="w-full">
+                            {s.image_url ? (
+                                <div className="flex flex-col gap-2 w-full mb-2">
+                                    <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200">
+                                        <img src={s.image_url} alt="Service" className="w-full h-full object-cover" />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            if (window.confirm('Remove this image? (You must click Save Changes to persist)')) {
+                                                handleFieldChange(idx, 'image_url', null);
+                                            }
+                                        }}
+                                        className="w-full py-1.5 px-3 bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-100 transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                                    >
+                                        <Trash2 size={12} color="currentColor" /> Remove Image
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="mb-2">
+                                    <ImageUploader
+                                        onUpload={(url) => handleFieldChange(idx, 'image_url', url)}
+                                        folder="services"
+                                        showMessage={showMessage}
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+
                         <input
                             placeholder="Service Title"
                             value={s.title}

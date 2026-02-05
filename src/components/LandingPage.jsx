@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2 } from 'lucide-react';
+import { Instagram, MapPin, Phone, Calendar, Menu, X, Mail, MessageCircle, Facebook, Music2, Scissors, Star, Sparkles, Palette, Feather, Droplet, Wind, Sun, Moon, Zap, Heart, Smile } from 'lucide-react';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 import TermsAndConditionsModal from './TermsAndConditionsModal';
 
@@ -432,6 +432,18 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
         Calendar: <Calendar style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
         MapPin: <MapPin style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
         Phone: <Phone style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Scissors: <Scissors style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Star: <Star style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Sparkles: <Sparkles style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Palette: <Palette style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Feather: <Feather style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Droplet: <Droplet style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Wind: <Wind style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Sun: <Sun style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Moon: <Moon style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Zap: <Zap style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Heart: <Heart style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
+        Smile: <Smile style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }} />,
     };
 
     const displayServices = services;
@@ -457,20 +469,46 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
                         key={index}
                         whileHover={{ y: -10, boxShadow: '0 20px 40px rgba(var(--primary-rgb), 0.1)', borderColor: 'rgba(var(--primary-rgb), 0.3)' }}
                         style={{
-                            padding: '60px 40px',
+                            padding: service.image_url ? '0 0 40px 0' : '60px 40px',
                             backgroundColor: 'var(--bg-secondary)',
                             borderRadius: '4px',
                             textAlign: 'center',
                             transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
                             border: '1px solid rgba(var(--accent-rgb), 0.3)',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center'
                         }}
                     >
-                        <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
-                            {iconMap[service.icon_name] || iconMap.Calendar}
+                        {service.image_url && (
+                            <div style={{
+                                width: '100%',
+                                height: '500px',
+                                marginBottom: '30px',
+                                overflow: 'hidden'
+                            }}>
+                                <img
+                                    src={service.image_url}
+                                    alt={service.title}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover'
+                                    }}
+                                />
+                            </div>
+                        )}
+                        <div style={{ padding: service.image_url ? '0 40px' : '0' }}>
+                            {service.icon_name !== '' && (
+                                <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
+                                    {iconMap[service.icon_name] || iconMap.Calendar}
+                                </div>
+                            )}
+                            <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }}>{service.title}</h3>
+                            <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#666', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8' }}>{service.description || service.desc}</p>
                         </div>
-                        <h3 style={{ fontSize: '1.8rem', marginBottom: '15px', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)' }}>{service.title}</h3>
-                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#666', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8' }}>{service.description || service.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -868,25 +906,26 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
     const [isExpanded, setIsExpanded] = useState(false);
 
     const cardStyle = {
-        padding: '40px 30px',
-        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb, 255,255,255), 0.05)' : 'rgba(var(--accent-rgb), 0.05)',
-        borderRadius: '16px',
+        padding: '60px 40px',
+        backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb, 255,255,255), 0.05)' : 'var(--bg-secondary)',
+        borderRadius: '4px',
         border: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(var(--accent-rgb), 0.1)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        transition: 'all 0.3s ease',
+        transition: 'all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)',
         cursor: isCombined ? 'pointer' : 'default',
         minHeight: '180px',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
     };
 
     if (isCombined) {
         return (
             <motion.div
-                whileHover={{ y: -5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.08)' : 'rgba(var(--accent-rgb), 0.08)' }}
+                whileHover={{ y: -10, boxShadow: '0 20px 40px rgba(var(--primary-rgb), 0.1)', borderColor: 'rgba(var(--primary-rgb), 0.3)' }}
                 onClick={() => setIsExpanded(!isExpanded)}
                 style={cardStyle}
             >
@@ -941,7 +980,7 @@ const ContactCard = ({ icon, label, value, link, isCombined, options, textColor 
 
     return (
         <motion.div
-            whileHover={{ y: -5, backgroundColor: textColor && textColor !== 'auto' ? 'rgba(var(--white-rgb), 0.08)' : 'rgba(var(--accent-rgb), 0.08)' }}
+            whileHover={{ y: -10, boxShadow: '0 20px 40px rgba(var(--primary-rgb), 0.1)', borderColor: 'rgba(var(--primary-rgb), 0.3)' }}
             style={cardStyle}
         >
             <div style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--accent)', marginBottom: '15px' }}>{icon}</div>
