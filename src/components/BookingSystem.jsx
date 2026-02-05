@@ -116,6 +116,11 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                 }));
                 // Note: user said rename to Professional, but internal state can keep 'professional' for now to avoid massive refactor of booking object
                 setProfessionals(formatted);
+                // Pre-expand all categories if they are small, or just the first one
+                const initialExpanded = {};
+                if (data.length > 0) {
+                    // We'll handle expanding categories in fetchServicesData
+                }
             }
             setIsLoadingProfessionals(false);
         };
@@ -161,6 +166,11 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                     })).filter(cat => cat.items.length > 0);
 
                     setCategories(grouped);
+
+                    // Auto-expand the first category
+                    if (grouped.length > 0) {
+                        setExpandedCategories({ [grouped[0].title]: true });
+                    }
                 }
             } catch (err) {
                 console.error('Error fetching services:', err);
@@ -441,12 +451,14 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
 
                                     {/* Booking Details */}
                                     <div style={{
-                                        backgroundColor: 'var(--input-bg)',
-                                        borderRadius: '10px',
-                                        padding: '20px',
-                                        margin: '20px 0',
+                                        backgroundColor: 'var(--white)',
+                                        borderRadius: '12px',
+                                        padding: '25px',
+                                        margin: '25px 0',
                                         textAlign: 'left',
-                                        fontSize: '0.9rem'
+                                        fontSize: '0.95rem',
+                                        border: '1px solid rgba(var(--primary-rgb), 0.08)',
+                                        boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
                                     }}>
                                         <h4 style={{ fontSize: '1rem', color: 'var(--primary)', marginBottom: '15px', fontWeight: '700' }}>Your Appointment</h4>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -515,53 +527,58 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                 justifyContent: 'center'
                                             }}>
                                                 {professionals.map((s) => (
-                                                    <button
-                                                        key={s.name}
-                                                        onClick={() => { setBooking({ ...booking, professional: s }); nextStep(); }}
+                                                    <motion.button
+                                                        key={s.id}
+                                                        whileHover={{ y: -5, borderColor: 'rgba(var(--primary-rgb), 0.3)', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}
+                                                        onClick={() => {
+                                                            setBooking(prev => ({ ...prev, professional: s }));
+                                                            nextStep();
+                                                        }}
                                                         style={{
                                                             width: '200px',
-                                                            padding: '20px',
-                                                            borderRadius: '12px',
-                                                            border: booking.professional?.name === s.name ? '2px solid var(--primary)' : '2px solid transparent',
-                                                            backgroundColor: booking.professional?.name === s.name ? 'var(--secondary)' : '#F9F9F9',
-                                                            transition: 'all 0.3s ease',
-                                                            textAlign: 'center',
+                                                            padding: '30px 20px',
+                                                            backgroundColor: booking.professional?.id === s.id ? 'rgba(var(--primary-rgb), 0.03)' : 'var(--white)',
+                                                            border: booking.professional?.id === s.id ? '1px solid var(--primary)' : '1px solid rgba(var(--primary-rgb), 0.08)',
+                                                            borderRadius: '16px',
                                                             cursor: 'pointer',
-                                                            flexShrink: 0
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            alignItems: 'center',
+                                                            transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
+                                                            boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
                                                         }}
                                                     >
                                                         <img src={s.img} alt={s.name} style={{ width: '80px', height: '80px', borderRadius: '50%', marginBottom: '15px', objectFit: 'cover', margin: '0 auto' }} />
-                                                        <div style={{ fontWeight: '700', color: 'var(--primary)' }}>{s.name}</div>
-                                                        <div style={{ fontSize: '0.8rem', color: '#666' }}>{s.role.split(' ')[0]}</div>
-                                                    </button>
+                                                        <div style={{ fontWeight: '500', color: 'var(--primary)', fontFamily: 'var(--font-heading)', fontSize: '1.25rem' }}>{s.name}</div>
+                                                        <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', marginTop: '4px' }}>{s.role}</div>
+                                                    </motion.button>
                                                 ))}
                                             </div>
                                             <div style={{ marginTop: '30px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
-                                                <button
+                                                <motion.button
+                                                    whileHover={{ backgroundColor: 'var(--white)', color: 'var(--primary)', borderColor: 'var(--primary)' }}
                                                     onClick={() => {
                                                         setBooking(prev => ({ ...prev, professional: null }));
                                                         nextStep();
                                                     }}
                                                     style={{
-                                                        padding: '12px 24px',
-                                                        backgroundColor: 'transparent',
-                                                        color: 'var(--primary)',
-                                                        border: '1px solid var(--primary)',
-                                                        borderRadius: '8px',
-                                                        fontSize: '0.9rem',
+                                                        padding: '14px 28px',
+                                                        backgroundColor: 'var(--primary)',
+                                                        color: 'var(--white)',
+                                                        border: '1px solid var(--accent)',
+                                                        borderRadius: '4px',
+                                                        fontSize: '12px',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '2px',
                                                         cursor: 'pointer',
-                                                        transition: 'all 0.2s ease',
-                                                        width: 'fit-content'
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.target.style.backgroundColor = 'var(--secondary)';
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.target.style.backgroundColor = 'transparent';
+                                                        transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
+                                                        width: 'fit-content',
+                                                        boxShadow: '0 4px 15px rgba(0,0,0,0.02)',
+                                                        fontWeight: '500'
                                                     }}
                                                 >
                                                     Skip - I'll take any available professional
-                                                </button>
+                                                </motion.button>
 
                                                 {booking.service || booking.date || booking.time ? (
                                                     <button
@@ -585,8 +602,12 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                                 {categories.map((cat) => {
                                                     // Filter items in this category based on professional's capabilities
-                                                    const filteredItems = booking.professional
-                                                        ? cat.items.filter(item => (booking.professional.provided_services || []).includes(item))
+                                                    // Fallback: if professional has no assigned services, show all.
+                                                    const filteredItems = (booking.professional && (booking.professional.provided_services || []).length > 0)
+                                                        ? cat.items.filter(item => {
+                                                            const serviceName = item.toLowerCase().trim();
+                                                            return booking.professional.provided_services.some(ps => ps.toLowerCase().trim() === serviceName);
+                                                        })
                                                         : cat.items;
 
                                                     if (filteredItems.length === 0) return null;
@@ -622,26 +643,33 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                     style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', paddingBottom: '20px' }}
                                                                 >
                                                                     {filteredItems.map(item => (
-                                                                        <button
+                                                                        <motion.button
                                                                             key={item}
-                                                                            onClick={() => setBooking({
-                                                                                ...booking,
-                                                                                service: item,
-                                                                                duration_minutes: serviceDurations[item] || 60
-                                                                            })}
+                                                                            whileHover={{ scale: 1.02, borderColor: 'var(--primary)' }}
+                                                                            onClick={() => {
+                                                                                setBooking({
+                                                                                    ...booking,
+                                                                                    service: item,
+                                                                                    duration_minutes: serviceDurations[item] || 60
+                                                                                });
+                                                                                setTimeout(nextStep, 200);
+                                                                            }}
                                                                             style={{
-                                                                                padding: '10px 20px',
-                                                                                borderRadius: '30px',
-                                                                                border: '1px solid var(--accent)',
-                                                                                backgroundColor: booking.service === item ? 'var(--primary)' : 'white',
+                                                                                padding: '12px 24px',
+                                                                                borderRadius: '4px',
+                                                                                border: booking.service === item ? '1px solid var(--primary)' : '1px solid var(--accent)',
+                                                                                backgroundColor: booking.service === item ? 'var(--primary)' : 'var(--white)',
                                                                                 color: booking.service === item ? '#FFF' : 'var(--primary)',
-                                                                                fontSize: '0.9rem',
-                                                                                transition: 'all 0.2s ease',
+                                                                                fontSize: '12px',
+                                                                                textTransform: 'uppercase',
+                                                                                letterSpacing: '2px',
+                                                                                transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
                                                                                 cursor: 'pointer',
                                                                                 display: 'flex',
                                                                                 alignItems: 'center',
                                                                                 gap: '8px',
-                                                                                fontWeight: booking.service === item ? '700' : '400'
+                                                                                fontWeight: booking.service === item ? '600' : '500',
+                                                                                boxShadow: '0 4px 10px rgba(0,0,0,0.02)'
                                                                             }}
                                                                         >
                                                                             {item}
@@ -652,7 +680,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                                         : `${serviceDurations[item]}m`})
                                                                                 </span>
                                                                             )}
-                                                                        </button>
+                                                                        </motion.button>
                                                                     ))}
                                                                 </motion.div>
                                                             )}
@@ -662,6 +690,7 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                             </div>
                                         </div>
                                     )}
+
 
                                     {step === 3 && (
                                         <div style={{ flex: 1 }}>
@@ -714,8 +743,9 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                         }}>
                                                             {timeSlots.length > 0 ? (
                                                                 timeSlots.map(t => (
-                                                                    <button
+                                                                    <motion.button
                                                                         key={t}
+                                                                        whileHover={{ scale: 1.02, borderColor: 'var(--primary)' }}
                                                                         onClick={() => {
                                                                             const sData = fullTimeSlots.find(slot => (typeof slot === "string" ? slot : slot.time) === t);
                                                                             const avProfs = sData?.professionals || [];
@@ -731,19 +761,21 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                                                             setTimeout(() => setStep(4), 100);
                                                                         }}
                                                                         style={{
-                                                                            padding: '12px 0',
-                                                                            borderRadius: '10px',
-                                                                            border: booking.time === t ? '2px solid #3D2B1F' : '1px solid var(--accent)',
-                                                                            backgroundColor: booking.time === t ? '#3D2B1F' : 'white',
-                                                                            color: booking.time === t ? '#FFFFFF' : '#3D2B1F',
-                                                                            fontWeight: booking.time === t ? '700' : '400',
-                                                                            fontSize: '0.9rem',
-                                                                            transition: 'all 0.2s ease',
-                                                                            cursor: 'pointer'
+                                                                            padding: '14px 0',
+                                                                            borderRadius: '4px',
+                                                                            border: booking.time === t ? '1px solid var(--primary)' : '1px solid var(--accent)',
+                                                                            backgroundColor: booking.time === t ? 'var(--primary)' : 'var(--white)',
+                                                                            color: booking.time === t ? '#FFFFFF' : 'var(--primary)',
+                                                                            fontWeight: booking.time === t ? '600' : '500',
+                                                                            fontSize: '12px',
+                                                                            letterSpacing: '1px',
+                                                                            transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
+                                                                            cursor: 'pointer',
+                                                                            boxShadow: '0 4px 10px rgba(0,0,0,0.02)'
                                                                         }}
                                                                     >
                                                                         {t}
-                                                                    </button>
+                                                                    </motion.button>
                                                                 ))
                                                             ) : (
                                                                 <div style={{ gridColumn: '1 / -1', padding: '20px', backgroundColor: 'var(--input-bg)', borderRadius: '10px', textAlign: 'center', color: '#999' }}>
@@ -808,51 +840,53 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                                         </div>
                                     )}
 
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '40px' }}>
-                                        {step > 1 && (
-                                            <button onClick={prevStep} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer' }}>
-                                                <ChevronLeft size={20} /> Back
-                                            </button>
-                                        )}
-                                        <div style={{ marginLeft: 'auto' }}>
-                                            {step < 4 ? (
-                                                <button
-                                                    onClick={nextStep}
-                                                    disabled={(step === 2 && !booking.service) || (step === 3 && (!booking.date || !booking.time || isLoadingSlots))}
-                                                    className="btn-primary"
-                                                    style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: ((step === 2 && !booking.service) || (step === 3 && (!booking.date || !booking.time || isLoadingSlots))) ? 0.5 : 1 }}
-                                                >
-                                                    Next Step <ChevronRight size={20} />
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={handleBooking}
-                                                    disabled={!booking.name || (!booking.email && !booking.phone) || isSubmitting}
-                                                    className="btn-primary"
-                                                    style={{ opacity: (!booking.name || (!booking.email && !booking.phone) || isSubmitting) ? 0.5 : 1 }}
-                                                >
-                                                    {isSubmitting ? (
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
-                                                            <motion.div
-                                                                animate={{ rotate: 360 }}
-                                                                transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                                                            >
-                                                                <Loader2 size={16} />
-                                                            </motion.div>
-                                                            Confirming...
-                                                        </div>
-                                                    ) : 'Confirm Booking'}
+                                    {step > 1 && (
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '40px' }}>
+                                            {step > 1 && (
+                                                <button onClick={prevStep} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary)', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer' }}>
+                                                    <ChevronLeft size={20} /> Back
                                                 </button>
                                             )}
+                                            <div style={{ marginLeft: 'auto' }}>
+                                                {step < 4 ? (
+                                                    <button
+                                                        onClick={nextStep}
+                                                        disabled={(step === 2 && !booking.service) || (step === 3 && (!booking.date || !booking.time || isLoadingSlots))}
+                                                        className="btn-primary"
+                                                        style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: ((step === 2 && !booking.service) || (step === 3 && (!booking.date || !booking.time || isLoadingSlots))) ? 0.5 : 1 }}
+                                                    >
+                                                        Next Step <ChevronRight size={20} />
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={handleBooking}
+                                                        disabled={!booking.name || (!booking.email && !booking.phone) || isSubmitting}
+                                                        className="btn-primary"
+                                                        style={{ opacity: (!booking.name || (!booking.email && !booking.phone) || isSubmitting) ? 0.5 : 1 }}
+                                                    >
+                                                        {isSubmitting ? (
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                                                                <motion.div
+                                                                    animate={{ rotate: 360 }}
+                                                                    transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                                                                >
+                                                                    <Loader2 size={16} />
+                                                                </motion.div>
+                                                                Confirming...
+                                                            </div>
+                                                        ) : 'Confirm Booking'}
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </motion.div>
                             )}
                         </AnimatePresence>
                     </div>
                 </div>
             </div>
-        </section>
+        </section >
     );
 };
 

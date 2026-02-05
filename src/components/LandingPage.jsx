@@ -48,16 +48,18 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
             top: 0,
             left: 0,
             width: '100%',
-            padding: isCompact ? '15px 20px' : '30px 20px',
+            height: '96px',
+            padding: '0 40px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             zIndex: 1000,
-            backgroundColor: (isCompact || isMenuOpen) ? 'rgba(var(--navbar-bg-rgb, var(--primary-rgb)), 0.98)' : 'rgba(var(--navbar-bg-rgb, var(--primary-rgb)), 0.8)',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.4s ease',
-            color: 'var(--navbar-text, var(--accent))',
-            boxSizing: 'border-box'
+            backgroundColor: 'rgba(var(--navbar-bg-rgb), 0.95)',
+            backdropFilter: 'blur(20px)',
+            transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
+            color: 'var(--navbar-text)',
+            boxSizing: 'border-box',
+            borderBottom: '1px solid rgba(var(--accent-rgb), 0.1)'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <img
@@ -84,7 +86,16 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
             </div>
 
             {/* Desktop Menu */}
-            <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px', fontWeight: '500' }}>
+            <div className="nav-links" style={{
+                display: 'flex',
+                gap: '30px',
+                alignItems: 'center',
+                textTransform: 'uppercase',
+                fontSize: '12px',
+                letterSpacing: '2.4px',
+                fontWeight: '500',
+                fontFamily: 'var(--font-body)'
+            }}>
                 <Link to="/">Home</Link>
                 {(() => {
                     const DEFAULT_ORDER = [
@@ -155,9 +166,13 @@ const Navbar = ({ settings, customSections = [], pageSections = [] }) => {
                         const isSeparate = bookingSection?.is_separate_page;
                         const style = {
                             padding: '10px 24px',
-                            backgroundColor: 'var(--accent)',
-                            color: 'var(--primary)',
-                            textDecoration: 'none'
+                            backgroundColor: 'var(--primary)',
+                            color: 'var(--white)',
+                            textDecoration: 'none',
+                            fontSize: '10px',
+                            letterSpacing: '2px',
+                            borderRadius: '4px',
+                            border: '1px solid var(--accent)'
                         };
 
                         if (isSeparate) {
@@ -288,7 +303,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                 left: 0,
                 width: '100%',
                 height: '100%',
-                background: 'linear-gradient(to right, rgba(var(--black-rgb, 0,0,0), 0.8) 0%, rgba(var(--black-rgb, 0,0,0), 0.4) 50%, transparent 100%)',
+                background: 'linear-gradient(to right, rgba(var(--primary-rgb), 0.8) 0%, rgba(var(--primary-rgb), 0.4) 50%, transparent 100%)',
                 zIndex: 1
             }} />
 
@@ -321,10 +336,13 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     {settings.business_name}
                 </div>
                 <h1 className="responsive-title" style={{
-                    fontSize: 'clamp(3.5rem, 8vw, 5.5rem)',
+                    fontSize: 'clamp(3.5rem, 8vw, 6.5rem)',
                     marginBottom: '1.5rem',
-                    lineHeight: '1.1',
-                    width: '100%'
+                    lineHeight: '1.05',
+                    width: '100%',
+                    fontFamily: 'var(--font-heading)',
+                    fontWeight: '400',
+                    letterSpacing: '-0.02em'
                 }}>{settings.hero_title || ""}</h1>
                 <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '2rem', letterSpacing: '1px', fontWeight: '300', opacity: 0.9, lineHeight: '1.6', maxWidth: '600px' }}>
                     {settings.hero_subtitle}
@@ -361,20 +379,22 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                         const servicesSection = pageSections.find(s => s.id === 'services');
                         const isSeparate = servicesSection?.is_separate_page;
                         const style = {
-                            border: '1px solid var(--white)',
+                            border: '1px solid var(--accent)',
                             color: 'var(--white)',
-                            padding: '12px 32px',
+                            padding: '14px 32px',
                             borderRadius: '4px',
                             textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            fontWeight: '600',
-                            textDecoration: 'none'
+                            letterSpacing: '2px',
+                            fontWeight: '500',
+                            textDecoration: 'none',
+                            fontSize: '14px',
+                            transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)'
                         };
 
                         if (isSeparate) {
-                            return <Link to="/section/services" style={style}>Our Services</Link>;
+                            return <Link to="/section/services" style={style} className="btn-secondary-outline">Our Services</Link>;
                         }
-                        return <a href="#services" style={style}>Our Services</a>;
+                        return <a href="#services" style={style} className="btn-secondary-outline">Our Services</a>;
                     })()}
                 </div>
             </motion.div>
@@ -440,7 +460,7 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
                             borderRadius: '12px',
                             textAlign: 'center',
                             transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                            border: '1px solid rgba(var(--primary-rgb), 0.08)',
+                            border: '1px solid var(--accent)',
                             boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
                         }}
                     >
@@ -610,13 +630,14 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
                         <div key={idx} style={{ width: '100%' }}>
                             <h3 style={{
                                 fontFamily: 'var(--font-heading)',
-                                fontSize: 'clamp(1.1rem, 3vw, 1.4rem)',
+                                fontSize: '0.9rem',
                                 fontWeight: '700',
                                 color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)',
-                                letterSpacing: '2px',
+                                letterSpacing: '3px',
+                                textTransform: 'uppercase',
                                 marginBottom: '20px',
                                 borderBottom: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : '1px solid rgba(var(--primary-rgb), 0.1)',
-                                paddingBottom: '10px'
+                                paddingBottom: '15px'
                             }}>
                                 {cat.title}
                             </h3>

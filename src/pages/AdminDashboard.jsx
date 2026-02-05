@@ -1502,12 +1502,12 @@ const ThemeTab = ({ showMessage }) => {
                                 onChange={(e) => handleChange('--font-heading', e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
                             >
-                                <option value="'Playfair Display', serif">Playfair Display (Serif)</option>
-                                <option value="'Merriweather', serif">Merriweather (Serif)</option>
-                                <option value="'Inter', sans-serif">Inter (Sans-serif)</option>
-                                <option value="'Montserrat', sans-serif">Montserrat (Sans-serif)</option>
-                                <option value="'Lato', sans-serif">Lato (Sans-serif)</option>
-                                <option value="'Great Vibes', cursive">Great Vibes (Script)</option>
+                                <option value="'Playfair Display', serif">Playfair Display (Luxury Serif)</option>
+                                <option value="'Outfit', sans-serif">Outfit (Modern Sans)</option>
+                                <option value="'Cormorant Garamond', serif">Cormorant Garamond (Elegant Serif)</option>
+                                <option value="'Prata', serif">Prata (Classic Serif)</option>
+                                <option value="'Inter', sans-serif">Inter (Minimalist Sans)</option>
+                                <option value="'Montserrat', sans-serif">Montserrat (Geometric Sans)</option>
                             </select>
                             <div
                                 className="mt-2 p-3 bg-white border border-gray-200 rounded text-center shadow-sm flex items-center justify-center"
