@@ -277,8 +277,10 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
             backgroundPosition: 'center',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--white)'
+            justifyContent: 'flex-start',
+            color: 'var(--white)',
+            paddingLeft: 'max(5%, 40px)',
+            paddingRight: 'max(5%, 40px)'
         }}>
             <div style={{
                 position: 'absolute',
@@ -286,7 +288,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                 left: 0,
                 width: '100%',
                 height: '100%',
-                background: 'linear-gradient(to bottom, rgba(var(--black-rgb, 0,0,0), 0.4), rgba(var(--primary-rgb), 0.6))',
+                background: 'linear-gradient(to right, rgba(var(--black-rgb, 0,0,0), 0.8) 0%, rgba(var(--black-rgb, 0,0,0), 0.4) 50%, transparent 100%)',
                 zIndex: 1
             }} />
 
@@ -297,9 +299,9 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                 style={{
                     position: 'relative',
                     zIndex: 2,
-                    textAlign: 'center',
-                    maxWidth: '800px',
-                    padding: '0 15px',
+                    textAlign: 'left',
+                    maxWidth: '900px',
+                    padding: '0',
                     boxSizing: 'border-box'
                 }}
             >
@@ -310,8 +312,12 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     marginBottom: '1rem',
                     opacity: 0.8,
                     fontWeight: '600',
-                    color: 'var(--accent)'
+                    color: 'var(--accent)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '15px'
                 }}>
+                    <div style={{ width: '40px', height: '1px', backgroundColor: 'var(--accent)', opacity: 0.6 }}></div>
                     {settings.business_name}
                 </div>
                 <h1 className="responsive-title" style={{
@@ -320,15 +326,15 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                     lineHeight: '1.1',
                     width: '100%'
                 }}>{settings.hero_title || ""}</h1>
-                <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '1.5rem', letterSpacing: '2px', fontWeight: '300', opacity: 0.9 }}>
+                <p className="responsive-p" style={{ fontSize: '1.25rem', marginBottom: '2rem', letterSpacing: '1px', fontWeight: '300', opacity: 0.9, lineHeight: '1.6', maxWidth: '600px' }}>
                     {settings.hero_subtitle}
                 </p>
                 {settings.show_opening_hours !== 'false' && (
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '10px',
+                        justifyContent: 'flex-start',
+                        gap: '12px',
                         marginBottom: '2.5rem',
                         opacity: 0.8,
                         fontSize: '0.95rem',
@@ -339,7 +345,7 @@ const Hero = ({ settings = {}, pageSections = [] }) => {
                         <span>{settings.opening_hours}</span>
                     </div>
                 )}
-                <div className="hero-buttons" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', width: '100%', margin: '0 auto' }}>
+                <div className="hero-buttons" style={{ display: 'flex', gap: '20px', justifyContent: 'flex-start', flexWrap: 'wrap', width: '100%', marginTop: '3rem' }}>
                     {(() => {
                         const bookingSection = pageSections.find(s => s.id === 'booking');
                         const isVisible = settings.show_booking_section !== 'false' && bookingSection?.enabled !== false;
@@ -427,13 +433,15 @@ const Services = ({ services = [], settings = {}, isSeparatePage = false }) => {
                 {displayServices.map((service, index) => (
                     <motion.div
                         key={index}
-                        whileHover={{ y: -10 }}
+                        whileHover={{ y: -10, boxShadow: '0 20px 40px rgba(var(--primary-rgb), 0.1)', borderColor: 'rgba(var(--primary-rgb), 0.3)' }}
                         style={{
-                            padding: '50px 40px',
+                            padding: '60px 40px',
                             backgroundColor: 'var(--secondary)',
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             textAlign: 'center',
-                            transition: 'all 0.3s ease'
+                            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                            border: '1px solid rgba(var(--primary-rgb), 0.08)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
                         }}
                     >
                         <div style={{ marginBottom: '25px', display: 'flex', justifyContent: 'center' }}>
@@ -505,16 +513,17 @@ const TeamSection = ({ team = [], settings = {}, isSeparatePage = false }) => {
                                 height: 'min(280px, 70vw)',
                                 borderRadius: '50%',
                                 overflow: 'hidden',
-                                margin: '0 auto 30px',
-                                border: '12px solid var(--white)',
-                                boxShadow: '0 20px 40px rgba(var(--black-rgb, 0,0,0), 0.1)'
+                                margin: '0 auto 35px',
+                                border: '8px solid var(--white)',
+                                boxShadow: '0 25px 50px rgba(var(--black-rgb, 0,0,0), 0.12)',
+                                position: 'relative'
                             }}
                         >
                             <img src={member.image_url || member.img} alt={member.stylist_name || member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </motion.div>
-                        <h3 style={{ fontSize: '2rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', marginBottom: '5px' }}>{member.stylist_name || member.name}</h3>
-                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.85rem', marginBottom: '20px', opacity: 0.8 }}>{member.role}</p>
-                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#666', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1.05rem' }}>{member.description || member.desc}</p>
+                        <h3 style={{ fontSize: '1.8rem', color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>{member.stylist_name || member.name}</h3>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : 'var(--primary)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '4px', fontSize: '0.75rem', marginBottom: '20px', opacity: 0.7 }}>{member.role}</p>
+                        <p style={{ color: textColor && textColor !== 'auto' ? textColor : '#666', opacity: textColor && textColor !== 'auto' ? 0.8 : 1, lineHeight: '1.8', maxWidth: '320px', margin: '0 auto', fontSize: '1rem', fontStyle: 'italic' }}>{member.description || member.desc}</p>
                     </motion.div>
                 ))}
             </div>
@@ -552,11 +561,12 @@ const PriceList = ({ pricing = [], settings = {}, isSeparatePage = false }) => {
         backgroundColor: textColor && textColor !== 'auto' ? 'rgba(255,255,255,0.05)' : 'var(--accent)',
         maxWidth: '900px',
         width: '100%',
-        padding: '60px 20px',
-        boxShadow: '0 20px 50px rgba(var(--black-rgb, 0,0,0), 0.05)',
+        padding: '80px 40px',
+        boxShadow: '0 30px 60px rgba(var(--black-rgb, 0,0,0), 0.08)',
         position: 'relative',
         boxSizing: 'border-box',
-        border: textColor && textColor !== 'auto' ? `1px solid ${textColor}22` : 'none'
+        border: '1px solid rgba(var(--primary-rgb), 0.05)',
+        borderRadius: '12px'
     };
 
     const headingStyle = {

@@ -72,7 +72,8 @@ a {
 }
 
 a:hover {
-  opacity: 0.8;
+  opacity: 1;
+  color: var(--primary);
 }
 
 button {
@@ -85,19 +86,22 @@ button {
 .btn-primary {
   background-color: var(--primary);
   color: var(--accent);
-  padding: 12px 32px;
-  border-radius: 4px;
+  padding: 14px 36px;
+  border-radius: 8px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  transition: all 0.3s ease;
+  letter-spacing: 2px;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.15);
+  display: inline-block;
+  border: 1px solid transparent;
 }
 
 .btn-primary:hover {
   background-color: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
-  /* Consider making shadow dynamic or keeping generic */
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(var(--primary-rgb), 0.25);
+  border-color: rgba(var(--accent-rgb), 0.2);
 }
 
 .overlay {
