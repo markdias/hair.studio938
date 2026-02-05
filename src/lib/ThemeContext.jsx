@@ -8,12 +8,12 @@ export const useTheme = () => useContext(ThemeContext);
 export const ThemeProvider = ({ children }) => {
 
     const FACOTRY_THEME = {
-        '--primary': '#3D2B1F',
-        '--primary-rgb': '61, 43, 31',
-        '--primary-hover': '#4D3B2F',
-        '--accent': '#EAE0D5',
-        '--secondary': '#F5F1ED',
-        '--text-main': '#2A1D15',
+        '--primary': '#000000',
+        '--primary-rgb': '0, 0, 0',
+        '--primary-hover': '#1A1A1A',
+        '--accent': '#C5A777',
+        '--secondary': '#FDFCFB',
+        '--text-main': '#1A1A1A',
         '--text-contrast': '#FFFFFF',
         '--font-heading': "'Playfair Display', serif",
         '--font-body': "'Inter', sans-serif",
@@ -69,8 +69,9 @@ export const ThemeProvider = ({ children }) => {
                 setTheme(newTheme);
                 setMaintenance(false);
             } else {
-                // No theme settings found - trigger maintenance mode
-                setMaintenance(true);
+                // No theme settings found - seed with Factory Theme automatically
+                console.log('No theme settings found, seeding default theme...');
+                await updateTheme(FACOTRY_THEME);
             }
         } catch (err) {
             console.error('Error fetching theme:', err);
