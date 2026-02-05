@@ -2550,7 +2550,7 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
     const [localStylists, setLocalStylists] = useState(stylists);
     const [showHelp, setShowHelp] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
-    const [newStylist, setNewStylist] = useState({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0, provided_services: [] });
+    const [newStylist, setNewStylist] = useState({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', hover_video_url: '', sort_order: 0, provided_services: [] });
     const [serviceModal, setServiceModal] = useState({ isOpen: false, context: null, initialSelection: [] });
     const [assigningServices, setAssigningServices] = useState(null);
 
@@ -2576,7 +2576,7 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
         try {
             const { error } = await supabase.from('stylist_calendars').insert([newStylist]);
             if (error) throw error;
-            setNewStylist({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', sort_order: 0, provided_services: [] });
+            setNewStylist({ stylist_name: '', role: '', description: '', calendar_id: '', image_url: '', hover_video_url: '', sort_order: 0, provided_services: [] });
             setIsAdding(false);
             refresh();
             showMessage('success', 'New staff member added!');
@@ -2701,12 +2701,31 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
             {isAdding && (
                 <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm space-y-4">
                     <h3 className="text-sm font-medium text-gray-700">New Professional</h3>
-                    <div className="flex items-center gap-4">
-                        <ImageUploader
-                            folder="team"
-                            onUpload={(url) => setNewStylist({ ...newStylist, image_url: url })}
-                            showMessage={showMessage}
-                        />
+                    <div className="flex items-start gap-4">
+                        <div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0">
+                            {newStylist.image_url ? (
+                                <img src={newStylist.image_url} className="w-full h-full object-cover" alt="Preview" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                    <Image size={32} />
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <ImageUploader
+                                folder="team"
+                                onUpload={(url) => setNewStylist({ ...newStylist, image_url: url })}
+                                showMessage={showMessage}
+                            />
+                            <VideoUploader
+                                folder="team_videos"
+                                onUpload={(url) => setNewStylist({ ...newStylist, hover_video_url: url })}
+                                showMessage={showMessage}
+                            />
+                            {newStylist.hover_video_url && (
+                                <span className="text-[10px] text-green-600 font-medium">✓ Video selected</span>
+                            )}
+                        </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input value={newStylist.stylist_name} onChange={e => setNewStylist({ ...newStylist, stylist_name: e.target.value })} placeholder="Name" className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none" />
@@ -2757,10 +2776,12 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
                         <div className="absolute top-4 right-4 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
                             <GripVertical size={20} />
                         </div>
-                        <div className="flex items-start gap-4">
-                            <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shrink-0 relative group">
-                                <img src={s.image_url || '/placeholder.png'} className="w-full h-full object-cover" alt={s.stylist_name} />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="flex items-start gap-6">
+                            <div className="flex flex-col gap-3 shrink-0">
+                                <div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 relative group">
+                                    <img src={s.image_url || '/placeholder.png'} className="w-full h-full object-cover" alt={s.stylist_name} />
+                                </div>
+                                <div className="flex flex-col gap-2">
                                     <ImageUploader
                                         folder="team"
                                         onUpload={(url) => {
@@ -2769,6 +2790,17 @@ const TeamTab = ({ stylists = [], services = [], pricing = [], priceCategories =
                                         }}
                                         showMessage={showMessage}
                                     />
+                                    <VideoUploader
+                                        folder="team_videos"
+                                        onUpload={(url) => {
+                                            handleFieldChange(idx, 'hover_video_url', url);
+                                            handleSave({ ...s, hover_video_url: url });
+                                        }}
+                                        showMessage={showMessage}
+                                    />
+                                    {s.hover_video_url && (
+                                        <span className="text-[10px] text-green-600 font-medium">✓ Hover video active</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="flex-grow space-y-2 pr-8">

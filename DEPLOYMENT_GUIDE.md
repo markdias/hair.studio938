@@ -418,6 +418,7 @@ CREATE TABLE IF NOT EXISTS public.stylist_calendars (
     image_url TEXT,
     role TEXT,
     provided_services TEXT[],
+    hover_video_url TEXT,
     sort_order INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
