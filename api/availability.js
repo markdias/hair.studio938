@@ -110,7 +110,7 @@ export default async function handler(req, res) {
     const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const defaultCalendarId = process.env.GOOGLE_CALENDAR_ID;
 
-    if (!privateKey || !clientEmail || !calendarId) {
+    if (!privateKey || !clientEmail || !defaultCalendarId) {
         console.warn('Google Calendar credentials not configured. Returning empty slots.');
         return res.status(200).json({
             slots: [],
