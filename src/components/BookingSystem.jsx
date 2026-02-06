@@ -294,7 +294,13 @@ const BookingSystem = ({ settings = {}, isSeparatePage = false }) => {
                 // Keep the full objects for auto-assignment
                 setFullTimeSlots(data.slots);
                 // Extract just times for the simplified timeSlots state
-                const times = data.slots.map(s => typeof s === 'string' ? s : s.time);
+                const times = data.slots.map(s => {
+                    if (typeof s === 'string') return s;
+                    // Defensive check: ensure s.time is a string
+                    if (typeof s.time === 'string') return s.time;
+                    console.warn('Unexpected slot format:', s);
+                    return null;
+                }).filter(Boolean);
                 setTimeSlots(times);
             } else {
                 setError('Could not load time slots');
