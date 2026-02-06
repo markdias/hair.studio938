@@ -312,7 +312,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'terms': return <TermsAndConditionsEditor settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} theme={theme} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} theme={theme} />;
         case 'page_flow': return <PageFlowTab customSections={data.customSections} showMessage={showMessage} refreshSiteData={refreshSiteData} />;
-        case 'footer': return <FooterTab footerSections={data.footerSections} setFooterSections={setData.setFooterSections} showMessage={showMessage} refresh={refresh} />;
+        case 'footer': return <FooterTab footerSections={data.footerSections} setFooterSections={setData.setFooterSections} settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} theme={theme} />;
         default: return null;
     }
 };
@@ -7172,7 +7172,7 @@ const TableElementConfig = ({ config, onSave }) => {
 };
 
 
-const FooterSectionConfig = ({ section, onUpdate, theme }) => {
+const FooterSectionConfig = ({ section, onUpdate }) => {
     const config = section.config || {};
 
     const handleConfigChange = (key, value) => {
@@ -7180,63 +7180,9 @@ const FooterSectionConfig = ({ section, onUpdate, theme }) => {
         onUpdate(section.id, { config: newConfig });
     };
 
-    const themeColors = [
-        { name: 'Primary', value: 'var(--primary)', hex: theme?.['--primary'] || 'var(--primary)' },
-        { name: 'Accent', value: 'var(--accent)', hex: theme?.['--accent'] || '#EAE0D5' },
-        { name: 'Soft Cream', value: 'var(--secondary)', hex: theme?.['--secondary'] || '#F5F1ED' },
-        { name: 'Dark Text', value: 'var(--text-main)', hex: theme?.['--text-main'] || '#2A1D15' },
-        { name: 'Light Text', value: 'var(--text-contrast)', hex: theme?.['--text-contrast'] || '#FFFFFF' },
-    ];
-
     return (
         <div className="bg-white border-t border-gray-100 p-4 pl-12 space-y-4">
-            {/* Colors */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                    <label className="text-xs font-medium text-gray-500 uppercase">Background Color</label>
-                    <div className="flex flex-wrap gap-2">
-                        {themeColors.map(color => (
-                            <button
-                                key={color.value}
-                                onClick={() => handleConfigChange('background_color', color.value)}
-                                className={`w-8 h-8 rounded-full border-2 transition-all ${config.background_color === color.value ? 'border-primary ring-2 ring-primary ring-offset-2 scale-110' : 'border-gray-200 hover:scale-105'}`}
-                                style={{ backgroundColor: color.hex }}
-                                title={color.name}
-                            />
-                        ))}
-                        <button
-                            onClick={() => handleConfigChange('background_color', '')}
-                            className={`px-3 h-8 rounded-full border-2 text-[10px] font-bold uppercase transition-all ${!config.background_color ? 'border-primary bg-gray-50' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}
-                            title="Automatic"
-                        >
-                            Auto
-                        </button>
-                    </div>
-                </div>
-                <div className="space-y-3">
-                    <label className="text-xs font-medium text-gray-500 uppercase">Text Color</label>
-                    <div className="flex flex-wrap gap-2">
-                        {themeColors.map(color => (
-                            <button
-                                key={color.value}
-                                onClick={() => handleConfigChange('text_color', color.value)}
-                                className={`w-8 h-8 rounded-full border-2 transition-all ${config.text_color === color.value ? 'border-primary ring-2 ring-primary ring-offset-2 scale-110' : 'border-gray-200 hover:scale-105'}`}
-                                style={{ backgroundColor: color.hex }}
-                                title={color.name}
-                            />
-                        ))}
-                        <button
-                            onClick={() => handleConfigChange('text_color', '')}
-                            className={`px-3 h-8 rounded-full border-2 text-[10px] font-bold uppercase transition-all ${!config.text_color ? 'border-primary bg-gray-50' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}
-                            title="Automatic"
-                        >
-                            Auto
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Type Specific Config */}
+            {/* Type Specific Config Only - Colors are now global */}
             {section.type === 'brand' && (
                 <div>
                     <label className="text-xs font-medium text-gray-500 uppercase block mb-2">Description Override</label>
@@ -7335,7 +7281,7 @@ const FooterSectionConfig = ({ section, onUpdate, theme }) => {
     );
 };
 
-const FooterTab = ({ footerSections = [], setFooterSections, showMessage, refresh, theme }) => {
+const FooterTab = ({ footerSections = [], setFooterSections, settings, setSettings, showMessage, refresh, theme }) => {
     const [localSections, setLocalSections] = useState(footerSections);
     const [expandedIds, setExpandedIds] = useState([]);
 
@@ -7446,9 +7392,21 @@ const FooterTab = ({ footerSections = [], setFooterSections, showMessage, refres
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Footer Management</h2>
-            <p className="text-gray-500 mb-8">Manage the sections displayed in the site footer using drag-and-drop. Click the arrow to customize colors and content.</p>
+            <SectionConfig
+                sectionId="footer"
+                settings={settings}
+                setSettings={setSettings}
+                showMessage={showMessage}
+                defaultMenuName="Footer"
+                defaultHeadingName="Footer"
+                description="Configure global footer appearance."
+                theme={theme}
+            />
 
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2 mt-8">Footer Management</h2>
+            <p className="text-gray-500 mb-8">Manage display settings and content sections for the site footer.</p>
+
+            <h3 className="text-lg font-medium text-gray-800 mb-4">Footer Sections</h3>
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     <div className="col-span-1"></div>

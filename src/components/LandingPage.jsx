@@ -1116,40 +1116,41 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
     const renderSection = (section) => {
         const config = section.config || {};
 
-        // Configurable styles
+        // Global styles now controlled by settings.footer_bg_color / footer_text_color
+        // We no longer use per-section background/text colors
+
         const sectionStyle = {
-            backgroundColor: config.background_color || 'transparent',
-            padding: config.background_color ? '20px' : '0',
-            borderRadius: config.background_color ? '8px' : '0',
-            color: config.text_color || 'inherit'
+            textAlign: 'left',
+            padding: '0 10px',
         };
 
         const headingStyle = {
             fontSize: '1.1rem',
-            fontWeight: '400',
-            fontFamily: 'var(--font-heading)',
-            color: config.text_color || 'var(--text-main)',
-            margin: '0 0 20px 0',
+            fontWeight: '600',
+            marginBottom: '20px',
             textTransform: 'uppercase',
-            letterSpacing: '1px'
+            letterSpacing: '1px',
+            // Color inherited from footer container
         };
 
         const textStyle = {
-            color: config.text_color || 'var(--text-main)',
-            opacity: config.text_color ? 0.9 : 0.7,
-            lineHeight: '1.6',
-            fontSize: '0.9rem'
+            lineHeight: '1.8',
+            opacity: 0.9,
+            margin: 0
+            // Color inherited from footer container
         };
 
         const linkStyle = {
             color: 'inherit',
-            textDecoration: 'none'
+            textDecoration: 'none',
+            transition: 'opacity 0.2s',
+            // Color inherited from footer container
         };
 
         switch (section.type) {
             case 'brand':
                 return (
-                    <div key={section.id} style={{ textAlign: 'left', ...sectionStyle }}>
+                    <div style={{ textAlign: 'left', ...sectionStyle }}>
                         <h3 style={headingStyle}>
                             {settings.business_name || 'Hair Studio 938'}
                         </h3>
@@ -1160,13 +1161,13 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
                             const bookingSection = pageSections.find(s => s.id === 'booking');
                             const isSeparate = bookingSection?.is_separate_page;
                             const bookBtnStyle = {
-                                color: config.text_color || 'var(--primary)',
+                                color: 'inherit',
                                 textDecoration: 'none',
                                 fontWeight: '700',
                                 fontSize: '0.85rem',
                                 textTransform: 'uppercase',
                                 letterSpacing: '1px',
-                                borderBottom: `1px solid ${config.text_color || 'var(--primary)'}`,
+                                borderBottom: `1px solid currentColor`,
                                 width: 'fit-content',
                                 paddingBottom: '2px'
                             };
@@ -1185,7 +1186,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
             case 'links':
                 if (settings?.show_privacy_section === 'false' && settings?.show_terms_section === 'false') return null;
                 return (
-                    <div key={section.id} style={{ display: 'flex', flexDirection: 'column', gap: '20px', ...sectionStyle }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', ...sectionStyle }}>
                         <h4 style={headingStyle}>{section.heading || "Important Links"}</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', ...textStyle }}>
                             {settings?.show_privacy_section !== 'false' && config.show_privacy !== false && (
@@ -1194,17 +1195,17 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
                                     style={{
                                         background: 'none',
                                         border: 'none',
-                                        color: config.text_color || 'var(--primary)',
+                                        color: 'inherit',
                                         fontSize: '0.95rem',
                                         cursor: 'pointer',
                                         textAlign: 'left',
                                         padding: 0,
-                                        opacity: config.text_color ? 0.9 : 0.8,
+                                        opacity: 0.8,
                                         transition: 'opacity 0.2s',
                                         width: 'fit-content'
                                     }}
                                     onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                    onMouseLeave={(e) => e.currentTarget.style.opacity = config.text_color ? '0.9' : '0.8'}
+                                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
                                 >
                                     {settings?.privacy_menu_name || "Privacy Policy"}
                                 </button>
@@ -1215,17 +1216,17 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
                                     style={{
                                         background: 'none',
                                         border: 'none',
-                                        color: config.text_color || 'var(--primary)',
+                                        color: 'inherit',
                                         fontSize: '0.95rem',
                                         cursor: 'pointer',
                                         textAlign: 'left',
                                         padding: 0,
-                                        opacity: config.text_color ? 0.9 : 0.8,
+                                        opacity: 0.8,
                                         transition: 'opacity 0.2s',
                                         width: 'fit-content'
                                     }}
                                     onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                    onMouseLeave={(e) => e.currentTarget.style.opacity = config.text_color ? '0.9' : '0.8'}
+                                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
                                 >
                                     {settings?.terms_menu_name || "Terms & Conditions"}
                                 </button>
@@ -1235,7 +1236,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
                 );
             case 'contact':
                 return (
-                    <div key={section.id} style={sectionStyle}>
+                    <div style={sectionStyle}>
                         <h4 style={headingStyle}>
                             {section.heading || "Contact Us"}
                         </h4>
@@ -1263,7 +1264,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
                                     href={settings.instagram_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    style={{ color: config.text_color || 'var(--primary)', marginTop: '5px', width: 'fit-content' }}
+                                    style={{ color: 'inherit', marginTop: '5px', width: 'fit-content' }}
                                 >
                                     <Instagram size={20} />
                                 </a>
@@ -1274,7 +1275,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
             case 'hours':
                 if (settings.show_opening_hours === 'false') return null;
                 return (
-                    <div key={section.id} style={sectionStyle}>
+                    <div style={sectionStyle}>
                         <h4 style={headingStyle}>
                             {section.heading || "Opening Hours"}
                         </h4>
@@ -1315,19 +1316,24 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
         <>
             <footer style={{
                 padding: '80px 20px 40px',
-                backgroundColor: 'var(--secondary)',
-                color: 'var(--primary)',
+                backgroundColor: settings.footer_bg_color || 'var(--secondary)',
+                color: settings.footer_text_color || 'var(--primary)',
                 borderTop: '1px solid rgba(61, 43, 31, 0.1)'
             }}>
                 <div style={{
                     maxWidth: '1200px',
                     margin: '0 auto',
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
                     gap: '40px',
                     paddingBottom: '20px'
                 }}>
-                    {sortedSections.map(renderSection)}
+                    {sortedSections.map(section => (
+                        <div key={section.id} style={{ flex: '1 1 250px', maxWidth: '300px' }}>
+                            {renderSection(section)}
+                        </div>
+                    ))}
                 </div>
 
                 {/* Copyright */}
