@@ -181,8 +181,16 @@ const AdminDashboard = ({ refreshSiteData }) => {
 
     return (
         <div className="flex h-screen bg-secondary font-sans text-stone-900">
+            {/* Mobile Backdrop */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-[45] md:hidden"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 overflow-y-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10  rounded-lg flex items-center justify-center" style={{ backgroundColor: "var(--primary)" }}>
@@ -3287,12 +3295,17 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
             const fetchAvailability = async () => {
                 setIsLoadingSlots(true);
                 try {
-                    const stylistParam = stylistToFetch ? `&stylist=${encodeURIComponent(stylistToFetch)}` : '';
+                    const stylistParam = stylistToFetch ? `&professional=${encodeURIComponent(stylistToFetch)}` : ''; // API expects 'professional'
                     const res = await fetch(`/api/availability?date=${dateToFetch}${stylistParam}`);
                     if (res.ok) {
                         const data = await res.json();
                         // If editing, include the current appointment's time slot as available
-                        let slots = data.slots || [];
+                        const rawSlots = data.slots || [];
+                        let slots = rawSlots.map(s => {
+                            if (typeof s === 'string') return s;
+                            if (s && typeof s.time === 'string') return s.time;
+                            return null;
+                        }).filter(Boolean);
                         if (editingAppt && editForm.date === new Date(editingAppt.startTime).toLocaleDateString('en-CA')) {
                             const currentSlot = new Date(editingAppt.startTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
                             if (!slots.includes(currentSlot)) {
