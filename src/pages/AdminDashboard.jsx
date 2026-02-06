@@ -3295,7 +3295,7 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
             const fetchAvailability = async () => {
                 setIsLoadingSlots(true);
                 try {
-                    const stylistParam = stylistToFetch ? `&stylist=${encodeURIComponent(stylistToFetch)}` : '';
+                    const stylistParam = stylistToFetch ? `&professional=${encodeURIComponent(stylistToFetch)}` : ''; // API expects 'professional'
                     const res = await fetch(`/api/availability?date=${dateToFetch}${stylistParam}`);
                     if (res.ok) {
                         const data = await res.json();
