@@ -1243,14 +1243,14 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', ...textStyle, fontSize: '0.95rem' }}>
                             {config.show_address !== false && (
                                 <p style={{ margin: 0, maxWidth: '200px' }}>
-                                    {settings.business_address || "Unit 5, 938 High Road, London, N12 9RT"}
+                                    {settings.address || settings.business_address || "Unit 5, 938 High Road, London, N12 9RT"}
                                 </p>
                             )}
-                            {config.show_email !== false && settings.business_email && (
-                                <a href={`mailto:${settings.business_email}`} style={linkStyle}>{settings.business_email}</a>
+                            {config.show_email !== false && (settings.email || settings.business_email) && (
+                                <a href={`mailto:${settings.email || settings.business_email}`} style={linkStyle}>{settings.email || settings.business_email}</a>
                             )}
-                            {config.show_phone !== false && settings.business_phone && (
-                                <a href={`tel:${settings.business_phone}`} style={linkStyle}>{settings.business_phone}</a>
+                            {config.show_phone !== false && (settings.phone || settings.business_phone) && (
+                                <a href={`tel:${settings.phone || settings.business_phone}`} style={linkStyle}>{settings.phone || settings.business_phone}</a>
                             )}
                             {/* Additional Phones */}
                             {config.show_phone !== false && phoneNumbers.map((phone) => (
