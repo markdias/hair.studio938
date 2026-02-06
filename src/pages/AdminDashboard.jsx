@@ -3300,7 +3300,12 @@ const AppointmentsTab = ({ appointments, setAppointments, showMessage, clients, 
                     if (res.ok) {
                         const data = await res.json();
                         // If editing, include the current appointment's time slot as available
-                        let slots = data.slots || [];
+                        const rawSlots = data.slots || [];
+                        let slots = rawSlots.map(s => {
+                            if (typeof s === 'string') return s;
+                            if (s && typeof s.time === 'string') return s.time;
+                            return null;
+                        }).filter(Boolean);
                         if (editingAppt && editForm.date === new Date(editingAppt.startTime).toLocaleDateString('en-CA')) {
                             const currentSlot = new Date(editingAppt.startTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
                             if (!slots.includes(currentSlot)) {
