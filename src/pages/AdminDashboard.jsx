@@ -23,6 +23,7 @@ const TABS = [
     { id: 'pricing', label: 'Pricing', icon: <Tag size={18} /> },
     { id: 'services', label: 'Services', icon: <Scissors size={18} /> },
     { id: 'custom_sections', label: 'Custom Section', icon: <List size={18} /> },
+    { id: 'footer', label: 'Footer Management', icon: <Layout size={18} /> },
 ];
 
 const STYLIST_COLORS = {
@@ -102,6 +103,7 @@ const AdminDashboard = ({ refreshSiteData }) => {
     const [clients, setClients] = useState([]); // Added clients state
     const [testimonials, setTestimonials] = useState([]);
     const [customSections, setCustomSections] = useState([]);
+    const [footerSections, setFooterSections] = useState([]);
 
     useEffect(() => {
         fetchAllData();
@@ -119,7 +121,8 @@ const AdminDashboard = ({ refreshSiteData }) => {
                 { data: clts },
                 { data: tests },
                 { data: customSects },
-                { data: cats }
+                { data: cats },
+                { data: footerSects }
             ] = await Promise.all([
                 supabase.from('site_settings').select('*'),
                 supabase.from('services_overview').select('*'),
@@ -129,7 +132,8 @@ const AdminDashboard = ({ refreshSiteData }) => {
                 supabase.from('clients').select('*').order('created_at', { ascending: false }),
                 supabase.from('testimonials').select('*').order('sort_order'),
                 supabase.from('custom_sections').select('*, custom_section_elements(*)').order('sort_order'),
-                supabase.from('price_categories').select('*').order('sort_order')
+                supabase.from('price_categories').select('*').order('sort_order'),
+                supabase.from('footer_sections').select('*').order('sort_order')
             ]);
             if (settings) {
                 const settingsObj = {};
@@ -145,6 +149,7 @@ const AdminDashboard = ({ refreshSiteData }) => {
             if (clts) setClients(clts);
             if (tests) setTestimonials(tests);
             if (customSects) setCustomSections(customSects);
+            if (footerSects) setFooterSections(footerSects);
 
         } catch (err) {
             console.error('Error fetching data:', err.message);
@@ -275,8 +280,8 @@ const AdminDashboard = ({ refreshSiteData }) => {
 
                     <TabContent
                         activeTab={activeTab}
-                        data={{ siteSettings, services, pricing, priceCategories, stylists, gallery, appointments, clients, testimonials, customSections }}
-                        setData={{ setSiteSettings, setServices, setPricing, setPriceCategories, setStylists, setGallery, setAppointments, setClients, setTestimonials, setCustomSections }}
+                        data={{ siteSettings, services, pricing, priceCategories, stylists, gallery, appointments, clients, testimonials, customSections, footerSections }}
+                        setData={{ setSiteSettings, setServices, setPricing, setPriceCategories, setStylists, setGallery, setAppointments, setClients, setTestimonials, setCustomSections, setFooterSections }}
                         refresh={fetchAllData}
                         showMessage={showMessage}
                         fetchClients={fetchClients}
@@ -307,6 +312,7 @@ const TabContent = ({ activeTab, data, setData, refresh, showMessage, fetchClien
         case 'terms': return <TermsAndConditionsEditor settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} theme={theme} />;
         case 'messages': return <MessagesTab settings={data.siteSettings} setSettings={setData.setSiteSettings} showMessage={showMessage} refresh={refresh} theme={theme} />;
         case 'page_flow': return <PageFlowTab customSections={data.customSections} showMessage={showMessage} refreshSiteData={refreshSiteData} />;
+        case 'footer': return <FooterTab footerSections={data.footerSections} setFooterSections={setData.setFooterSections} showMessage={showMessage} refresh={refresh} />;
         default: return null;
     }
 };
@@ -7162,6 +7168,152 @@ const TableElementConfig = ({ config, onSave }) => {
                 Save Table
             </button>
         </div>
+    );
+};
+
+
+const FooterTab = ({ footerSections = [], setFooterSections, showMessage, refresh }) => {
+    const [localSections, setLocalSections] = useState(footerSections);
+
+    useEffect(() => {
+        setLocalSections(footerSections);
+    }, [footerSections]);
+
+    const handleReorder = async (newOrder) => {
+        setLocalSections(newOrder);
+
+        // Update sort_order in database for all items
+        const updates = newOrder.map((section, index) => ({
+            id: section.id,
+            sort_order: (index + 1) * 10
+        }));
+
+        try {
+            const { error } = await supabase
+                .from('footer_sections')
+                .upsert(updates);
+
+            if (error) throw error;
+
+            // Update parent state slightly delayed to allow UI to settle or just let it sync
+            // setFooterSections(newOrder.map((s, i) => ({ ...s, sort_order: (i + 1) * 10 })));
+        } catch (err) {
+            console.error('Error reordering footer sections:', err);
+            showMessage('error', 'Error updating order');
+            refresh(); // Revert on error
+        }
+    };
+
+    const handleToggle = async (id, currentStatus) => {
+        try {
+            const newStatus = !currentStatus;
+            const { error } = await supabase
+                .from('footer_sections')
+                .update({ enabled: newStatus })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            const updated = localSections.map(s => s.id === id ? { ...s, enabled: newStatus } : s);
+            setLocalSections(updated);
+            setFooterSections(updated);
+            showMessage('success', newStatus ? 'Section enabled' : 'Section disabled');
+        } catch (err) {
+            console.error('Error toggling section:', err);
+            showMessage('error', 'Error updating status');
+        }
+    };
+
+    const handleUpdateHeading = async (id, newHeading) => {
+        try {
+            const { error } = await supabase
+                .from('footer_sections')
+                .update({ heading: newHeading })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            const updated = localSections.map(s => s.id === id ? { ...s, heading: newHeading } : s);
+            setLocalSections(updated);
+            setFooterSections(updated);
+            showMessage('success', 'Heading updated');
+        } catch (err) {
+            console.error('Error updating heading:', err);
+            showMessage('error', 'Error updating heading');
+        }
+    };
+
+    const getTypeLabel = (type) => {
+        switch (type) {
+            case 'brand': return 'Brand Info';
+            case 'links': return 'Important Links';
+            case 'contact': return 'Contact Info';
+            case 'hours': return 'Opening Hours';
+            default: return type;
+        }
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Footer Management</h2>
+            <p className="text-gray-500 mb-8">Manage the sections displayed in the site footer using drag-and-drop.</p>
+
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <div className="col-span-1"></div>
+                    <div className="col-span-2">Type</div>
+                    <div className="col-span-6">Heading</div>
+                    <div className="col-span-3 text-right">Visibility</div>
+                </div>
+
+                <Reorder.Group axis="y" values={localSections} onReorder={handleReorder} className="divide-y divide-gray-100">
+                    {localSections.map((section) => (
+                        <Reorder.Item key={section.id} value={section} className="bg-white">
+                            <div className="grid grid-cols-12 gap-4 items-center px-6 py-4">
+                                <div className="col-span-1 flex items-center text-gray-400 cursor-grab active:cursor-grabbing hover:text-gray-600">
+                                    <GripVertical size={20} />
+                                </div>
+                                <div className="col-span-2">
+                                    <span className={`inline-flex px-2 py-1 rounded text-xs font-medium uppercase tracking-wide border ${section.type === 'brand' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                            section.type === 'links' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                                section.type === 'contact' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                    'bg-orange-50 text-orange-700 border-orange-200'
+                                        }`}>
+                                        {getTypeLabel(section.type)}
+                                    </span>
+                                </div>
+                                <div className="col-span-6">
+                                    <input
+                                        type="text"
+                                        value={section.heading}
+                                        onChange={(e) => setLocalSections(localSections.map(s => s.id === section.id ? { ...s, heading: e.target.value } : s))}
+                                        onBlur={(e) => handleUpdateHeading(section.id, e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                                    />
+                                </div>
+                                <div className="col-span-3 flex justify-end">
+                                    <button
+                                        onClick={() => handleToggle(section.id, section.enabled)}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 transition-colors ${section.enabled ? 'border-[var(--primary)]' : 'border-gray-200'}`}
+                                        style={{ backgroundColor: section.enabled ? 'var(--primary)' : '#E5E7EB' }}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${section.enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    </button>
+                                </div>
+                            </div>
+                        </Reorder.Item>
+                    ))}
+                </Reorder.Group>
+            </div>
+
+            <div className="mt-8 p-4 bg-blue-50 border border-blue-100 rounded-lgflex items-start gap-3">
+                <Info size={20} className="text-blue-600 shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-800">
+                    <p className="font-medium mb-1">Standardizing Footer Design</p>
+                    <p>The "Important Links" and "Contact Us" sections now share consistent styling. Drag items to reorder how columns appear in the footer.</p>
+                </div>
+            </div>
+        </motion.div>
     );
 };
 

@@ -505,6 +505,29 @@ ALTER TABLE public.site_page_sections ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read" ON public.site_page_sections FOR SELECT USING (enabled = true);
 CREATE POLICY "Auth manage" ON public.site_page_sections FOR ALL USING (auth.role() = 'authenticated');
 
+-- FOOTER SECTIONS TABLE
+CREATE TABLE IF NOT EXISTS public.footer_sections (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    type TEXT NOT NULL, -- 'brand', 'links', 'contact', 'hours'
+    heading TEXT NOT NULL,
+    sort_order INTEGER DEFAULT 0,
+    enabled BOOLEAN DEFAULT true,
+    config JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.footer_sections ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read access" ON public.footer_sections FOR SELECT USING (true);
+CREATE POLICY "Admin full access" ON public.footer_sections FOR ALL USING (auth.role() = 'authenticated');
+
+-- Seed data for footer sections
+INSERT INTO public.footer_sections (type, heading, sort_order, enabled) VALUES
+('brand', 'Brand Info', 10, true),
+('links', 'Important Links', 20, true),
+('contact', 'Contact Us', 30, true),
+('hours', 'Opening Hours', 40, true)
+ON CONFLICT DO NOTHING;
+
 -- DEFAULT SETTINGS
 INSERT INTO public.site_settings (key, value)
 VALUES

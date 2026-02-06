@@ -84,7 +84,7 @@ const DEFAULT_ORDER = [
 // Custom Hook for fetching CMS data
 const useSiteData = () => {
   const [siteData, setSiteData] = useState({
-    settings: {}, services: [], pricing: [], team: [], gallery: [], testimonials: [], phoneNumbers: [], customSections: [], pageSections: [], loading: true
+    settings: {}, services: [], pricing: [], team: [], gallery: [], testimonials: [], phoneNumbers: [], customSections: [], pageSections: [], footerSections: [], loading: true
   });
 
   const fetchSiteData = async () => {
@@ -98,7 +98,8 @@ const useSiteData = () => {
         { data: tests },
         { data: phones },
         { data: customSects },
-        { data: fetchedSections }
+        { data: fetchedSections },
+        { data: fetchedFooterSections }
       ] = await Promise.all([
         supabase.from('site_settings').select('*'),
         supabase.from('services_overview').select('*'),
@@ -108,7 +109,8 @@ const useSiteData = () => {
         supabase.from('testimonials').select('*').order('sort_order'),
         supabase.from('phone_numbers').select('*').order('display_order'),
         supabase.from('custom_sections').select('*, custom_section_elements(*)').order('sort_order'),
-        supabase.from('site_page_sections').select('*').order('sort_order')
+        supabase.from('site_page_sections').select('*').order('sort_order'),
+        supabase.from('footer_sections').select('*').order('sort_order')
       ]);
 
       const settingsObj = {};
@@ -154,6 +156,7 @@ const useSiteData = () => {
         phoneNumbers: phones || [],
         customSections: customSects || [],
         pageSections: finalSections,
+        footerSections: fetchedFooterSections || [],
         loading: false
       });
     } catch (err) {
@@ -254,7 +257,7 @@ const MainSite = ({ siteData }) => {
                 })()}
               </div>
 
-              <Footer settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} pageSections={siteData.pageSections} />
+              <Footer settings={siteData.settings} phoneNumbers={siteData.phoneNumbers} pageSections={siteData.pageSections} footerSections={siteData.footerSections} />
               <Analytics />
               <SpeedInsights />
             </main>

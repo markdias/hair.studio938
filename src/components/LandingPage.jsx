@@ -1092,7 +1092,7 @@ const Testimonials = ({ testimonials = [], settings = {}, isSeparatePage = false
     );
 };
 
-const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
+const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSections = [] }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const isHomePage = location.pathname === '/';
@@ -1100,29 +1100,24 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
     const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
     const businessName = settings.business_name || '';
-    const footerDescription = settings.footer_description || "";
-    const email = settings.email || "";
-    const address = settings.address || "";
-    const phone = phoneNumbers.length > 0 ? phoneNumbers[0].number : (settings.phone || "");
 
-    return (
-        <>
-            <footer style={{
-                padding: '80px 20px 40px',
-                backgroundColor: 'var(--secondary)',
-                color: 'var(--primary)',
-                borderTop: '1px solid rgba(61, 43, 31, 0.1)'
-            }}>
-                <div style={{
-                    maxWidth: '1200px',
-                    margin: '0 auto',
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                    gap: '40px',
-                    paddingBottom: '20px'
-                }}>
-                    {/* Column 1: Brand */}
-                    <div style={{ textAlign: 'left' }}>
+    // Default order if footerSections is empty
+    const displaySections = footerSections.length > 0
+        ? footerSections.filter(s => s.enabled)
+        : [
+            { id: 'brand', type: 'brand', sort_order: 10 },
+            { id: 'links', type: 'links', sort_order: 20 },
+            { id: 'contact', type: 'contact', sort_order: 30 },
+            { id: 'hours', type: 'hours', sort_order: 40 }
+        ];
+
+    const sortedSections = [...displaySections].sort((a, b) => a.sort_order - b.sort_order);
+
+    const renderSection = (section) => {
+        switch (section.type) {
+            case 'brand':
+                return (
+                    <div key={section.id} style={{ textAlign: 'left' }}>
                         <h3 style={{ fontSize: '1.1rem', fontWeight: '400', fontFamily: 'var(--font-heading)', color: 'var(--text-main)', margin: '0 0 20px 0', textTransform: 'uppercase', letterSpacing: '1px' }}>
                             {settings.business_name || 'Hair Studio 938'}
                         </h3>
@@ -1154,63 +1149,70 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                             );
                         })()}
                     </div>
-
-                    {/* Column 2: Links */}
-                    {(settings?.show_privacy_section !== 'false' || settings?.show_terms_section !== 'false') && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <h4 style={{
-                                fontFamily: 'var(--font-heading)',
-                                fontSize: '1.4rem',
-                                margin: 0
-                            }}>Important Links</h4>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {settings?.show_privacy_section !== 'false' && (
-                                    <button
-                                        onClick={() => setIsPrivacyModalOpen(true)}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: 'var(--primary)',
-                                            fontSize: '0.95rem',
-                                            cursor: 'pointer',
-                                            textAlign: 'left',
-                                            padding: 0,
-                                            opacity: 0.8,
-                                            transition: 'opacity 0.2s'
-                                        }}
-                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
-                                    >
-                                        {settings?.privacy_menu_name || "Privacy Policy"}
-                                    </button>
-                                )}
-                                {settings?.show_terms_section !== 'false' && (
-                                    <button
-                                        onClick={() => setIsTermsModalOpen(true)}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: 'var(--primary)',
-                                            fontSize: '0.95rem',
-                                            cursor: 'pointer',
-                                            textAlign: 'left',
-                                            padding: 0,
-                                            opacity: 0.8,
-                                            transition: 'opacity 0.2s'
-                                        }}
-                                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
-                                    >
-                                        {settings?.terms_menu_name || "Terms & Conditions"}
-                                    </button>
-                                )}
-                            </div>
+                );
+            case 'links':
+                if (settings?.show_privacy_section === 'false' && settings?.show_terms_section === 'false') return null;
+                return (
+                    <div key={section.id} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <h4 style={{
+                            fontSize: '1.1rem', // Standardized size
+                            fontWeight: '400',
+                            fontFamily: 'var(--font-heading)',
+                            color: 'var(--text-main)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px',
+                            margin: '0 0 20px 0' // Consistent margin
+                        }}>{section.heading || "Important Links"}</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {settings?.show_privacy_section !== 'false' && (
+                                <button
+                                    onClick={() => setIsPrivacyModalOpen(true)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--primary)',
+                                        fontSize: '0.95rem',
+                                        cursor: 'pointer',
+                                        textAlign: 'left',
+                                        padding: 0,
+                                        opacity: 0.8,
+                                        transition: 'opacity 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                                >
+                                    {settings?.privacy_menu_name || "Privacy Policy"}
+                                </button>
+                            )}
+                            {settings?.show_terms_section !== 'false' && (
+                                <button
+                                    onClick={() => setIsTermsModalOpen(true)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--primary)',
+                                        fontSize: '0.95rem',
+                                        cursor: 'pointer',
+                                        textAlign: 'left',
+                                        padding: 0,
+                                        opacity: 0.8,
+                                        transition: 'opacity 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                                >
+                                    {settings?.terms_menu_name || "Terms & Conditions"}
+                                </button>
+                            )}
                         </div>
-                    )}
-
-                    {/* Column 3: Contact Us */}
-                    <div>
-                        <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)' }}>Contact Us</h4>
+                    </div>
+                );
+            case 'contact':
+                return (
+                    <div key={section.id}>
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            {section.heading || "Contact Us"}
+                        </h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', color: 'var(--text-main)', opacity: 0.7, fontSize: '0.95rem', lineHeight: '1.6' }}>
                             <p style={{ margin: 0, maxWidth: '200px' }}>
                                 {settings.business_address || "Unit 5, 938 High Road, London, N12 9RT"}
@@ -1240,39 +1242,64 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [] }) => {
                             )}
                         </div>
                     </div>
-
-                    {/* Column 4: Opening Hours */}
-                    {settings.show_opening_hours !== 'false' && (
-                        <div>
-                            <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)' }}>Opening Hours</h4>
-                            <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.6', fontSize: '0.95rem' }}>
-                                {settings.opening_hours || "Tue-Sat: 9 AM - 6 PM"}
-                            </p>
-                            {/* Dynamic Payment Icons */}
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px', opacity: 0.8, flexWrap: 'wrap' }}>
-                                {(() => {
-                                    const paymentLogos = {
-                                        'visa': 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg',
-                                        'mastercard': 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg',
-                                        'paypal': 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg',
-                                        'applepay': 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg',
-                                        'googlepay': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Pay_Logo_%282020%29.svg',
-                                        'amex': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg',
-                                    };
-                                    const methods = (settings.payment_methods || 'visa,mastercard,paypal').split(',').filter(Boolean);
-                                    return methods.map(method => (
-                                        <img
-                                            key={method}
-                                            src={paymentLogos[method]}
-                                            alt={method}
-                                            style={{ height: '24px' }}
-                                            onError={(e) => e.target.style.display = 'none'}
-                                        />
-                                    ));
-                                })()}
-                            </div>
+                );
+            case 'hours':
+                if (settings.show_opening_hours === 'false') return null;
+                return (
+                    <div key={section.id}>
+                        <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            {section.heading || "Opening Hours"}
+                        </h4>
+                        <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.6', fontSize: '0.95rem' }}>
+                            {settings.opening_hours || "Tue-Sat: 9 AM - 6 PM"}
+                        </p>
+                        {/* Dynamic Payment Icons */}
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '20px', opacity: 0.8, flexWrap: 'wrap' }}>
+                            {(() => {
+                                const paymentLogos = {
+                                    'visa': 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg',
+                                    'mastercard': 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg',
+                                    'paypal': 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg',
+                                    'applepay': 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Apple_Pay_logo.svg',
+                                    'googlepay': 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Pay_Logo_%282020%29.svg',
+                                    'amex': 'https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg',
+                                };
+                                const methods = (settings.payment_methods || 'visa,mastercard,paypal').split(',').filter(Boolean);
+                                return methods.map(method => (
+                                    <img
+                                        key={method}
+                                        src={paymentLogos[method]}
+                                        alt={method}
+                                        style={{ height: '24px' }}
+                                        onError={(e) => e.target.style.display = 'none'}
+                                    />
+                                ));
+                            })()}
                         </div>
-                    )}
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
+
+    return (
+        <>
+            <footer style={{
+                padding: '80px 20px 40px',
+                backgroundColor: 'var(--secondary)',
+                color: 'var(--primary)',
+                borderTop: '1px solid rgba(61, 43, 31, 0.1)'
+            }}>
+                <div style={{
+                    maxWidth: '1200px',
+                    margin: '0 auto',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    gap: '40px',
+                    paddingBottom: '20px'
+                }}>
+                    {sortedSections.map(renderSection)}
                 </div>
 
                 {/* Copyright */}
