@@ -1114,38 +1114,70 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
     const sortedSections = [...displaySections].sort((a, b) => a.sort_order - b.sort_order);
 
     const renderSection = (section) => {
+        const config = section.config || {};
+
+        // Configurable styles
+        const sectionStyle = {
+            backgroundColor: config.background_color || 'transparent',
+            padding: config.background_color ? '20px' : '0',
+            borderRadius: config.background_color ? '8px' : '0',
+            color: config.text_color || 'inherit'
+        };
+
+        const headingStyle = {
+            fontSize: '1.1rem',
+            fontWeight: '400',
+            fontFamily: 'var(--font-heading)',
+            color: config.text_color || 'var(--text-main)',
+            margin: '0 0 20px 0',
+            textTransform: 'uppercase',
+            letterSpacing: '1px'
+        };
+
+        const textStyle = {
+            color: config.text_color || 'var(--text-main)',
+            opacity: config.text_color ? 0.9 : 0.7,
+            lineHeight: '1.6',
+            fontSize: '0.9rem'
+        };
+
+        const linkStyle = {
+            color: 'inherit',
+            textDecoration: 'none'
+        };
+
         switch (section.type) {
             case 'brand':
                 return (
-                    <div key={section.id} style={{ textAlign: 'left' }}>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: '400', fontFamily: 'var(--font-heading)', color: 'var(--text-main)', margin: '0 0 20px 0', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <div key={section.id} style={{ textAlign: 'left', ...sectionStyle }}>
+                        <h3 style={headingStyle}>
                             {settings.business_name || 'Hair Studio 938'}
                         </h3>
-                        <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.6', maxWidth: '250px', marginBottom: '25px', fontSize: '0.9rem' }}>
-                            {settings.footer_description || "Premium hair styling and aesthetic treatments."}
+                        <p style={{ ...textStyle, maxWidth: '250px', marginBottom: '25px' }}>
+                            {config.description || settings.footer_description || "Premium hair styling and aesthetic treatments."}
                         </p>
                         {(() => {
                             const bookingSection = pageSections.find(s => s.id === 'booking');
                             const isSeparate = bookingSection?.is_separate_page;
-                            const style = {
-                                color: 'var(--primary)',
+                            const bookBtnStyle = {
+                                color: config.text_color || 'var(--primary)',
                                 textDecoration: 'none',
                                 fontWeight: '700',
                                 fontSize: '0.85rem',
                                 textTransform: 'uppercase',
                                 letterSpacing: '1px',
-                                borderBottom: '1px solid var(--primary)',
+                                borderBottom: `1px solid ${config.text_color || 'var(--primary)'}`,
                                 width: 'fit-content',
                                 paddingBottom: '2px'
                             };
 
                             if (isSeparate) {
-                                return <Link to="/section/booking" style={style}>Book Online</Link>;
+                                return <Link to="/section/booking" style={bookBtnStyle}>Book Online</Link>;
                             }
                             return isHomePage ? (
-                                <a href="#booking" style={style}>Book Online</a>
+                                <a href="#booking" style={bookBtnStyle}>Book Online</a>
                             ) : (
-                                <Link to="/#booking" style={style}>Book Online</Link>
+                                <Link to="/#booking" style={bookBtnStyle}>Book Online</Link>
                             );
                         })()}
                     </div>
@@ -1153,53 +1185,47 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
             case 'links':
                 if (settings?.show_privacy_section === 'false' && settings?.show_terms_section === 'false') return null;
                 return (
-                    <div key={section.id} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <h4 style={{
-                            fontSize: '1.1rem', // Standardized size
-                            fontWeight: '400',
-                            fontFamily: 'var(--font-heading)',
-                            color: 'var(--text-main)',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            margin: '0 0 20px 0' // Consistent margin
-                        }}>{section.heading || "Important Links"}</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            {settings?.show_privacy_section !== 'false' && (
+                    <div key={section.id} style={{ display: 'flex', flexDirection: 'column', gap: '20px', ...sectionStyle }}>
+                        <h4 style={headingStyle}>{section.heading || "Important Links"}</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', ...textStyle }}>
+                            {settings?.show_privacy_section !== 'false' && config.show_privacy !== false && (
                                 <button
                                     onClick={() => setIsPrivacyModalOpen(true)}
                                     style={{
                                         background: 'none',
                                         border: 'none',
-                                        color: 'var(--primary)',
+                                        color: config.text_color || 'var(--primary)',
                                         fontSize: '0.95rem',
                                         cursor: 'pointer',
                                         textAlign: 'left',
                                         padding: 0,
-                                        opacity: 0.8,
-                                        transition: 'opacity 0.2s'
+                                        opacity: config.text_color ? 0.9 : 0.8,
+                                        transition: 'opacity 0.2s',
+                                        width: 'fit-content'
                                     }}
                                     onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                                    onMouseLeave={(e) => e.currentTarget.style.opacity = config.text_color ? '0.9' : '0.8'}
                                 >
                                     {settings?.privacy_menu_name || "Privacy Policy"}
                                 </button>
                             )}
-                            {settings?.show_terms_section !== 'false' && (
+                            {settings?.show_terms_section !== 'false' && config.show_terms !== false && (
                                 <button
                                     onClick={() => setIsTermsModalOpen(true)}
                                     style={{
                                         background: 'none',
                                         border: 'none',
-                                        color: 'var(--primary)',
+                                        color: config.text_color || 'var(--primary)',
                                         fontSize: '0.95rem',
                                         cursor: 'pointer',
                                         textAlign: 'left',
                                         padding: 0,
-                                        opacity: 0.8,
-                                        transition: 'opacity 0.2s'
+                                        opacity: config.text_color ? 0.9 : 0.8,
+                                        transition: 'opacity 0.2s',
+                                        width: 'fit-content'
                                     }}
                                     onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+                                    onMouseLeave={(e) => e.currentTarget.style.opacity = config.text_color ? '0.9' : '0.8'}
                                 >
                                     {settings?.terms_menu_name || "Terms & Conditions"}
                                 </button>
@@ -1209,33 +1235,35 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
                 );
             case 'contact':
                 return (
-                    <div key={section.id}>
-                        <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <div key={section.id} style={sectionStyle}>
+                        <h4 style={headingStyle}>
                             {section.heading || "Contact Us"}
                         </h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', color: 'var(--text-main)', opacity: 0.7, fontSize: '0.95rem', lineHeight: '1.6' }}>
-                            <p style={{ margin: 0, maxWidth: '200px' }}>
-                                {settings.business_address || "Unit 5, 938 High Road, London, N12 9RT"}
-                            </p>
-                            {settings.business_email && (
-                                <a href={`mailto:${settings.business_email}`} style={{ color: 'inherit', textDecoration: 'none' }}>{settings.business_email}</a>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', ...textStyle, fontSize: '0.95rem' }}>
+                            {config.show_address !== false && (
+                                <p style={{ margin: 0, maxWidth: '200px' }}>
+                                    {settings.business_address || "Unit 5, 938 High Road, London, N12 9RT"}
+                                </p>
                             )}
-                            {settings.business_phone && (
-                                <a href={`tel:${settings.business_phone}`} style={{ color: 'inherit', textDecoration: 'none' }}>{settings.business_phone}</a>
+                            {config.show_email !== false && settings.business_email && (
+                                <a href={`mailto:${settings.business_email}`} style={linkStyle}>{settings.business_email}</a>
+                            )}
+                            {config.show_phone !== false && settings.business_phone && (
+                                <a href={`tel:${settings.business_phone}`} style={linkStyle}>{settings.business_phone}</a>
                             )}
                             {/* Additional Phones */}
-                            {phoneNumbers.map((phone) => (
-                                <a key={phone.id} href={phone.type === 'whatsapp' ? `https://wa.me/${phone.number.replace(/\+/g, '')}` : `tel:${phone.number}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                            {config.show_phone !== false && phoneNumbers.map((phone) => (
+                                <a key={phone.id} href={phone.type === 'whatsapp' ? `https://wa.me/${phone.number.replace(/\+/g, '')}` : `tel:${phone.number}`} style={linkStyle}>
                                     {phone.number}
                                 </a>
                             ))}
 
-                            {settings.instagram_url && (
+                            {config.show_socials !== false && settings.instagram_url && (
                                 <a
                                     href={settings.instagram_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    style={{ color: 'var(--primary)', marginTop: '5px', width: 'fit-content' }}
+                                    style={{ color: config.text_color || 'var(--primary)', marginTop: '5px', width: 'fit-content' }}
                                 >
                                     <Instagram size={20} />
                                 </a>
@@ -1246,14 +1274,14 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
             case 'hours':
                 if (settings.show_opening_hours === 'false') return null;
                 return (
-                    <div key={section.id}>
-                        <h4 style={{ fontSize: '1.1rem', fontWeight: '400', color: 'var(--text-main)', marginBottom: '25px', fontFamily: 'var(--font-heading)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <div key={section.id} style={sectionStyle}>
+                        <h4 style={headingStyle}>
                             {section.heading || "Opening Hours"}
                         </h4>
-                        <p style={{ color: 'var(--text-main)', opacity: 0.7, lineHeight: '1.6', fontSize: '0.95rem' }}>
-                            {settings.opening_hours || "Tue-Sat: 9 AM - 6 PM"}
+                        <p style={{ ...textStyle, fontSize: '0.95rem', whiteSpace: 'pre-line' }}>
+                            {config.hours_text || settings.opening_hours || "Tue-Sat: 9 AM - 6 PM"}
                         </p>
-                        {/* Dynamic Payment Icons */}
+                        {/* Dynamic Payment Icons - usually don't need overrides */}
                         <div style={{ display: 'flex', gap: '10px', marginTop: '20px', opacity: 0.8, flexWrap: 'wrap' }}>
                             {(() => {
                                 const paymentLogos = {

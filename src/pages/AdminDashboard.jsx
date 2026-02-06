@@ -7200,7 +7200,7 @@ const FooterTab = ({ footerSections = [], setFooterSections, showMessage, refres
         } catch (err) {
             console.error('Error reordering footer sections:', err);
             showMessage('error', 'Error updating order');
-            refresh(); // Revert on error
+            refresh();
         }
     };
 
@@ -7225,6 +7225,10 @@ const FooterTab = ({ footerSections = [], setFooterSections, showMessage, refres
     };
 
     const handleUpdateHeading = async (id, newHeading) => {
+        // Optimistic update
+        const updated = localSections.map(s => s.id === id ? { ...s, heading: newHeading } : s);
+        setLocalSections(updated);
+
         try {
             const { error } = await supabase
                 .from('footer_sections')
@@ -7232,15 +7236,38 @@ const FooterTab = ({ footerSections = [], setFooterSections, showMessage, refres
                 .eq('id', id);
 
             if (error) throw error;
-
-            const updated = localSections.map(s => s.id === id ? { ...s, heading: newHeading } : s);
-            setLocalSections(updated);
             setFooterSections(updated);
-            showMessage('success', 'Heading updated');
         } catch (err) {
             console.error('Error updating heading:', err);
             showMessage('error', 'Error updating heading');
+            refresh();
         }
+    };
+
+    const handleUpdateSection = async (id, updates) => {
+        // Optimistic update
+        const updated = localSections.map(s => s.id === id ? { ...s, ...updates } : s);
+        setLocalSections(updated);
+
+        try {
+            // Only send specific fields to DB
+            const { error } = await supabase
+                .from('footer_sections')
+                .update(updates)
+                .eq('id', id);
+
+            if (error) throw error;
+            setFooterSections(updated);
+            showMessage('success', 'Changes saved'); // Optional feedback
+        } catch (err) {
+            console.error('Error updating section:', err);
+            showMessage('error', 'Error updating section');
+            refresh();
+        }
+    };
+
+    const toggleExpand = (id) => {
+        setExpandedIds(prev => prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]);
     };
 
     const getTypeLabel = (type) => {
@@ -7256,7 +7283,7 @@ const FooterTab = ({ footerSections = [], setFooterSections, showMessage, refres
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Footer Management</h2>
-            <p className="text-gray-500 mb-8">Manage the sections displayed in the site footer using drag-and-drop.</p>
+            <p className="text-gray-500 mb-8">Manage the sections displayed in the site footer using drag-and-drop. Click the arrow to customize colors and content.</p>
 
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -7282,14 +7309,20 @@ const FooterTab = ({ footerSections = [], setFooterSections, showMessage, refres
                                         {getTypeLabel(section.type)}
                                     </span>
                                 </div>
-                                <div className="col-span-6">
+                                <div className="col-span-6 flex gap-2 items-center">
                                     <input
                                         type="text"
                                         value={section.heading}
-                                        onChange={(e) => setLocalSections(localSections.map(s => s.id === section.id ? { ...s, heading: e.target.value } : s))}
-                                        onBlur={(e) => handleUpdateHeading(section.id, e.target.value)}
+                                        onChange={(e) => handleUpdateHeading(section.id, e.target.value)} // Using optimistic update wrapper
                                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                                     />
+                                    <button
+                                        onClick={() => toggleExpand(section.id)}
+                                        className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${expandedIds.includes(section.id) ? 'bg-gray-100 text-primary' : 'text-gray-400'}`}
+                                        title="Configure Section"
+                                    >
+                                        <Settings size={16} />
+                                    </button>
                                 </div>
                                 <div className="col-span-3 flex justify-end">
                                     <button
@@ -7301,6 +7334,15 @@ const FooterTab = ({ footerSections = [], setFooterSections, showMessage, refres
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Expanded Config Panel */}
+                            {expandedIds.includes(section.id) && (
+                                <FooterSectionConfig
+                                    section={section}
+                                    onUpdate={handleUpdateSection}
+                                    theme={theme}
+                                />
+                            )}
                         </Reorder.Item>
                     ))}
                 </Reorder.Group>
