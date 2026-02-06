@@ -1188,7 +1188,7 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
                 return (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', ...sectionStyle }}>
                         <h4 style={headingStyle}>{section.heading || "Important Links"}</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', ...textStyle }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', ...textStyle }}>
                             {settings?.show_privacy_section !== 'false' && config.show_privacy !== false && (
                                 <button
                                     onClick={() => setIsPrivacyModalOpen(true)}
@@ -1235,6 +1235,8 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
                     </div>
                 );
             case 'contact':
+                const visiblePhoneNumbers = phoneNumbers.filter(p => p.number !== (settings.phone || settings.business_phone));
+
                 return (
                     <div style={sectionStyle}>
                         <h4 style={headingStyle}>
@@ -1252,8 +1254,8 @@ const Footer = ({ settings = {}, phoneNumbers = [], pageSections = [], footerSec
                             {config.show_phone !== false && (settings.phone || settings.business_phone) && (
                                 <a href={`tel:${settings.phone || settings.business_phone}`} style={linkStyle}>{settings.phone || settings.business_phone}</a>
                             )}
-                            {/* Additional Phones */}
-                            {config.show_phone !== false && phoneNumbers.map((phone) => (
+                            {/* Additional Phones - Filtered to avoid duplicates */}
+                            {config.show_phone !== false && visiblePhoneNumbers.map((phone) => (
                                 <a key={phone.id} href={phone.type === 'whatsapp' ? `https://wa.me/${phone.number.replace(/\+/g, '')}` : `tel:${phone.number}`} style={linkStyle}>
                                     {phone.number}
                                 </a>
