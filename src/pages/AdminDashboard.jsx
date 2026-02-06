@@ -7172,8 +7172,172 @@ const TableElementConfig = ({ config, onSave }) => {
 };
 
 
-const FooterTab = ({ footerSections = [], setFooterSections, showMessage, refresh }) => {
+const FooterSectionConfig = ({ section, onUpdate, theme }) => {
+    const config = section.config || {};
+
+    const handleConfigChange = (key, value) => {
+        const newConfig = { ...config, [key]: value };
+        onUpdate(section.id, { config: newConfig });
+    };
+
+    const themeColors = [
+        { name: 'Primary', value: 'var(--primary)', hex: theme?.['--primary'] || 'var(--primary)' },
+        { name: 'Accent', value: 'var(--accent)', hex: theme?.['--accent'] || '#EAE0D5' },
+        { name: 'Soft Cream', value: 'var(--secondary)', hex: theme?.['--secondary'] || '#F5F1ED' },
+        { name: 'Dark Text', value: 'var(--text-main)', hex: theme?.['--text-main'] || '#2A1D15' },
+        { name: 'Light Text', value: 'var(--text-contrast)', hex: theme?.['--text-contrast'] || '#FFFFFF' },
+    ];
+
+    return (
+        <div className="bg-white border-t border-gray-100 p-4 pl-12 space-y-4">
+            {/* Colors */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                    <label className="text-xs font-medium text-gray-500 uppercase">Background Color</label>
+                    <div className="flex flex-wrap gap-2">
+                        {themeColors.map(color => (
+                            <button
+                                key={color.value}
+                                onClick={() => handleConfigChange('background_color', color.value)}
+                                className={`w-8 h-8 rounded-full border-2 transition-all ${config.background_color === color.value ? 'border-primary ring-2 ring-primary ring-offset-2 scale-110' : 'border-gray-200 hover:scale-105'}`}
+                                style={{ backgroundColor: color.hex }}
+                                title={color.name}
+                            />
+                        ))}
+                        <button
+                            onClick={() => handleConfigChange('background_color', '')}
+                            className={`px-3 h-8 rounded-full border-2 text-[10px] font-bold uppercase transition-all ${!config.background_color ? 'border-primary bg-gray-50' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                            title="Automatic"
+                        >
+                            Auto
+                        </button>
+                    </div>
+                </div>
+                <div className="space-y-3">
+                    <label className="text-xs font-medium text-gray-500 uppercase">Text Color</label>
+                    <div className="flex flex-wrap gap-2">
+                        {themeColors.map(color => (
+                            <button
+                                key={color.value}
+                                onClick={() => handleConfigChange('text_color', color.value)}
+                                className={`w-8 h-8 rounded-full border-2 transition-all ${config.text_color === color.value ? 'border-primary ring-2 ring-primary ring-offset-2 scale-110' : 'border-gray-200 hover:scale-105'}`}
+                                style={{ backgroundColor: color.hex }}
+                                title={color.name}
+                            />
+                        ))}
+                        <button
+                            onClick={() => handleConfigChange('text_color', '')}
+                            className={`px-3 h-8 rounded-full border-2 text-[10px] font-bold uppercase transition-all ${!config.text_color ? 'border-primary bg-gray-50' : 'border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                            title="Automatic"
+                        >
+                            Auto
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Type Specific Config */}
+            {section.type === 'brand' && (
+                <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase block mb-2">Description Override</label>
+                    <textarea
+                        value={config.description || ''}
+                        onChange={(e) => handleConfigChange('description', e.target.value)}
+                        placeholder="Override default footer description..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+                        rows={3}
+                    />
+                </div>
+            )}
+
+            {section.type === 'links' && (
+                <div className="space-y-3">
+                    <label className="text-xs font-medium text-gray-500 uppercase block">Visible Links</label>
+                    <div className="space-y-2">
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={config.show_privacy !== false}
+                                onChange={(e) => handleConfigChange('show_privacy', e.target.checked)}
+                                className="rounded text-primary focus:ring-primary"
+                            />
+                            <span className="text-sm text-gray-700">Privacy Policy</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={config.show_terms !== false}
+                                onChange={(e) => handleConfigChange('show_terms', e.target.checked)}
+                                className="rounded text-primary focus:ring-primary"
+                            />
+                            <span className="text-sm text-gray-700">Terms & Conditions</span>
+                        </label>
+                    </div>
+                </div>
+            )}
+
+            {section.type === 'contact' && (
+                <div className="space-y-3">
+                    <label className="text-xs font-medium text-gray-500 uppercase block">Visible Details</label>
+                    <div className="grid grid-cols-2 gap-2">
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={config.show_address !== false}
+                                onChange={(e) => handleConfigChange('show_address', e.target.checked)}
+                                className="rounded text-primary focus:ring-primary"
+                            />
+                            <span className="text-sm text-gray-700">Address</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={config.show_email !== false}
+                                onChange={(e) => handleConfigChange('show_email', e.target.checked)}
+                                className="rounded text-primary focus:ring-primary"
+                            />
+                            <span className="text-sm text-gray-700">Email</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={config.show_phone !== false}
+                                onChange={(e) => handleConfigChange('show_phone', e.target.checked)}
+                                className="rounded text-primary focus:ring-primary"
+                            />
+                            <span className="text-sm text-gray-700">Phone</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={config.show_socials !== false}
+                                onChange={(e) => handleConfigChange('show_socials', e.target.checked)}
+                                className="rounded text-primary focus:ring-primary"
+                            />
+                            <span className="text-sm text-gray-700">Social Icons</span>
+                        </label>
+                    </div>
+                </div>
+            )}
+            {section.type === 'hours' && (
+                <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase block mb-2">Hours Text Override</label>
+                    <textarea
+                        value={config.hours_text || ''}
+                        onChange={(e) => handleConfigChange('hours_text', e.target.value)}
+                        placeholder="Override default opening hours text..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+                        rows={3}
+                    />
+                </div>
+            )}
+        </div>
+    );
+};
+
+const FooterTab = ({ footerSections = [], setFooterSections, showMessage, refresh, theme }) => {
     const [localSections, setLocalSections] = useState(footerSections);
+    const [expandedIds, setExpandedIds] = useState([]);
 
     useEffect(() => {
         setLocalSections(footerSections);
@@ -7302,9 +7466,9 @@ const FooterTab = ({ footerSections = [], setFooterSections, showMessage, refres
                                 </div>
                                 <div className="col-span-2">
                                     <span className={`inline-flex px-2 py-1 rounded text-xs font-medium uppercase tracking-wide border ${section.type === 'brand' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                            section.type === 'links' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                                section.type === 'contact' ? 'bg-green-50 text-green-700 border-green-200' :
-                                                    'bg-orange-50 text-orange-700 border-orange-200'
+                                        section.type === 'links' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                            section.type === 'contact' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                'bg-orange-50 text-orange-700 border-orange-200'
                                         }`}>
                                         {getTypeLabel(section.type)}
                                     </span>
